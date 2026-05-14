@@ -1,9 +1,9 @@
 {
-  "slug": "",
-  "lastUpdated": "",
+  "slug": "avatar",
+  "lastUpdated": "2026-05-14",
   "status": "scaffold",
   "component": {
-    "name": "",
+    "name": "Avatar",
     "category": "atoms",
     "description": "",
     "type": "interactive"

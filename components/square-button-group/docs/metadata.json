@@ -1,9 +1,9 @@
 {
-  "slug": "",
-  "lastUpdated": "",
+  "slug": "square-button-group",
+  "lastUpdated": "2026-05-14",
   "status": "scaffold",
   "component": {
-    "name": "",
+    "name": "Square Button Group",
     "category": "atoms",
     "description": "",
     "type": "interactive"

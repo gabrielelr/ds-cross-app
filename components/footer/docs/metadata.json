@@ -1,9 +1,9 @@
 {
-  "slug": "",
-  "lastUpdated": "",
+  "slug": "footer",
+  "lastUpdated": "2026-05-14",
   "status": "scaffold",
   "component": {
-    "name": "",
+    "name": "Footer",
     "category": "atoms",
     "description": "",
     "type": "interactive"

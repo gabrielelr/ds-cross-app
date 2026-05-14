@@ -1,9 +1,9 @@
 {
-  "slug": "",
-  "lastUpdated": "",
+  "slug": "badge-special",
+  "lastUpdated": "2026-05-14",
   "status": "scaffold",
   "component": {
-    "name": "",
+    "name": "Badge Special",
     "category": "atoms",
     "description": "",
     "type": "interactive"

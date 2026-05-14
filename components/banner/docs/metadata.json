@@ -1,9 +1,9 @@
 {
-  "slug": "",
-  "lastUpdated": "",
+  "slug": "banner",
+  "lastUpdated": "2026-05-14",
   "status": "scaffold",
   "component": {
-    "name": "",
+    "name": "Banner",
     "category": "atoms",
     "description": "",
     "type": "interactive"

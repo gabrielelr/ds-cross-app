@@ -15,7 +15,6 @@ components/
 └── {slug}/
     └── docs/
         ├── metadata.json          Obbligatorio
-        ├── rationale-note.md      Obbligatorio
         ├── changelog.md           Obbligatorio (sincronizzato da Changelog Master)
         └── images/                Obbligatoria, può essere vuota
             └── *.png
@@ -23,11 +22,11 @@ components/
 
 **Regole.**
 
-- I nomi dei file sono fissi e case-sensitive: `metadata.json`, `rationale-note.md`, `changelog.md`.
+- I nomi dei file sono fissi e case-sensitive: `metadata.json`, `changelog.md`.
 - Tutti i file esistono sempre, anche per i componenti in stato `scaffold`.
 - La cartella `images/` esiste sempre. Se vuota, contiene un file `.gitkeep` per essere versionata da Git.
 - Niente sottocartelle dentro `docs/` oltre a `images/`.
-- Il file `changelog.md` non viene mai modificato a mano: è sincronizzato automaticamente dal plugin Changelog Master di Figma (vedi sezione 4).
+- Il file `changelog.md` non viene mai modificato a mano: è sincronizzato automaticamente dal plugin Changelog Master di Figma (vedi sezione 3).
 
 **File aggiuntivi consentiti** (non gestiti dagli script automatici, ma utili al team):
 
@@ -81,42 +80,7 @@ Lo script di estrazione del node tree (in fase di check) consulta `aliases.json`
 
 ---
 
-## 3. `rationale-note.md` — Perché è così
-
-Risponde alle domande: *"Perché è progettato in questo modo? Quali decisioni di design ci sono dietro? Quali eccezioni esistono?"*
-
-**Frontmatter.**
-
-```yaml
----
-slug: button
-component: Button
-lastUpdated: 2026-05-09
-status: full
----
-```
-
-| Campo         | Tipo   | Valori ammessi                                           |
-|---------------|--------|----------------------------------------------------------|
-| `slug`        | string | Slug del componente, conforme alla sezione 2             |
-| `component`   | string | Nome leggibile del componente                            |
-| `lastUpdated` | string | Data ISO `YYYY-MM-DD` dell'ultima modifica significativa |
-| `status`      | enum   | `full` o `scaffold`                                      |
-
-Campi opzionali: `version` (semver), `author`, `reviewer`.
-
-**Sezioni interne.**
-
-- `## Decisioni di design` — perché certe scelte sono state fatte
-- `## Eccezioni` — casi in cui il componente si discosta dalle regole standard del DS
-- `## Note storiche` — evoluzione del componente, deprecazioni, migrazioni
-- `## Componenti correlati` — link ad altri componenti che interagiscono con questo, con relazione esplicita ("usato dentro X", "alternativa a Y", "compone Z")
-
-**Regola.** Questo file è il più "discorsivo". Serve sia ai designer (per capire il *perché*) sia agli LLM (per disambiguare casi d'uso simili a partire dal contesto storico/progettuale).
-
----
-
-## 4. `changelog.md` — Storico delle modifiche del componente
+## 3. `changelog.md` — Storico delle modifiche del componente
 
 Il file `changelog.md` traccia l'evoluzione del componente nel tempo: nuove varianti, modifiche comportamentali, fix, deprecazioni. È sincronizzato automaticamente dal plugin **Changelog Master** di Figma e non va mai modificato a mano.
 
@@ -126,7 +90,7 @@ Il file `changelog.md` traccia l'evoluzione del componente nel tempo: nuove vari
 2. All'interno del plugin Changelog Master, il team DS registra la modifica indicando tipo, descrizione, autore ed eventuale progetto/revisore
 3. La modifica entra nella **Sync Queue** del plugin, dove può essere ancora corretta o cancellata prima dell'invio
 4. Al sync, il plugin scrive l'aggiornamento al file `components/{slug}/docs/changelog.md` della repo, in append rispetto allo storico precedente, e aggiorna il campo `last_updated` del frontmatter
-5. Eventuali documenti correlati (`rationale-note.md`, `metadata.json`) vanno aggiornati a mano dal team UX se la modifica impatta la documentazione
+5. Eventuali campi correlati nel `metadata.json` (es. il blocco `rationale`) vanno aggiornati a mano dal team UX se la modifica impatta la documentazione
 
 Il path template del plugin è configurabile dalle impostazioni; per questa repo è `components/{component}/docs/changelog.md`, dove `{component}` viene risolto sostituendo lo slug del frame Figma (es. `"Icon Button"` → `"icon-button"`).
 
@@ -183,11 +147,11 @@ last_updated: 2026-04-27
 
 ---
 
-## 5. Struttura del `metadata.json`
+## 4. Struttura del `metadata.json`
 
-Il `metadata.json` è la fonte di verità strutturata per ogni componente. Contiene tutte le informazioni su cosa è il componente, quando usarlo, come si comporta e come è composto. È quello che alimenta il sistema di check di aderenza, la generazione dell'`index.json` e il contesto caricato dall'LLM per rispondere alle domande sul DS.
+Il `metadata.json` è la fonte di verità strutturata per ogni componente. Contiene tutte le informazioni su cosa è il componente, quando usarlo, come si comporta, come è composto e **perché** è progettato così. È quello che alimenta il sistema di check di aderenza, la generazione dell'`index.json` e il contesto caricato dall'LLM per rispondere alle domande sul DS.
 
-Lo schema del `metadata.json` segue esattamente il formato della skill **AI Component Metadata** (`skills/ai-component-metadata`), con l'aggiunta di tre campi di repo-level (`slug`, `lastUpdated`, `status`) necessari per il tooling automatico.
+Lo schema del `metadata.json` segue il formato della skill **AI Component Metadata** (`skills/ai-component-metadata`), con l'aggiunta di campi specifici della repo: tre campi di repo-level (`slug`, `lastUpdated`, `status`) per il tooling automatico, e il blocco `rationale` per le decisioni di design e il contesto storico/progettuale del componente.
 
 **Schema di riferimento completo.**
 
@@ -216,19 +180,22 @@ Lo schema del `metadata.json` segue esattamente il formato della skill **AI Comp
       {
         "name": "primary-action",
         "description": "Azione principale di una schermata o flusso",
-        "composition": "<Button variant=\"solid_primary\"><Button.Text>Conferma</Button.Text></Button>"
+        "composition": "<Button variant=\"solid_primary\"><Button.Text>Conferma</Button.Text></Button>",
+        "images": ["1.1"]
       },
       {
         "name": "secondary-action",
         "description": "Azione alternativa o di annullamento",
-        "composition": "<Button variant=\"outline_default\"><Button.Text>Annulla</Button.Text></Button>"
+        "composition": "<Button variant=\"outline_default\"><Button.Text>Annulla</Button.Text></Button>",
+        "images": ["1.2"]
       }
     ],
     "antiPatterns": [
       {
         "scenario": "multiple-primary-buttons",
         "reason": "Confuses user decision-making and visual hierarchy",
-        "alternative": "Use one primary button, others as secondary or tertiary"
+        "alternative": "Use one primary button, others as secondary or tertiary",
+        "images": ["2.1"]
       }
     ]
   },
@@ -277,17 +244,28 @@ Lo schema del `metadata.json` segue esattamente il formato della skill **AI Comp
     "priority": "high",
     "keywords": ["button", "action", "click", "submit", "cta", "trigger"],
     "context": "Use for any interactive action that changes state or triggers behavior"
+  },
+
+  "rationale": {
+    "designDecisions": "- Il padding usa token `spacing-3` per coerenza touch (decisione validata in user testing Q1 2026, vedi [1.1]).\n- Lo stato `loading` sostituisce il testo con uno spinner per mantenere stabile l'hit area.\n- La variante `ghost` è stata rimossa a febbraio 2026 dopo che la ricerca ha mostrato bassa discoverability (vedi [3.1])."
   }
 }
 ```
 
-**Campi di repo-level** (non presenti nella skill, necessari per il tooling).
+**Campi aggiuntivi della repo** (non presenti nella skill, necessari per il tooling e la documentazione).
 
-| Campo         | Tipo   | Obbligatorio | Note                                                     |
-|---------------|--------|--------------|----------------------------------------------------------|
-| `slug`        | string | Sì           | Identificativo tecnico, conforme alla sezione 2          |
-| `lastUpdated` | string | Sì           | ISO `YYYY-MM-DD` dell'ultima modifica significativa      |
-| `status`      | enum   | Sì           | `full` o `scaffold`                                      |
+| Campo         | Tipo   | Obbligatorio | Note                                                                                       |
+|---------------|--------|--------------|--------------------------------------------------------------------------------------------|
+| `slug`        | string | Sì           | Identificativo tecnico, conforme alla sezione 2                                            |
+| `lastUpdated` | string | Sì           | ISO `YYYY-MM-DD` dell'ultima modifica significativa                                        |
+| `status`      | enum   | Sì           | `full` o `scaffold`                                                                        |
+| `rationale`   | object | Sì           | Blocco "Perché è così" — contiene il solo campo `designDecisions`                          |
+
+**Campi del blocco `rationale`**.
+
+| Campo                       | Tipo            | Obbligatorio | Note                                                                                                                                  |
+|-----------------------------|-----------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `rationale.designDecisions` | string markdown | Sì se `full` | Lista discorsiva delle decisioni di design del componente: razionali, evidenze da user testing/ricerca, eccezioni, note storiche. Per scaffold: stringa vuota (`""`). Markdown ammesso, incluse referenze inline alle immagini in formato `[N.M]` (vedi sezione 5). |
 
 **Campi della skill** (struttura completa documentata in `skills/ai-component-metadata/SKILL.md`).
 
@@ -299,8 +277,8 @@ Lo schema del `metadata.json` segue esattamente il formato della skill **AI Comp
 | `component.type`                 | enum            | Sì           | `interactive`, `display`, `container`, `input`, `navigation`        |
 | `usage.useCases[]`               | array di string | Sì se `full` | Casi d'uso semantici, almeno 1 per componenti `full`                 |
 | `usage.requiredProps[]`          | array di string | No           | Props obbligatorie da passare sempre                                 |
-| `usage.commonPatterns[]`         | array di object | No           | Pattern d'uso comuni con `name`, `description`, `composition`        |
-| `usage.antiPatterns[]`           | array di object | No           | Con `scenario`, `reason`, `alternative`                              |
+| `usage.commonPatterns[]`         | array di object | No           | Pattern d'uso comuni con `name`, `description`, `composition`, opzionale `images` (array di ID immagine, vedi sezione 5) |
+| `usage.antiPatterns[]`           | array di object | No           | Con `scenario`, `reason`, `alternative`, opzionale `images` (array di ID immagine, vedi sezione 5) |
 | `composition.slots`              | object          | No           | Slot/subcomponenti con `required` e `description`                    |
 | `composition.nestedComponents[]` | array di string | No           | Componenti figli usati internamente                                  |
 | `composition.commonPartners[]`   | array di string | No           | Componenti con cui viene spesso combinato                            |
@@ -319,32 +297,34 @@ Lo schema del `metadata.json` segue esattamente il formato della skill **AI Comp
 
 ---
 
-## 6. Naming delle immagini
+## 5. Naming delle immagini
 
-Le immagini in `components/{slug}/docs/images/` seguono un naming convenzionale che permette agli script di identificarle automaticamente.
+Le immagini in `components/{slug}/docs/images/` usano un naming numerico che funge anche da **identificatore univoco** referenziabile dal `metadata.json`.
 
 **Formato base.**
 
 ```
-{slug}-{variant?}-{do|dont}-{n}.{ext}
+{slug}{N}.{M}.{ext}
 ```
 
 Dove:
 
 - `{slug}` — slug del componente (sempre presente)
-- `{variant}` — nome della variante (opzionale, ometti se l'immagine non è specifica di una variante)
-- `do|dont` — indica se l'immagine mostra un esempio corretto (`do`) o un anti-pattern (`dont`)
-- `{n}` — numero progressivo (1, 2, 3...) per distinguere più immagini dello stesso tipo
+- `{N}.{M}` — identificatore dell'immagine in formato dotted (es. `1.1`, `1.2`, `2.3`):
+  - `N` è il gruppo logico (es. `1.x` per varianti, `2.x` per stati, `3.x` per anti-pattern — convenzione consigliata, non forzata)
+  - `M` è la posizione all'interno del gruppo
 - `{ext}` — estensione del file: `png` (preferito), `jpg`, `webp`
+
+L'ID `N.M` deve essere **univoco e stabile per componente**: una volta assegnato non va riusato per immagini diverse, anche se l'originale viene sostituita.
 
 **Esempi.**
 
 ```
-button-primary-do-1.png       → Button variante primary, esempio corretto #1
-button-primary-dont-1.png     → Button variante primary, anti-pattern #1
-button-do-1.png               → Button generico, esempio corretto #1
-bottom-sheet-do-1.png         → Bottom Sheet generico, esempio corretto #1
-modal-confirmation-dont-2.png → Modal variante confirmation, anti-pattern #2
+button1.1.png            → Button — immagine 1.1 (gruppo 1, primo elemento)
+button1.2.png            → Button — immagine 1.2
+button2.1.png            → Button — immagine 2.1 (gruppo 2)
+button-icon1.1.png       → Button Icon — immagine 1.1
+modal-feedback3.2.png    → Modal Feedback — immagine 3.2
 ```
 
 **Specifiche tecniche.**
@@ -352,46 +332,61 @@ modal-confirmation-dont-2.png → Modal variante confirmation, anti-pattern #2
 - Risoluzione minima: 800px sul lato lungo
 - Formato preferito: PNG su sfondo trasparente o sfondo che riproduce la canvas reale
 - Peso massimo per file: 500 KB (oltre, comprimere o ridurre risoluzione)
-- Nessun watermark, nessuna annotazione visiva sovrapposta — le note vanno nel testo del `rationale-note.md`
+- Nessun watermark, nessuna annotazione visiva sovrapposta — le note vanno nel `metadata.json`
 
-**Riferimenti alle immagini nel testo.**
+**Referenziare un'immagine dal `metadata.json`.**
 
-Ogni immagine Do/Don't presente in `images/` deve essere referenziata e descritta nel `metadata.json` (in `usage.antiPatterns` o `usage.useCases`) oppure in `rationale-note.md`. Un'immagine senza descrizione testuale è invisibile all'LLM.
+Gli identificatori `N.M` sono usati come **link logici** tra immagini e contenuto del JSON. Due modi:
+
+1. **Campo `images: ["N.M", ...]`** in qualunque oggetto di `usage.commonPatterns[]`, `usage.antiPatterns[]` (o estensioni future). Esempio:
+   ```json
+   {
+     "scenario": "multiple-primary-buttons",
+     "reason": "Confonde la gerarchia visiva",
+     "images": ["2.1", "2.2"]
+   }
+   ```
+
+2. **Reference inline `[N.M]`** dentro stringhe markdown come `rationale.designDecisions`. Esempio:
+   ```
+   "designDecisions": "Il padding usa spacing-3 dopo user testing (vedi [1.1])."
+   ```
+
+Un'immagine **deve** comparire come ID `N.M` almeno una volta nel `metadata.json` (in `images` o inline `[N.M]`): un'immagine non referenziata è invisibile all'LLM e va rimossa o referenziata.
 
 ---
 
-## 7. File a livello di repo
+## 6. File a livello di repo
 
 Oltre alle cartelle dei singoli componenti, la repo contiene questi file alla radice:
 
-| File              | Generato   | Scopo                                                                  |
-|-------------------|------------|------------------------------------------------------------------------|
-| `README.md`       | Manuale    | Introduzione alla repo e istruzioni di utilizzo                        |
-| `SCHEMA.md`       | Manuale    | Questo documento                                                       |
-| `WRITING-GUIDE.md`| Manuale    | Guida alla scrittura di `rationale-note.md` per il team UX             |
-| `inventory.md`    | Manuale    | Inventario di tutti i componenti del DS, con stato di documentazione   |
-| `aliases.json`    | Manuale    | Mappa di nomi alternativi → slug canonici                              |
-| `index.json`      | Automatico | Indice strutturato di tutti i componenti, generato dalla GitHub Action |
+| File              | Generato   | Scopo                                                                       |
+|-------------------|------------|-----------------------------------------------------------------------------|
+| `README.md`       | Manuale    | Introduzione alla repo e istruzioni di utilizzo                             |
+| `SCHEMA.md`       | Manuale    | Questo documento                                                            |
+| `WRITING-GUIDE.md`| Manuale    | Guida alla scrittura del blocco `rationale` del `metadata.json` per il team UX |
+| `inventory.md`    | Manuale    | Inventario di tutti i componenti del DS, con stato di documentazione        |
+| `aliases.json`    | Manuale    | Mappa di nomi alternativi → slug canonici                                   |
+| `index.json`      | Automatico | Indice strutturato di tutti i componenti, generato dalla GitHub Action      |
 
 `index.json` viene rigenerato a ogni push su `main` da una GitHub Action. Non va mai modificato a mano.
 
 ---
 
-## 8. Stato `scaffold` vs `full`
+## 7. Stato `scaffold` vs `full`
 
 Un componente in stato `scaffold` ha la struttura prevista dallo schema ma il contenuto è incompleto. Serve a tracciare nell'inventario quali componenti sono ancora da documentare in profondità.
 
 **Cosa deve esserci in un componente `scaffold`.**
 
-- Tutti i file (`metadata.json`, `rationale-note.md`, `changelog.md`) esistono
-- Il frontmatter di `rationale-note.md` è compilato
-- Il `metadata.json` contiene i campi di repo-level (`slug`, `lastUpdated`, `status: scaffold`) e i campi della skill (`component.name`, `component.category`, `component.type`) con gli array `useCases` e `antiPatterns` vuoti
+- Tutti i file (`metadata.json`, `changelog.md`) esistono
+- Il `metadata.json` contiene i campi di repo-level (`slug`, `lastUpdated`, `status: scaffold`), i campi della skill (`component.name`, `component.category`, `component.type`) con gli array `useCases` e `antiPatterns` vuoti, e il blocco `rationale` presente come oggetto con stringhe vuote e `relatedComponents: []`
 - Il `changelog.md` contiene **solo il frontmatter YAML** (`component`, `figma_id`, `last_updated`); il plugin Changelog Master appende le entry quando il team DS registra le prime modifiche
 
 **Cosa deve esserci in più in un componente `full`.**
 
-- `metadata.json` completamente compilato, inclusi `component.description`, almeno 1 `useCases[]`, `behavior` e `accessibility`
-- `rationale-note.md` compilato con contenuto reale, niente TODO residui
+- `metadata.json` completamente compilato, inclusi `component.description`, almeno 1 `useCases[]`, `behavior`, `accessibility` e il blocco `rationale` con almeno `designDecisions` valorizzato
+- Niente TODO residui in `rationale`
 - Idealmente almeno 1 elemento in `usage.antiPatterns[]`
 - Le immagini Do/Don't sono presenti e referenziate nel testo
 
@@ -399,26 +394,26 @@ Un componente in stato `scaffold` ha la struttura prevista dallo schema ma il co
 
 Quando un componente viene completato:
 
-1. Compilare tutti i campi mancanti di `metadata.json` e di `rationale-note.md`
-2. Aggiornare `status: scaffold` → `status: full` nel JSON e nel frontmatter del Markdown
+1. Compilare tutti i campi mancanti di `metadata.json`, incluso il blocco `rationale`
+2. Aggiornare `status: scaffold` → `status: full` nel `metadata.json`
 3. Aggiornare `lastUpdated` con la data corrente
 4. Eseguire la pipeline di conversione per validare la consistenza
 5. Commit con messaggio convenzionale: `docs({slug}): promote to full`
 
 ---
 
-## 9. Versioning dello schema
+## 8. Versioning dello schema
 
 Questo schema può evolvere. Quando viene modificato in modo non retrocompatibile (campi obbligatori aggiunti, campi rinominati, struttura cambiata), va incrementata la versione dello schema e va comunicata la modifica.
 
 La versione corrente dello schema è documentata qui:
 
 ```
-SCHEMA_VERSION: 2.0
+SCHEMA_VERSION: 3.0
 ```
 
 In caso di modifiche, aggiornare la versione e aggiungere una nota nel `CHANGELOG.md` della repo template.
 
 ---
 
-*SCHEMA v2.1 — Schema `metadata.json` allineato alla skill AI Component Metadata (`skills/ai-component-metadata`). La struttura JSON segue esattamente il formato della skill; i soli campi aggiuntivi sono `slug`, `lastUpdated` e `status` (necessari per il tooling della repo).*
+*SCHEMA v3.0 — Breaking change: `rationale-note.md` rimosso. Il contenuto "Perché è così" è ora rappresentato dal blocco `rationale` dentro `metadata.json`, con il solo campo `designDecisions` (string markdown). Eccezioni, note storiche e relazioni tra componenti sono state assorbite: eccezioni e note storiche dentro `designDecisions`, relazioni dentro i campi esistenti `composition.*` (`nestedComponents`, `commonPartners`, `parentConstraints`) e `usage.antiPatterns` (alternative). Naming immagini cambiato da `{slug}-{variant?}-{do|dont}-{n}.{ext}` a `{slug}{N}.{M}.{ext}`, con gli ID `N.M` referenziabili dal JSON via campo `images: ["N.M"]` (in commonPatterns/antiPatterns) o reference inline `[N.M]` (in `designDecisions`). I campi aggiuntivi della repo rispetto alla skill AI Component Metadata sono `slug`, `lastUpdated`, `status`, `rationale`.*

@@ -1,9 +1,9 @@
 {
-  "slug": "",
-  "lastUpdated": "",
+  "slug": "back-to-top-navigation",
+  "lastUpdated": "2026-05-14",
   "status": "scaffold",
   "component": {
-    "name": "",
+    "name": "Back To Top Navigation",
     "category": "atoms",
     "description": "",
     "type": "interactive"

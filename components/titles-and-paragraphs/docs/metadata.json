@@ -1,9 +1,9 @@
 {
-  "slug": "",
-  "lastUpdated": "",
+  "slug": "titles-and-paragraphs",
+  "lastUpdated": "2026-05-14",
   "status": "scaffold",
   "component": {
-    "name": "",
+    "name": "Titles And Paragraphs",
     "category": "atoms",
     "description": "",
     "type": "interactive"

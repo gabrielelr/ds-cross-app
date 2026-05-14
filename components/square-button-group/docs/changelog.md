@@ -1,0 +1,5 @@
+---
+component: Square Button Group
+figma_id: ""
+last_updated: 2026-05-14
+---

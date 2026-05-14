@@ -1,9 +1,9 @@
 {
-  "slug": "",
-  "lastUpdated": "",
+  "slug": "quicklink-navigation",
+  "lastUpdated": "2026-05-14",
   "status": "scaffold",
   "component": {
-    "name": "",
+    "name": "Quicklink Navigation",
     "category": "atoms",
     "description": "",
     "type": "interactive"
