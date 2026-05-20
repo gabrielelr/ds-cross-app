@@ -2,6 +2,8 @@
   "slug": "radio-button",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Radio Button",
     "category": "atoms",

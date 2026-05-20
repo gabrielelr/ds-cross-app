@@ -2,6 +2,8 @@
   "slug": "link",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Link",
     "category": "atoms",

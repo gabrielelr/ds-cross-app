@@ -2,6 +2,8 @@
   "slug": "card-highlight",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Card Highlight",
     "category": "atoms",

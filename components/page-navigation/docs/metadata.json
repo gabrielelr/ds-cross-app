@@ -1,42 +1,116 @@
 {
   "slug": "page-navigation",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6061:84624",
+    "ios": "6061:84624"
+  },
+
   "component": {
     "name": "Page Navigation",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Riga di navigazione orizzontale che organizza e permette di switchare tra le sezioni principali di contenuto al top-level di una pagina (es. Home, Lotterie, Casinò, Sport, Poker, Bingo). Composta da N `Button Square Navigation` allineati orizzontalmente con un gap, di cui uno sempre in stato `Selected` (sezione corrente). 4 varianti su 2 dimensioni booleane: `Icon` (True/False, icona sopra label) × `Scroll Overflow` (True/False, riga scrollabile orizzontalmente o distribuita nel viewport). Discrepanza naming: slug `page-navigation`, token namespace `navigationPage/*`.",
+    "type": "navigation"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "top-level-section-switching",
+      "homepage-vertical-switching",
+      "main-content-areas"
+    ],
+    "requiredProps": ["items", "selectedKey", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "icon-scrollable-many-sections",
+        "description": "Variante `Icon=True, Scroll Overflow=True`: molte sezioni (es. 7+ in homepage di un betting app: Home, Lotterie, Gratta e vinci, Scommesse, Virtual, Casinò, Slot, Carte, Poker, Bingo). Ogni Button Square mostra icona + label; la riga è più alta (80) per ospitare le icone e scrolla orizzontalmente perché non entra nel viewport.",
+        "composition": "<PageNavigation icon scrollOverflow items={sections} selectedKey=\"home\" onChange={setSection} />"
+      },
+      {
+        "name": "label-only-scrollable",
+        "description": "Variante `Icon=False, Scroll Overflow=True`: molte sezioni ma senza icone (riga più bassa, 52). Adatto quando il numero di sezioni è alto e le icone non aggiungono valore (es. categorie sportive: Calcio, Tennis, Basket, Volley, F1, …).",
+        "composition": "<PageNavigation scrollOverflow items={sportCategories} selectedKey=\"calcio\" onChange={setCategory} />"
+      },
+      {
+        "name": "icon-fit-few-sections",
+        "description": "Variante `Icon=True, Scroll Overflow=False`: poche sezioni (3-4) che entrano nel viewport. I Button Square si distribuiscono con `flex: 1` per riempire la riga, mostrando icona + label.",
+        "composition": "<PageNavigation icon items={[home, profile, settings]} selectedKey=\"home\" onChange={setTab} />"
+      },
+      {
+        "name": "label-only-fit",
+        "description": "Variante `Icon=False, Scroll Overflow=False`: poche sezioni, solo label, distribuite nel viewport. Caso più semplice; visualmente simile a un Tab Bar testuale.",
+        "composition": "<PageNavigation items={[overview, history, settings]} selectedKey=\"overview\" onChange={setTab} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "no-selected-item",
+        "reason": "Page Navigation comunica la sezione corrente tramite lo `Selected` di uno dei Button Square. Senza nessun item selezionato, l'utente perde il contesto di 'dove sono' nella struttura della pagina.",
+        "alternative": "Assicurarsi che `selectedKey` sia sempre valorizzata con un item presente in `items`. Se l'utente è in una sub-sezione non rappresentata nella nav, scegliere la sezione padre come Selected."
+      },
+      {
+        "scenario": "multiple-selected-items",
+        "reason": "A differenza di Square Button Group (che supporta multi-select per filtri), Page Navigation è single-choice: una sola sezione è 'quella corrente' in un dato momento. Più item in Selected sarebbe semanticamente scorretto e confonderebbe l'utente.",
+        "alternative": "Sempre esattamente 1 item in Selected. Per pattern multi-select (filtri categorie) usare Square Button Group, non Page Navigation."
+      },
+      {
+        "scenario": "scroll-overflow-false-with-many-items",
+        "reason": "Con `Scroll Overflow=False` i Button Square si distribuiscono con `flex: 1` e respect ano il `min-width: 88`. Con troppi item, vanno o in overflow non gestito (sbordo) o si comprimono fino a rendere illeggibili icona e label.",
+        "alternative": "Per 5+ sezioni usare `Scroll Overflow=True` (riga scrollabile). Per 3-4 sezioni usare `Scroll Overflow=False` (riga distribuita). La soglia esatta dipende dalla lunghezza delle label."
+      },
+      {
+        "scenario": "page-navigation-for-content-switching-within-section",
+        "reason": "Page Navigation è progettata per top-level: switchare fra aree principali della pagina/dell'app. Usarla dentro a una sezione per switchare fra contenuti correlati (es. tab tra 'In corso' / 'Completati' / 'Annullati' di un'unica lista) sovra-comunica gerarchia e fa sembrare ogni tab una pagina diversa.",
+        "alternative": "Per switch fra contenuti correlati dentro una sezione usare Tab Navigation (componente dedicato a quel livello). Riservare Page Navigation al top-level della pagina."
+      },
+      {
+        "scenario": "missing-icons-on-mixed-set",
+        "reason": "Con `Icon=True` la riga è alta 80 per ospitare le icone. Se solo alcuni Button Square hanno icone (e altri no), l'allineamento verticale si rompe e il gruppo sembra incompleto.",
+        "alternative": "Quando si sceglie Icon=True, tutti gli item devono avere un'icona valorizzata. Se non si trova un'icona sensata per tutti, scegliere Icon=False per tutta la riga."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Items": {
+        "required": true,
+        "description": "Array di `Button Square Navigation` allineati orizzontalmente. Ogni item rappresenta una sezione top-level; ognuno espone uno State (Default / Selected / Disabled). Un solo item in Selected (single-choice). Quando `Scroll Overflow=True` gli item mantengono `min-width: 88px` e la riga eccede il viewport; quando `Scroll Overflow=False` gli item si distribuiscono con `flex: 1` riempiendo lo spazio."
+      }
+    },
+    "nestedComponents": ["Button Square"],
+    "commonPartners": ["Page", "Header"],
+    "parentConstraints": [
+      "Si renderizza a tutta larghezza viewport, tipicamente sotto l'Header della pagina, sopra il contenuto principale. Padding orizzontale gestito dai token `navigationPage/size/padding/horizontal/{left|right}`."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-item": "Tap su un Button Square non-Selected esegue `onChange` con la key dell'item: l'item tappato passa a Selected, quello prima selezionato torna a Default. Lo scroll della pagina sotto NON cambia automaticamente — è responsabilità del consumer caricare/mostrare la sezione corretta.",
+      "horizontal-scroll": "Con `Scroll Overflow=True`, la riga è scrollabile orizzontalmente con gesture nativa. Idealmente lo scroll snappa sull'item Selected quando questo cambia (l'item attivo viene portato in vista)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "tablist (Page Navigation è semanticamente un set di tab) — su iOS usare `accessibilityElements` con `accessibilityTraits = .tabBar` sul container e `.button + .selected` sull'item attivo; su Android `Role.TabRow` per Compose. Ogni Button Square interno è un `tab`.",
+    "screenReader": "Lo screen reader annuncia il container come 'Tab bar' (iOS) o 'Selettore sezioni' (Android), e per ogni item legge 'Label, [selezionato,] tab'. La posizione nel set (es. 'tab 2 di 7') aiuta a orientarsi quando la riga è scrollabile.",
+    "focusManagement": "Il focus iniziale va sull'item Selected. Movimento focus orizzontale con gesture standard di TalkBack/VoiceOver. Quando il focus arriva all'estremo di una riga scrollable, lo scroll segue il focus per portare l'item in vista.",
+    "touchTarget": "Ogni Button Square ha touch target garantito dal proprio `min-width: 88px` × height (52 o 80) — sopra-soglia su entrambe le piattaforme.",
+    "wcag": "AA — lo `Selected` non è comunicato solo dal colore: nello screen reader passa via `accessibilityTraits=selected`. Vedere anche le note WCAG di Button Square."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["page navigation", "tab navigation", "section switcher", "top-level navigation", "navigazione sezioni", "tab bar"],
+    "context": "Usa Page Navigation per organizzare e switchare tra le aree principali di contenuto al TOP-LEVEL di una pagina (es. categorie di una homepage gaming, sezioni di area personale). Single-choice: un solo item in Selected. Scegli le variant in base a numero sezioni e icone: per 5+ sezioni usa `Scroll Overflow=True`; per 3-4 sezioni usa `Scroll Overflow=False`. `Icon=True` se le sezioni hanno icone tutte e ben riconoscibili; altrimenti `Icon=False`. Per switching dentro a una singola sezione (sotto-tab) usare Tab Navigation invece di Page Navigation. Page Navigation usa Button Square Navigation come atomo costituente — modifiche allo Button Square impattano la Page Navigation."
   },
+
   "rationale": {
     "designDecisions": ""
   }

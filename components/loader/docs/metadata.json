@@ -2,6 +2,8 @@
   "slug": "loader",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Loader",
     "category": "atoms",

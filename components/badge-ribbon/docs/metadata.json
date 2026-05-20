@@ -1,42 +1,104 @@
 {
   "slug": "badge-ribbon",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "8206:635149",
+    "ios": "8206:635149"
+  },
+
   "component": {
     "name": "Badge Ribbon",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Tag a forma di nastro angolare (corner ribbon) che si applica all'angolo in alto a sinistra di una card. Forma 49×49 con angolo top-left arrotondato (`border-radius` top-left = 8) e label scritta ruotata di -45° sulla diagonale del triangolo. Disponibile in 3 `Type` (Promo, Highlight, Exclusive). Una sola size. Slot Text obbligatorio, label corta.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "product-promo-tag-corner",
+      "product-new-tag-corner",
+      "exclusive-game-tag-corner"
+    ],
+    "requiredProps": ["label"],
+    "commonPatterns": [
+      {
+        "name": "promo-ribbon-on-card",
+        "description": "Badge Ribbon `Type=Promo` per evidenziare un prodotto in promozione. Token: bg=`badgeRibbon/color/promo/bg`, text=`badgeRibbon/color/promo/text`. Si applica in alto a sinistra a Card Product / Card Promo per segnalare la promozione a colpo d'occhio nella griglia.",
+        "composition": "<BadgeRibbon type=\"Promo\" label=\"Promo\" />"
+      },
+      {
+        "name": "highlight-ribbon-on-card",
+        "description": "Badge Ribbon `Type=Highlight` per evidenziare nuovi prodotti (es. un nuovo gioco) o eventi marketing (quote maggiorate, breaking bets) che vogliono attirare l'attenzione o spingere all'azione. Token: bg=`badgeRibbon/color/highlight/bg`, text=`badgeRibbon/color/highlight/text`. Si applica in alto a sinistra a Card Product / Card Highlight / Card Entry Point.",
+        "composition": "<BadgeRibbon type=\"Highlight\" label=\"New\" />"
+      },
+      {
+        "name": "exclusive-ribbon-on-card",
+        "description": "Badge Ribbon `Type=Exclusive` per il tag 'exclusive' che indica un gioco esclusivo, tipicamente in homepage. È il tag a bassa enfasi del Ribbon: comunica informazione che non rientra nelle altre categorie e non deve competere con Promo/Highlight. Token: bg=`badgeRibbon/color/default/bg`, text=`badgeRibbon/color/default/text` (notare la discrepanza intenzionale tra nome variante 'Exclusive' e path token 'default' — il token è condiviso con la visualità Default del DS, la variante è specifica di scopo).",
+        "composition": "<BadgeRibbon type=\"Exclusive\" label=\"Exclusive\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "ribbon-not-in-top-left",
+        "reason": "Il Ribbon è progettato come corner badge top-left: l'angolo arrotondato `rounded-tl-8` combacia con l'angolo della card e la diagonale del testo è orientata da basso-sinistra a alto-destra. Spostarlo in un altro angolo (top-right, bottom-left, bottom-right) rompe l'orientamento della label (che resterebbe leggibile solo ruotando la testa) e disallinea il radius con quello della card.",
+        "alternative": "Mantenerlo SEMPRE in alto a sinistra della card. Per badge in altre posizioni o di forma non-angolare usare Badge Default (pill) sovrapposto, posizionabile liberamente."
+      },
+      {
+        "scenario": "ribbon-on-non-card",
+        "reason": "Badge Ribbon è disegnato per agganciarsi al corner di una card con radius corrispondente. Su contenitori senza border-radius (es. banner full-width) o con radius diverso, il ribbon stacca visivamente dall'angolo e perde il senso di 'sticker' applicato.",
+        "alternative": "Usare il Ribbon solo su Card Product / Card Highlight / Card Entry Point / Card Promo (i parent supportati). Per evidenziare elementi non-card scegliere Badge Default o un altro pattern."
+      },
+      {
+        "scenario": "long-label-on-ribbon",
+        "reason": "Lo slot Text del Ribbon è centrato sulla diagonale di un triangolo 49×49 e usa tipografia `typography/body/microCaptionBold` (10px). Label più lunghe di una parola corta vengono troncate o escono dal triangolo, e a 10px ruotate diventano illeggibili.",
+        "alternative": "Mantenere la label a una parola breve (es. 'Promo', 'New', 'Exclusive'). Per testi più lunghi usare Badge Default pill in posizione libera sulla card."
+      },
+      {
+        "scenario": "multiple-ribbons-on-same-card",
+        "reason": "Il corner top-left ospita un solo ribbon. Applicarne più di uno costringe a sovrapporli o spostarli, rompendo la forma e l'ancoraggio al corner che è il pattern visivo del componente.",
+        "alternative": "Una sola Badge Ribbon per card. Se servono più tag, abbinare il ribbon a un Badge Default pill nella stessa card, in posizione diversa (es. sotto al titolo)."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Text": {
+        "required": true,
+        "description": "Label del ribbon, ruotata di -45° sulla diagonale del triangolo. Tipografia bold con token `typography/body/microCaptionBold`. Il colore del testo è auto-derivato dal Type tramite token `badgeRibbon/color/{type}/text` (dove `{type}` è `promo`, `highlight`, o `default` per la variante `Type=Exclusive`)."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Card Product", "Card Highlight", "Card Entry Point", "Card Promo"],
+    "parentConstraints": [
+      "Posizionato SEMPRE nell'angolo in alto a sinistra del parent. Il radius top-left del ribbon (`rounded-tl-8`) deve combaciare con il radius della card ospitante.",
+      "Una sola istanza di Badge Ribbon per card."
+    ]
   },
+
   "behavior": {
     "states": [],
     "interactions": {},
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "image/text decorativo — Badge Ribbon è un atomo display, non interattivo. Su iOS impostare `accessibilityTraits = .staticText` con `accessibilityLabel` uguale alla label visibile; su Android usare `contentDescription`. Quando il ribbon è sopra a una Card tappabile, marcarlo come decorativo (`isAccessibilityElement = false` / `importantForAccessibility = no`) e includere il significato della label nell'accessibilityLabel della card stessa, per evitare che lo screen reader legga due elementi separati.",
+    "screenReader": "La label è breve e va letta in sequenza con il contenuto della card (es. 'Nuovo, Slot Megaways, prezzo 50 centesimi'). Per la variante Exclusive il termine 'Exclusive' è semanticamente sufficiente — non aggiungere prefissi.",
+    "focusManagement": "Badge Ribbon non è focusable. Il focus è gestito dalla card ospitante.",
+    "touchTarget": "Non applicabile: il ribbon non è un target tap. Quando la card è tappabile, l'hit area è dell'intera card, ribbon incluso.",
     "wcag": "AA"
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["badge ribbon", "corner ribbon", "tag angolare", "card ribbon", "promo ribbon", "new ribbon", "exclusive ribbon"],
+    "context": "Usa Badge Ribbon per applicare un tag corner top-left a una Card Product / Card Highlight / Card Entry Point / Card Promo. Scegli il `Type` in base alla semantica della label: `Promo` = prodotto in promozione; `Highlight` = nuovi prodotti o eventi marketing (quote maggiorate, breaking bets); `Exclusive` = tag 'exclusive' per giochi esclusivi (tipicamente homepage), a bassa enfasi, non deve competere con Promo/Highlight. Una sola Ribbon per card, sempre in alto a sinistra. Label corta (1 parola). Per posizioni diverse o testi più lunghi usare Badge Default."
   },
+
   "rationale": {
     "designDecisions": ""
   }

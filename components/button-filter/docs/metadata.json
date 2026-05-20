@@ -1,42 +1,112 @@
 {
   "slug": "button-filter",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "8206:696630",
+    "ios": "8206:696630"
+  },
+
   "component": {
     "name": "Button Filter",
     "category": "atoms",
-    "description": "",
+    "description": "Bottone pill dedicato all'apertura del bottom sheet dei filtri di una pagina lunga (homepage, listing, risultati di ricerca). Visualmente è un CTA ad alta enfasi (fill brand pieno, icona sliders + label 'Filter'/'Filtri', testo bold 14px) progettato per essere ancorato in basso come overlay floating sopra il contenuto scrollabile. 3 `State` (Default, Pressed, Disabled) × 3 `Size` (md 48h, sm 40h, xs 32h) = 9 combinazioni.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "open-filter-bottom-sheet",
+      "homepage-filters",
+      "listing-filters",
+      "search-results-filters"
+    ],
+    "requiredProps": ["label", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "floating-filter-on-listing",
+        "description": "Button Filter ancorato in basso (overlay floating, centrato orizzontalmente) sopra una listing/listing dei risultati. Tap apre la bottom sheet dei filtri (Drawer side=bottom). Size md di default — è il CTA principale di filtraggio della pagina e deve essere ben visibile durante lo scroll.",
+        "composition": "<ButtonFilter size=\"md\" label=\"Filtri\" onPress={openFilterDrawer} />"
+      },
+      {
+        "name": "homepage-filter",
+        "description": "Stessa logica della listing, applicata in homepage quando il contenuto principale ha bisogno di un filtraggio rapido (es. categorie sport, palinsesto). Size md ancorato in basso.",
+        "composition": "<ButtonFilter size=\"md\" label=\"Filtri\" onPress={openHomepageFilters} />"
+      },
+      {
+        "name": "filter-disabled-no-results-yet",
+        "description": "`State=Disabled` quando non ci sono ancora risultati su cui applicare filtri (es. listing in caricamento o vuoto). Il bottone resta visibile ma non tappabile, comunicando che la funzione esiste ma non è ancora utile.",
+        "composition": "<ButtonFilter size=\"md\" label=\"Filtri\" disabled />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "filter-button-inline-in-content",
+        "reason": "Button Filter è progettato per stare in overlay floating ancorato in basso, sopra lo scroll. Inserirlo inline nel contenuto (es. dentro a una card o nel mezzo della listing) lo fa sembrare un'azione su un singolo item, non un filtro globale della pagina, e fa perdere la visibilità durante lo scroll.",
+        "alternative": "Per filtrare un singolo blocco/sezione usare Button Square o un Filter inline. Riservare Button Filter all'apertura del bottom sheet globale dei filtri della pagina."
+      },
+      {
+        "scenario": "filter-button-without-bottom-sheet",
+        "reason": "Il pattern documentato è 'tap Button Filter → si apre la bottom sheet dei filtri'. Aprire invece una pagina full-screen, un modal centrato o un menu a tendina rompe l'aspettativa dell'utente che ha imparato a usare il bottom sheet come superficie di filtraggio.",
+        "alternative": "All'`onPress` aprire sempre un Drawer side=bottom (la bottom sheet) con il componente Filter dentro. Per altre superfici di filtraggio (es. pagina avanzata con molti filtri) considerare un componente diverso, non Button Filter."
+      },
+      {
+        "scenario": "multiple-filter-buttons-on-page",
+        "reason": "Più Button Filter sulla stessa pagina (es. uno in alto e uno in basso, o uno per ogni sezione) ridondano e confondono: l'utente non sa quale filtra cosa. Inoltre la versione floating in basso copre già la visibilità durante lo scroll.",
+        "alternative": "Un solo Button Filter per pagina, ancorato in basso. Per filtri locali di una sezione usare componenti diversi (Button Square, Chip Filter, Filter inline)."
+      },
+      {
+        "scenario": "xs-on-primary-listing",
+        "reason": "`Size=xs` (32h) ha un'area tappabile sotto-soglia per pollice rispetto alla criticità del filtraggio in una listing principale. La label corta + icona 24px in 32px di altezza è leggibile ma molto compatta — non adatta come CTA principale.",
+        "alternative": "Default a `md` (48h) per il pattern principale (homepage/listing). Usare `sm` (40h) o `xs` (32h) solo in contesti secondari con vincoli di spazio (es. dentro a una toolbar densa)."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Icon": {
+        "required": true,
+        "description": "Icona sliders 24×24 (`icon / Generic / sliders`) a sinistra della label, riconoscibile come 'filtri'. Il colore è auto-derivato dallo State tramite token `buttonFilter/icon/{default|pressed|disabled}`. È parte della firma visiva del componente: cambiare icona snatura il Button Filter — per filtri non rappresentabili dall'icona sliders usare un Button generico."
+      },
+      "Text": {
+        "required": true,
+        "description": "Label del bottone (tipicamente 'Filtri' / 'Filter'), single-line `whitespace-nowrap`. Tipografia bold con token `typography/interaction/button` (14px, line-height 14). Il colore del testo è auto-derivato dallo State tramite token `buttonFilter/text/{default|pressed|disabled}`. Gap fra Icon e Text = `buttonFilter/size/{size}/gap` (4)."
+      }
+    },
+    "nestedComponents": ["Icon"],
+    "commonPartners": ["Drawer", "Filter", "Listing", "Search Results Listing", "Page"],
+    "parentConstraints": [
+      "Posizionato come overlay floating ancorato al bordo bottom della viewport (con safe-area), centrato orizzontalmente o ancorato a un margine. Non sta nel flusso del contenuto: resta visibile durante lo scroll della pagina sotto.",
+      "Una sola istanza di Button Filter per pagina."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed", "disabled"],
+    "interactions": {
+      "tap": "Tap apre la bottom sheet dei filtri (`Drawer side=bottom` con il componente `Filter` dentro). Durante il touch attivo il bottone passa a `State=Pressed`: bg da `buttonFilter/bg/default` a `buttonFilter/bg/pressed` (tono brand più scuro). Il rilascio fuori dall'hit area annulla l'apertura.",
+      "disabled": "In `State=Disabled` il bottone non è tappabile. bg=`buttonFilter/bg/disabled`, border `buttonFilter/border/disabled` (Disabled è l'unico State con border), icona e testo al token `*/disabled`. Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` e `accessibilityTraits` include `.notEnabled`."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "button — è un'azione che apre una superficie di filtraggio (bottom sheet). Su iOS `accessibilityTraits = .button` (+ `.notEnabled` quando Disabled); su Android `Role.Button`. `accessibilityLabel` = la Label visibile, eventualmente arricchita con un hint sull'azione (es. 'Filtri, pulsante. Apre il pannello dei filtri').",
+    "screenReader": "Lo screen reader legge 'Filtri, pulsante'. L'icona sliders va marcata come decorativa (l'informazione è nella Label). Per `State=Disabled` aggiunge 'non disponibile' (iOS) o 'disabilitato' (Android). Dopo il tap, spostare l'accessibility focus sulla prima superficie focusable della bottom sheet che si apre (titolo o primo control).",
+    "focusManagement": "Focusable in `Default` e `Pressed`, non in `Disabled`. Quando la bottom sheet si apre, il focus va sulla bottom sheet e il contenuto sotto diventa inerte per screen reader (vedi Backdrop). Alla chiusura della bottom sheet, riportare il focus al Button Filter.",
+    "touchTarget": "Size md (48h) è sopra-soglia su entrambe le piattaforme; sm (40h) è sotto-soglia su iOS (44pt) e Android (48dp) — quando si usa sm/xs valutare se aumentare l'hit area tramite container tappabile.",
     "wcag": "AA"
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["button filter", "filtri", "open filters", "filter cta", "bottom sheet trigger"],
+    "context": "Usa Button Filter SOLO per aprire la bottom sheet dei filtri di una pagina con contenuto scrollabile (homepage, listing, search results). Posizionalo come overlay floating ancorato in basso (con safe-area), centrato o ancorato a un margine — mai inline nel contenuto. Una sola istanza per pagina. All'`onPress` aprire un Drawer side=bottom con il componente Filter dentro. Size default `md` (48h); usa `sm`/`xs` solo in contesti secondari con vincoli di spazio. Per filtri inline o per sezioni singole, usare componenti diversi (Filter inline, Chip Filter, Button Square)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

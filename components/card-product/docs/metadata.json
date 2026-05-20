@@ -2,6 +2,8 @@
   "slug": "card-product",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Card Product",
     "category": "atoms",

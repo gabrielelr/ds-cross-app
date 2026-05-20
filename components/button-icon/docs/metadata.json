@@ -1,43 +1,120 @@
 {
   "slug": "button-icon",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "5639:2256",
+    "ios": "5639:2256",
+    "ios-liquid-glass": "8354:2608"
+  },
+
   "component": {
     "name": "Button Icon",
     "category": "atoms",
-    "description": "",
+    "description": "Bottone solo-icona (senza label) usato per azioni rappresentabili visivamente: chiudere, condividere, aprire un menu, attivare/disattivare, navigare indietro. Lo slot Icon è sostituibile via prop. Disponibile in due versioni di piattaforma: standard (Android/iOS) con shape rounded-square (radius 12) e Liquid Glass (iOS) con shape pill (radius 128) e palette ridotta — vedere figmaLayouts e rationale.designDecisions per la mappatura. Token namespace: `button/*` per la standard, `buttonLiquidGlass/*` per Liquid Glass.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "header-actions",
+      "card-overflow-trigger",
+      "toggle-favorite-like",
+      "close-dismiss",
+      "back-navigation",
+      "toolbar-actions"
+    ],
+    "requiredProps": ["accessibilityLabel", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "header-close-action",
+        "description": "Icon Button in alto a destra di un Modal/Drawer/pagina per chiudere o tornare indietro. Tipicamente `Appearance=Neutral, Hierarchy=Ghost, Size=md` quando il bottone deve scomparire visivamente nello sfondo della testata.",
+        "composition": "<ButtonIcon appearance=\"Neutral\" hierarchy=\"Ghost\" size=\"md\" icon={<IconClose />} accessibilityLabel=\"Chiudi\" onPress={dismiss} />"
+      },
+      {
+        "name": "destructive-action-icon",
+        "description": "Icon Button per azione distruttiva (elimina, blocca, annulla iscrizione). `Appearance=Danger` in `Hierarchy=Secondary` (fill chiaro + icona rossa) per essere riconoscibile come distruttivo senza essere troppo aggressivo, oppure `Primary` se l'azione è la principale del contesto.",
+        "composition": "<ButtonIcon appearance=\"Danger\" hierarchy=\"Secondary\" size=\"sm\" icon={<IconTrash />} accessibilityLabel=\"Elimina elemento\" onPress={deleteItem} />"
+      },
+      {
+        "name": "inverse-on-dark-background",
+        "description": "`Appearance=Inverse` per quando il bottone vive sopra contenuto scuro/immagine (es. Icon Button sopra a un Hero con foto a tutto schermo). Esiste solo nella versione standard, non in Liquid Glass.",
+        "composition": "<ButtonIcon appearance=\"Inverse\" hierarchy=\"Secondary\" size=\"md\" icon={<IconShare />} accessibilityLabel=\"Condividi\" />"
+      },
+      {
+        "name": "liquid-glass-primary-action",
+        "description": "Su iOS con Liquid Glass attivo, il Button Icon è pill (radius 128) e ha solo combinazioni Brand/Danger × Primary/Secondary. Lo stato Pressed/Disabled non ha varianti dedicate in Figma: viene gestito dal sistema Glass (depth/blur dinamici). Usare quando il target deployment è ios-liquid-glass.",
+        "composition": "<ButtonIcon appearance=\"Brand\" hierarchy=\"Primary\" size=\"md\" icon={<IconAdd />} accessibilityLabel=\"Aggiungi\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "no-accessibility-label",
+        "reason": "Senza label visibile, l'unica informazione semantica del bottone è l'icona — che lo screen reader non legge come testo. Senza `accessibilityLabel` valorizzato, l'utente non vedente sente solo 'pulsante' senza sapere cosa fa.",
+        "alternative": "`accessibilityLabel` è SEMPRE obbligatorio (vedi requiredProps). Deve descrivere l'azione, non l'icona (es. 'Chiudi' non 'X'; 'Elimina ordine' non 'cestino')."
+      },
+      {
+        "scenario": "icon-button-when-label-would-help",
+        "reason": "Per azioni non rappresentabili in modo ovvio da un'icona (es. 'Aggiungi ai preferiti' vs 'Aggiungi al carrello' — entrambi potrebbero essere un cuore o un più), l'icona da sola produce ambiguità. Gli utenti devono leggere il contesto per capire cosa fa, e non sempre ci riescono.",
+        "alternative": "Per azioni ambigue o critiche usare Button (con label esplicita). Riservare Button Icon ad azioni universalmente riconoscibili (close, share, back, more) o in contesti dove la convenzione è già forte (icona cuore in una card prodotto)."
+      },
+      {
+        "scenario": "mixing-many-appearances-on-same-screen",
+        "reason": "Avere 4-5 Appearance diverse sulla stessa schermata (Neutral, Brand, Danger, Accent…) trasforma il color-coding in rumore. Le Appearance dovrebbero servire a creare gerarchia, non a colorare le icone una per una.",
+        "alternative": "Una sola Appearance per gruppo di azioni (es. tutte le azioni di una toolbar in Neutral). Riservare Brand/Danger/Accent a una singola azione che merita risalto."
+      },
+      {
+        "scenario": "ghost-on-low-contrast-background",
+        "reason": "`Hierarchy=Ghost` non ha bg né border in Default: su sfondi chiari/medi è difficile da scoprire. È utile sopra contenuto già delimitato (header, card) ma non in mezzo a un canvas vuoto.",
+        "alternative": "Per bottone discreto ma scopribile usare `Hierarchy=Secondary` (white bg + border). Riservare Ghost a toolbar/header dove l'utente sa già dove cercare."
+      },
+      {
+        "scenario": "using-ghost-on-liquid-glass",
+        "reason": "La versione Liquid Glass NON ha `Hierarchy=Ghost` in Figma: ha solo Primary e Secondary. Tentare di replicarla manualmente rompe la coerenza del sistema Glass (che ha effetti propri di trasparenza).",
+        "alternative": "Su `ios-liquid-glass` scegliere tra Primary e Secondary. Se serve un bottone discreto in un contesto Liquid Glass, usare Secondary."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
+    "slots": {
+      "Icon": {
+        "required": true,
+        "description": "Icona del bottone, sostituibile via prop `icon`. Size: 24×24 in `Size=md` (token `button/size/md/icon`), 20×20 in `Size=sm` (token `button/size/sm/icon`). Il colore dell'icona è auto-derivato dalla combinazione Appearance × Hierarchy × State tramite token `button/color/{appearance}/{hierarchy}/icon/{default|pressed|disabled}` (standard) o `buttonLiquidGlass/color/{appearance}/{hierarchy}/icon/default` (Liquid Glass, no state variants)."
+      }
+    },
+    "nestedComponents": ["Icon"],
+    "commonPartners": ["Header", "Navbar", "Drawer", "Modal Feedback", "Card", "Listing Item", "Hero"],
     "parentConstraints": []
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed", "disabled"],
+    "interactions": {
+      "tap": "Tap esegue `onPress`. Durante il touch il bottone passa visivamente a `State=Pressed`: bg/icon/border passano ai token `*/pressed`. Il rilascio fuori dall'hit area annulla l'azione e ripristina Default.",
+      "disabled": "In `State=Disabled` il bottone non è tappabile. Tutte le combinazioni Appearance × Hierarchy condividono lo stesso visual disabled (bg=`button/color/{appearance}/{hierarchy}/bg/disabled`, border=`*/border/disabled`, icon=`*/icon/disabled` — toni grigi neutri). Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` + `accessibilityTraits` include `.notEnabled`.",
+      "liquid-glass-states": "Nella versione `ios-liquid-glass` non esistono variant Figma per Pressed/Disabled: gli stati interattivi sono gestiti dal sistema Liquid Glass (depth/blur dinamici, opacity calibrate dal sistema). Il consumer non override i layer Glass — affida il rendering allo standard di piattaforma."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "button — su iOS `accessibilityTraits = .button` (+ `.notEnabled` quando Disabled); su Android `Role.Button` per Compose. `accessibilityLabel` SEMPRE valorizzato (è in `requiredProps`): deve descrivere l'azione semantica, non l'icona (es. 'Chiudi', non 'icona X'). Quando il bottone è in un contesto in cui la sua funzione è ovvia (es. X nell'angolo di un Modal), basta il verbo; in contesti ambigui aggiungere il complemento (es. 'Elimina ordine', non solo 'Elimina').",
+    "screenReader": "Lo screen reader legge l'accessibilityLabel + 'pulsante'. L'icona va marcata come decorativa (l'informazione è nella label). Per `State=Disabled` aggiunge 'non disponibile' (iOS) o 'disabilitato' (Android).",
+    "focusManagement": "Focusable in `Default` e `Pressed`, non in `Disabled`. Il focus ring segue lo standard di piattaforma; in Liquid Glass è il sistema a renderizzarlo.",
+    "touchTarget": "`Size=md` (48×48) sopra-soglia su entrambe le piattaforme. `Size=sm` (32×32) è sotto-soglia (44pt iOS / 48dp Android): quando si usa sm, estendere l'hit area del wrapper tappabile per arrivare a soglia.",
+    "wcag": "AA — il contrasto di icona/sfondo è garantito dai token Default. Per le varianti Ghost su immagine, valutare il contrasto sul background reale (l'icona può perdersi su immagini chiare/scure ad alta varianza)."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["button icon", "icon button", "icona bottone", "azione icona", "toolbar action"],
+    "context": "Usa Button Icon per azioni rappresentabili visivamente in modo non ambiguo (close, share, back, more, like). Sempre con `accessibilityLabel` valorizzato. Scegli Appearance × Hierarchy in base alla gerarchia visiva richiesta: `Neutral` (default per UI cromaticamente neutra), `Brand` (azione primaria di pagina), `Accent` (azione promozionale), `Danger` (azione distruttiva), `Inverse` (sopra contenuto scuro/immagine). Hierarchy: `Primary` (fill pieno), `Secondary` (fill chiaro + border), `Ghost` (no bg/border). Size `md` (48) default, `sm` (32) in toolbar dense (attenzione all'hit area). Su `ios-liquid-glass` sono disponibili solo Brand/Danger × Primary/Secondary, shape pill, e niente State variants. Per azioni con label esplicita usare Button, non Button Icon."
   },
+
   "rationale": {
-    "designDecisions": ""
+    "designDecisions": "- **Liquid Glass è un sottoinsieme volutamente ridotto, con forma diversa.** La versione `ios-liquid-glass` (node Figma 8354:2608) espone solo 2 Appearance (Brand, Danger) × 2 Hierarchy (Primary, Secondary) × 2 Size (md, sm) = 8 combinazioni — contro le ~70 della versione standard. La shape è pill (radius 128) invece che rounded-square (radius 12), e non ci sono variant Figma per Pressed/Disabled perché gli stati interattivi sono gestiti dal sistema Liquid Glass (depth/blur dinamici applicati a runtime). Token namespace separato `buttonLiquidGlass/*` per distinguere chiaramente le due famiglie nel check di aderenza."
   }
 }

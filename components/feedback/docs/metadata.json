@@ -1,42 +1,141 @@
 {
   "slug": "feedback",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6067:92459",
+    "ios": "6067:92459"
+  },
+
   "component": {
     "name": "Feedback",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Blocco di feedback testuale a tutta larghezza composto da: Icon Circle (64×64 a forma circolare, radius 128), Title (`typography/heading/h1` 20px ExtraBold Mulish) e Paragraph (`typography/body/p` 14px regular Roboto). Pensato per comunicare l'esito di un'azione o lo stato di un'area (empty state, fine flusso, modale). 6 `State` × 2 `Text Alignment` = 12 varianti in Figma. State: `Default` (icon neutra su bg grigio), `Error` (rosso), `Warning` (arancione), `Success` (verde), `Info` (blu), `Custom` (icona/bg lasciati al consumer). Text Alignment: `Center` (icon + text centrati orizzontalmente) o `Side` (icon + text allineati a sinistra). NON è interattivo: nessun State pressed/disabled, niente onPress sul componente — eventuali CTA vivono fuori dal Feedback come componenti separati (Button) accostati sotto.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "empty-state",
+      "end-of-flow-confirmation",
+      "modal-confirmation",
+      "error-recovery-screen",
+      "informational-callout"
+    ],
+    "requiredProps": ["state", "title", "paragraph"],
+    "commonPatterns": [
+      {
+        "name": "end-of-flow-success",
+        "description": "`State=Success` a fine di un flusso completato (es. 'Pagamento effettuato', 'Account creato'). Icon verde con check su bg light-green. Typically `Text Alignment=Center` per dare risalto in pagina dedicata. Sotto, il consumer aggiunge un Button per CTA di proseguimento ('Vai alla home', 'Vedi ricevuta').",
+        "composition": "<Feedback state=\"Success\" title=\"Pagamento effettuato\" paragraph=\"Riceverai una mail di conferma a breve.\" textAlignment=\"Center\" />"
+      },
+      {
+        "name": "empty-state-default",
+        "description": "`State=Default` come placeholder in un'area vuota (es. lista filtrata senza risultati, sezione mai popolata). Icona neutra grigia su bg grigio chiaro — comunica 'qui non c'è (ancora) niente' senza allarmare. Tipicamente `Center` per occupare verticalmente lo spazio vuoto e ancorare l'occhio dell'utente.",
+        "composition": "<Feedback state=\"Default\" title=\"Nessun movimento\" paragraph=\"I tuoi movimenti appariranno qui.\" textAlignment=\"Center\" />"
+      },
+      {
+        "name": "error-recovery",
+        "description": "`State=Error` per comunicare un errore di flusso (es. 'Pagamento non riuscito', 'Connessione persa') in una schermata dedicata. Icon rosso con X su bg rosa chiaro. Sotto, il consumer aggiunge Button per la recovery action ('Riprova', 'Torna indietro'). Per errori inline su un campo NON usare Feedback — usare Form Field con `State=Error`.",
+        "composition": "<Feedback state=\"Error\" title=\"Pagamento non riuscito\" paragraph=\"Verifica i dati della carta e riprova.\" textAlignment=\"Center\" />"
+      },
+      {
+        "name": "modal-warning",
+        "description": "`State=Warning` dentro a un Drawer/modale per richiamare l'attenzione su una conseguenza di un'azione in corso (es. 'Stai per chiudere il conto', 'I tuoi dati saranno cancellati'). Icon arancione con triangolo su bg crema. Tipicamente abbinato a due Button (azione distruttiva / annulla).",
+        "composition": "<Feedback state=\"Warning\" title=\"Stai per chiudere il conto\" paragraph=\"Tutti i tuoi dati saranno cancellati e non potrai recuperarli.\" textAlignment=\"Center\" />"
+      },
+      {
+        "name": "side-aligned-info",
+        "description": "`Text Alignment=Side` (left-align) per Feedback inseriti in contesti dove l'allineamento a sinistra coerente col flusso di lettura (es. dentro a un Drawer dove altri contenuti sono left-aligned, o in una sezione informativa di una pagina lunga). Stessi 6 State, solo cambia l'asse di allineamento.",
+        "composition": "<Feedback state=\"Info\" title=\"Aggiornamento app disponibile\" paragraph=\"Aggiorna per ricevere le ultime novità.\" textAlignment=\"Side\" />"
+      },
+      {
+        "name": "custom-brand-feedback",
+        "description": "`State=Custom` per Feedback con icona/colore specifici dell'iniziativa, fuori dai 5 semantic state. Il consumer fornisce icon e (se necessario) override del bg via token alternativo. Bg fallback è `feedback/color/bg/custom` (grigio chiaro) — è anche il bg dello State Default.",
+        "composition": "<Feedback state=\"Custom\" icon={<IconStar />} title=\"Sei diventato Gold!\" paragraph=\"Ora hai accesso a vantaggi esclusivi.\" textAlignment=\"Center\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "feedback-as-inline-error",
+        "reason": "Feedback è un blocco a tutta larghezza pensato per occupare lo spazio (pagina dedicata, modale, empty state). Usarlo come messaggio d'errore inline sotto a un singolo campo di un form sovraccarica visivamente: l'icon 64×64 e il title 20px in mezzo a un form rompono la gerarchia.",
+        "alternative": "Per errori inline di un input usare Form Field con `State=Error` + error message testuale. Riservare Feedback a stati di pagina/sezione/modale dedicati."
+      },
+      {
+        "scenario": "feedback-without-paragraph",
+        "reason": "Il Title da solo (es. 'Errore') non spiega cosa è successo né cosa fare. L'utente ha bisogno del Paragraph per orientarsi: il pattern Feedback presuppone che entrambi gli slot siano valorizzati.",
+        "alternative": "Sempre con Title (cosa è successo) + Paragraph (perché / cosa fare). Se la spiegazione è davvero superflua, riconsiderare se Feedback è il componente giusto (forse Banner inline o Toast bastano)."
+      },
+      {
+        "scenario": "feedback-with-multiple-actions-inside",
+        "reason": "Il Feedback Figma NON contiene Button al suo interno: gli slot sono solo Icon + Title + Paragraph. Forzare due Button dentro al box rompe il pattern e crea ambiguità sul cosa fa parte del feedback e cosa è azione separata.",
+        "alternative": "Le CTA vivono sotto al Feedback come Button standalone (uno per le pagine fine-flusso, due affiancati per le scelte di recovery in modali). Il Feedback rimane un blocco di testo + icon; l'azione è un fratello, non un figlio."
+      },
+      {
+        "scenario": "wrong-state-for-meaning",
+        "reason": "I 5 State semantic (Default/Error/Warning/Success/Info) hanno significati codificati e colori associati. Usare `Success` per un errore o `Error` per un'informazione neutra trasmette il messaggio sbagliato a colpo d'occhio — l'utente reagisce al colore prima ancora di leggere il testo.",
+        "alternative": "Allineare State al significato: Success = esito positivo concluso; Error = qualcosa non è andato; Warning = attenzione su una conseguenza; Info = informazione neutra; Default = neutro senza valenza semantica; Custom = caso bespoke (es. branded)."
+      },
+      {
+        "scenario": "long-paragraph-text",
+        "reason": "Il Paragraph è in `typography/body/p` (14px regular) ed è progettato per testi brevi (1-3 righe). Paragraph lunghi (4+ righe) trasformano il Feedback in un muro di testo, perdendo la sua funzione di 'lettura veloce dello stato'.",
+        "alternative": "Mantenere il paragraph conciso (1-3 righe). Per spiegazioni più articolate (FAQ, errori dettagliati) usare un link 'Scopri di più' / 'Vedi dettagli' sotto al Feedback che porta a una pagina dedicata."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "IconCircle": {
+        "required": true,
+        "description": "Cerchio 64×64 (token `feedback/size/icon/height`) radius 128 (token `feedback/size/icon/border/radius`, cerchio pieno) che ospita un'icona centrata. Bg e color icon dipendono dallo State: `feedback/color/bg/{custom|danger|warning|success|info}` per il container e `feedback/color/icon/{default|danger|warning|success|info}` per l'icona interna. Note: lo State Default usa `bg/custom` come fallback (stesso bg del Custom) ma con un'icona neutra default. Lo State Custom non ha un proprio token bg/icon dedicato — il consumer fornisce icona e (se necessario) override del bg."
+      },
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale di Title + Paragraph con gap = `textbox/size/gap` (8). Allineato secondo la prop `Text Alignment`: `Center` (testo centrato) o `Side` (testo left-aligned). Il gap fra IconCircle e TextBox è = `feedback/size/gap` (24)."
+      },
+      "Title": {
+        "required": true,
+        "description": "Titolo del feedback. Tipografia `typography/heading/h1` (20px ExtraBold Mulish, line-height 24 — è un heading display). Colore `feedback/color/text/default` (dark) — invariato fra tutti gli State (il colore semantico vive solo nell'icon, non nel testo, per non sovraccaricare). Può wrappare su più righe."
+      },
+      "Paragraph": {
+        "required": true,
+        "description": "Testo descrittivo sotto il Title. Tipografia `typography/body/p` (14px regular Roboto, line-height 18). Colore `feedback/color/text/default` (dark). Pensato per 1-3 righe brevi che spiegano il significato del feedback e/o cosa fare."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Button", "Drawer", "Page", "Modal"],
+    "parentConstraints": [
+      "Pensato per occupare spazio in un contesto dedicato: empty state in una pagina/sezione, schermata di fine flusso (Success/Error), dentro a una modale o Drawer di conferma. Standalone in mezzo a una pagina densa appare visivamente sproporzionato (icon 64×64 + heading 20px attira l'attenzione).",
+      "Eventuali CTA legate al Feedback (Riprova, Torna indietro, Vai alla home) sono Button standalone POSIZIONATI SOTTO al Feedback, non figli del Feedback stesso. Il container parent gestisce il gap fra Feedback e Button."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "error", "warning", "success", "info", "custom"],
+    "interactions": {
+      "state-as-semantic": "Lo `State` qui NON è uno stato di interazione (Default/Pressed/Disabled/...) ma una variante semantica: ogni State mappa a un colore di icon+bg coerente col significato (Error=rosso, Warning=arancione, Success=verde, Info=blu, Default=neutro grigio, Custom=consumer-defined). Il Feedback è display: niente onPress, niente focus.",
+      "alignment-toggle": "La prop `Text Alignment` controlla l'allineamento orizzontale di IconCircle + TextBox: `Center` centra entrambi, `Side` li allinea a sinistra. La scelta dipende dal contesto del parent (pagina dedicata centrata vs sezione left-aligned in una lista)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "status / alert — su iOS impostare il container come `accessibilityElement=true` con `accessibilityTraits = .staticText` (e per Error/Warning anche `.causesPageTurn` se è il risultato di un flusso); per State semantic urgenti (Error) considerare `UIAccessibility.post(.announcement, ...)` al mount per forzare l'annuncio. Su Android usare `Modifier.semantics { liveRegion = LiveRegionMode.Polite }` per State=Info/Success, `Assertive` per State=Error.",
+    "screenReader": "Annunciare al mount in modo unito: '[Semantic dello State], [Title], [Paragraph]' (es. 'Successo, Pagamento effettuato, Riceverai una mail di conferma a breve'). Lo screen reader NON deve leggere l'icon come elemento separato — è decorativa, il significato semantico è espresso dal prefisso ('Successo'/'Errore'/'Avviso'/'Informazione'). Per `State=Default` e `Custom` non prefixare nulla — leggere solo Title + Paragraph.",
+    "focusManagement": "Non focusable (display passivo). Se il Feedback è il contenuto principale di una pagina/modale appena aperta, spostare il focus screen reader sul Feedback al mount per garantire che l'annuncio venga letto. Le CTA sotto al Feedback sono elementi focusable separati nell'ordine di lettura naturale.",
+    "touchTarget": "N/A — non è un target tappabile. Le CTA correlate sono Button standalone con propri touch target.",
+    "wcag": "AA — il significato semantico è comunicato sia da colore (icon + bg coordinati) sia da forma (icon distintivo per ogni State: X per Error, ! per Warning, ✓ per Success, i per Info) sia, idealmente, da prefisso testuale nell'announcement screen reader. Non solo-colore. Il testo (Title + Paragraph) è sempre nel token text/default scuro per garantire contrasto AA su qualsiasi bg semantico (i bg sono tutti chiari)."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["feedback", "empty state", "end of flow", "success message", "error screen", "callout", "messaggio"],
+    "context": "Usa Feedback come blocco completo (Icon Circle + Title + Paragraph) per comunicare l'esito di un flusso, lo stato di un'area vuota, o un messaggio in modale. 6 `State` semantici (Default/Error/Warning/Success/Info/Custom — NON sono State di interazione, sono varianti di significato) × 2 `Text Alignment` (Center / Side). Scegli lo State in base al significato, non al colore preferito: Error rosso, Warning arancione, Success verde, Info blu, Default neutro, Custom per casi bespoke. NON è interattivo — eventuali Button vanno SOTTO al Feedback come componenti separati. NON usarlo per errori inline di form (per quello Form Field). Il Title è in heading/h1 (20px ExtraBold Mulish) — pensato per stati a livello di pagina/sezione, non per messaggi accessori. Per screen reader prefissare l'annuncio con la semantica dello State (es. 'Successo: ...') quando appropriato."
   },
+
   "rationale": {
     "designDecisions": ""
   }

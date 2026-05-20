@@ -1,42 +1,112 @@
 {
   "slug": "button-square",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6061:60035",
+    "ios": "6061:60035"
+  },
+
   "component": {
     "name": "Button Square",
     "category": "atoms",
-    "description": "",
+    "description": "Bottone rounded-square compatto (radius 12, min-width 88, border sempre presente) con composizione vertical stack: slot Icon 24×24 + Label corta (12px bold). 4 `State`: Default, Pressed, Selected, Disabled. Lo stato `Selected` (palette verde tematizzata) è la differenza chiave rispetto a Button Quicklink: rende Button Square adatto a comportamenti toggle/selezione (filtri, picker multi-select), non solo a navigazione one-way. Nomi triplici da tenere a mente: frame Figma 'Button Square Navigation', slug repo `button-square`, token namespace `buttonSquare/*`.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "filter-toggle",
+      "multi-select-picker",
+      "section-selector",
+      "tab-like-selection"
+    ],
+    "requiredProps": ["label", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "filter-toggle",
+        "description": "Set di Button Square in un Square Button Group come filtri toggle: ogni bottone è una categoria/criterio, tap alterna fra `Default` e `Selected`. Più bottoni possono essere selezionati contemporaneamente (multi-select). Lo State Selected (verde) comunica chiaramente che l'opzione è attiva.",
+        "composition": "<ButtonSquare icon={<IconSoccer />} label=\"Calcio\" selected={isSelected} onPress={toggleFilter} />"
+      },
+      {
+        "name": "single-choice-picker",
+        "description": "Stesso pattern del filter-toggle ma con vincolo di mutua esclusività: al tap su un Button Square, quello prima selezionato torna a Default e il nuovo diventa Selected. Adatto a selezioni di tipo 'scegli uno tra N' (es. tipologia di scommessa).",
+        "composition": "<ButtonSquare icon={<IconLive />} label=\"Live\" selected={selectedOption === 'live'} onPress={() => setSelectedOption('live')} />"
+      },
+      {
+        "name": "disabled-not-yet-available",
+        "description": "`State=Disabled` quando l'opzione non è ancora disponibile (es. filtro che richiede dati non ancora caricati). Il bottone resta visibile ma non tappabile, comunicando che la funzione esiste e tornerà attivabile.",
+        "composition": "<ButtonSquare icon={<IconPremium />} label=\"Premium\" disabled />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "button-square-as-one-way-navigation",
+        "reason": "Button Square ha uno State=Selected dedicato pensato per il toggle: usarlo come puro link di navigazione (tap → vai a pagina, niente selezione) lascia lo Selected inutilizzato e confonde l'utente, che non sa se può deselezionarlo o no.",
+        "alternative": "Per scorciatoie di navigazione one-way (tap → naviga, niente stato persistente) usare Button Quicklink (che non ha Selected) o Button Circle Navigation."
+      },
+      {
+        "scenario": "button-square-as-primary-cta",
+        "reason": "Button Square ha bg chiaro + border + label piccola (12px): è progettato per coesistere in gruppi come elemento di filtraggio/selezione, non come call-to-action principale di pagina.",
+        "alternative": "Per azioni primarie usare Button (variante solid/primary). Riservare Button Square a contesti di scelta multipla o singola in un cluster."
+      },
+      {
+        "scenario": "long-multiword-label",
+        "reason": "La Label è `whitespace-nowrap` in `typography/interaction/microButton` (12px bold) e il container ha min-width 88. Label lunghe escono dal contenitore o fanno collassare l'allineamento del gruppo.",
+        "alternative": "Mantenere la label a 1 parola breve (es. 'Calcio', 'Live', 'Slot'). Per scelte con etichette più articolate usare Chip o un List Item selezionabile."
+      },
+      {
+        "scenario": "selected-state-without-clear-toggle-affordance",
+        "reason": "Usare State=Selected per indicare semplicemente 'destinazione corrente' (senza che il tap deselezioni) genera ambiguità: l'utente vede il verde e pensa di poter togliere la selezione, ma il tap navigando lo porta da un'altra parte.",
+        "alternative": "Selected deve corrispondere a un toggle reale: il tap su un Button Square in stato Selected deve tornarlo a Default (o, in single-choice, spostare la selezione su un altro). Per indicare 'sezione corrente' senza toggleabilità usare Tab Navigation."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Icon": {
+        "required": false,
+        "description": "Icona 24×24 sopra la Label, sostituibile via prop `icon`. Controllata da `showIcon` (default true). Il colore dell'icona è auto-derivato dallo State tramite token `buttonSquare/color/icon/{default|pressed|selected|disabled}`. Senza prop `icon` viene mostrato un placeholder."
+      },
+      "Label": {
+        "required": true,
+        "description": "Testo sotto l'icona, allineato al centro. Tipografia bold con token `typography/interaction/microButton` (12px, line-height 12). Il colore del testo è auto-derivato dallo State tramite token `buttonSquare/color/text/{default|pressed|selected|disabled}`. Single-line `whitespace-nowrap`. Gap fra Icon e Label = token `buttonSquare/size/gap` (4)."
+      }
+    },
+    "nestedComponents": ["Icon"],
+    "commonPartners": ["Square Button Group", "Page Navigation", "Filter", "Page"],
+    "parentConstraints": [
+      "Pensato per essere parte di un cluster — due pattern principali: (1) Square Button Group per filtri/selettori multi/single-choice; (2) Page Navigation, dove più Button Square allineati orizzontalmente fungono da tab top-level di una pagina, con un solo item in Selected. Funziona anche standalone come selettore singolo (es. on/off di una preferenza), ma il pattern visivo brilla in gruppi."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed", "selected", "disabled"],
+    "interactions": {
+      "tap": "Tap esegue `onPress`. Durante il touch il bottone passa visivamente a `State=Pressed`: bg, border, icon e text passano ai token `*/pressed`. Al rilascio, lo state effettivo dipende dal toggle: se prima era Default → diventa Selected; se era Selected → torna Default (in multi-select) o resta Selected (in single-choice se non si sposta su un altro).",
+      "selected": "`State=Selected` comunica che l'opzione è attiva. Tutti i token passano alla palette `*/selected` (bg, border, icon, text dei token `buttonSquare/color/*/selected`).",
+      "disabled": "In `State=Disabled` il bottone non è tappabile. bg=`buttonSquare/color/bg/disabled`, border=`buttonSquare/color/border/disabled`, icon e text al token `*/disabled` (toni grigi). Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` + `accessibilityTraits` include `.notEnabled`."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "button — è un'azione di selezione/toggle. Per `State=Selected` usare il pattern di selezione di piattaforma: su iOS aggiungere `accessibilityTraits = [.button, .selected]`; su Android usare `Toggleable` o `selected=true` sull'elemento per Compose. `accessibilityLabel` = Label visibile + (opzionale) ruolo della selezione (es. 'Calcio, selezionato, pulsante').",
+    "screenReader": "Lo screen reader legge 'Label, [selezionato,] pulsante'. Per `State=Disabled` aggiunge 'non disponibile' (iOS) o 'disabilitato' (Android). L'icona va marcata decorativa (l'informazione è nella Label).",
+    "focusManagement": "Focusable in `Default`, `Pressed`, `Selected`. Non in `Disabled`. In un Square Button Group il movimento del focus segue il flusso di lettura del gruppo (orizzontale o griglia).",
+    "touchTarget": "Min-width 88 × height ~64 (padding-h 8, padding-v 12, icona 24, gap 4, label 12). Sopra-soglia su entrambe le piattaforme; l'hit area copre tutto il container, label inclusa.",
+    "wcag": "AA — lo Selected non è comunicato solo da colore (verde): il border passa al token brand e il testo cambia colore, ma chi non distingue il verde deve poter capire lo stato anche dal contesto (es. checkmark o accessibilityTraits=selected per screen reader)."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["button square", "filter button", "toggle button", "selector", "multi-select", "filtro", "selezionatore"],
+    "context": "Usa Button Square quando hai bisogno di un bottone con comportamento toggle/selezione (filtri, picker multi-select o single-choice). Lo State Selected è la firma del componente: se l'azione non ha 'stato persistente' (tap → naviga senza ritorno), usa Button Quicklink invece. Tipicamente in gruppi (Square Button Group, riga orizzontale o griglia 2×N). Per disabilitare temporaneamente un'opzione, usare `State=Disabled` invece di nasconderla. Label corta (1 parola); per testi più articolati usare Chip o List Item selezionabile."
   },
+
   "rationale": {
     "designDecisions": ""
   }

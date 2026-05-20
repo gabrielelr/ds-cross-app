@@ -1,42 +1,92 @@
 {
   "slug": "backdrop",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6013:46706",
+    "ios": "6013:46706"
+  },
+
   "component": {
     "name": "Backdrop",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Scrim a tutto schermo che oscura il contenuto sottostante quando viene aperto un overlay (drawer, modal, bottom sheet). Una sola variante: superficie piena con colore al token `color/elevation/backdrop/default` e opacity 80%. Non ha child né stati Figma: è puro layer di elevazione/focus visivo.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
+    "useCases": [
+      "modal-scrim",
+      "drawer-scrim",
+      "bottom-sheet-scrim",
+      "focus-attention"
+    ],
     "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "commonPatterns": [
+      {
+        "name": "modal-overlay",
+        "description": "Backdrop sotto un Modal Feedback (o qualsiasi modal centrato). Copre tutta l'area visibile compreso safe area, status bar e bottom nav, così il modal è l'unica superficie 'attiva' percepita dall'utente.",
+        "composition": "<Overlay><Backdrop onPress={dismiss} /><Modal>...</Modal></Overlay>"
+      },
+      {
+        "name": "drawer-overlay",
+        "description": "Backdrop sotto un Drawer (laterale o bottom). Il drawer entra in slide animato; il backdrop fade-in in contemporanea da 0 a 80% opacity, fade-out alla chiusura.",
+        "composition": "<Overlay visible={drawerOpen}><Backdrop onPress={closeDrawer} /><Drawer side=\"bottom\">...</Drawer></Overlay>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "backdrop-without-overlay",
+        "reason": "Il Backdrop da solo, senza nessun overlay visibile sopra, è solo uno schermo scuro che blocca l'interazione: l'utente non capisce cosa stia succedendo né come uscirne. Backdrop è un layer di supporto, non un componente standalone.",
+        "alternative": "Usare il Backdrop sempre in coppia con un overlay (Modal, Drawer, Bottom Sheet) che lo giustifica visivamente. Per loading a tutto schermo usare Splash Screen o un Loader full-page, non un Backdrop nudo."
+      },
+      {
+        "scenario": "non-dismiss-backdrop-on-non-blocking-overlay",
+        "reason": "Per overlay non bloccanti (es. un'azione opzionale dell'utente) disabilitare il tap-to-dismiss sul backdrop costringe l'utente a cercare il pulsante di chiusura. Rompe l'aspettativa universale 'tap fuori per chiudere'.",
+        "alternative": "Tap su backdrop = dismiss overlay, default. Disabilitarlo solo per flussi davvero bloccanti (es. errore critico che richiede una scelta esplicita), e in quel caso documentarlo nel comportamento del modal/drawer."
+      },
+      {
+        "scenario": "double-backdrop",
+        "reason": "Aprire un overlay sopra un altro overlay senza unificare il backdrop produce due scrim sovrapposti (effettivamente opacity ~96%) e una scena nera-quasi-piena che disorienta l'utente. Si perde il senso di profondità dell'elevazione.",
+        "alternative": "Mostrare un solo Backdrop alla volta. Se serve un secondo livello di overlay (es. confirm modal sopra drawer), il drawer di sotto resta visibile attraverso lo stesso backdrop o si chiude prima di aprire il secondo."
+      }
+    ]
   },
+
   "composition": {
     "slots": {},
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Drawer", "Modal Feedback"],
+    "parentConstraints": [
+      "Renderizzato sempre come overlay full-screen, posizionato sopra il contenuto della pagina e sotto l'overlay che ha richiesto il backdrop (modal/drawer/bottom-sheet). Copre safe-area, status bar e bottom nav.",
+      "z-index/elevation immediatamente sotto l'overlay che lo accompagna; mai sotto contenuto interattivo della pagina."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap": "Tap sul backdrop chiude l'overlay associato (drawer/modal/bottom-sheet), eseguendo il callback `onPress`/`onDismiss` del consumer. Comportamento opt-out: il consumer può disabilitarlo per overlay bloccanti."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "Il Backdrop non è un elemento accessibile di per sé: la struttura accessibile è 'overlay container con `accessibilityViewIsModal = true` (iOS) o `importantForAccessibility = yes-hide-descendants` sul contenuto sotto (Android)'. Il backdrop visivo non è esposto allo screen reader come un elemento navigabile; tappabile sì.",
+    "screenReader": "Quando l'overlay si apre, il contenuto della pagina sotto va reso inerte per lo screen reader (iOS: `accessibilityElementsHidden = true` sulla view di pagina; Android: `importantForAccessibility = no-hide-descendants`). VoiceOver/TalkBack legge solo l'overlay. Alla chiusura, ripristinare l'accessibility tree del contenuto sotto.",
+    "focusManagement": "Il backdrop non riceve mai accessibility focus. All'apertura dell'overlay, spostare il focus al primo elemento focusable dell'overlay (header o primo control). Alla chiusura, ripristinare il focus all'elemento che ha aperto l'overlay (trigger), seguendo il pattern modal standard.",
+    "touchTarget": "L'intera area del backdrop è hit area (full-screen meno l'area occupata dall'overlay). Sempre sopra-soglia per definizione.",
     "wcag": "AA"
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["backdrop", "scrim", "overlay", "dim", "modal background", "sfondo modale"],
+    "context": "Usa Backdrop SEMPRE accoppiato a un overlay (Drawer, Modal Feedback, Bottom Sheet) per oscurare il contenuto sottostante e focalizzare l'attenzione sull'overlay. Mai standalone. Default: tap-to-dismiss attivo, da disabilitare solo per overlay realmente bloccanti. Una sola istanza di Backdrop visibile alla volta — non sovrapporre più scrim."
   },
+
   "rationale": {
     "designDecisions": ""
   }

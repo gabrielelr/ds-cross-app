@@ -2,6 +2,8 @@
   "slug": "menu-unico",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Menu Unico",
     "category": "atoms",

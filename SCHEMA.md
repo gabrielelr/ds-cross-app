@@ -161,6 +161,13 @@ Lo schema del `metadata.json` segue il formato della skill **AI Component Metada
   "lastUpdated": "2026-05-09",
   "status": "full",
 
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "5473:10855",
+    "ios": "5473:10855",
+    "ios-liquid-glass": "8354:2516"
+  },
+
   "component": {
     "name": "Button",
     "category": "atoms",
@@ -254,12 +261,47 @@ Lo schema del `metadata.json` segue il formato della skill **AI Component Metada
 
 **Campi aggiuntivi della repo** (non presenti nella skill, necessari per il tooling e la documentazione).
 
-| Campo         | Tipo   | Obbligatorio | Note                                                                                       |
-|---------------|--------|--------------|--------------------------------------------------------------------------------------------|
-| `slug`        | string | Sì           | Identificativo tecnico, conforme alla sezione 2                                            |
-| `lastUpdated` | string | Sì           | ISO `YYYY-MM-DD` dell'ultima modifica significativa                                        |
-| `status`      | enum   | Sì           | `full` o `scaffold`                                                                        |
-| `rationale`   | object | Sì           | Blocco "Perché è così" — contiene il solo campo `designDecisions`                          |
+| Campo           | Tipo            | Obbligatorio | Note                                                                                       |
+|-----------------|-----------------|--------------|--------------------------------------------------------------------------------------------|
+| `slug`          | string          | Sì           | Identificativo tecnico, conforme alla sezione 2                                            |
+| `lastUpdated`   | string          | Sì           | ISO `YYYY-MM-DD` dell'ultima modifica significativa                                        |
+| `status`        | enum            | Sì           | `full` o `scaffold`                                                                        |
+| `platforms`     | array di string | Sì           | OS supportati. Valori ammessi: `"android"`, `"ios"`, `"ios-liquid-glass"`. Per scaffold: `[]`. Vedi tabella sotto. |
+| `figmaNodeIds`  | object          | Sì           | Mappa platform → ID nodo Figma della variante. Chiavi devono combaciare con `platforms[]`. Quando piattaforme condividono lo stesso nodo, ripetere l'ID esplicitamente. Per scaffold: `{}`. |
+| `figmaLayouts`  | object          | No           | Solo se il componente ha più frame Figma per varianti di **layout/placement** (es. Alert `sticky` vs `inline`). Mappa `layoutName` → ID nodo Figma. Le chiavi sono libere, lowercase, kebab-case (`sticky`, `inline`, `top-sheet`, `bottom-sheet`…). Quando presente, ogni `usage.commonPatterns[]` può aggiungere il campo opzionale `layout` con il nome del layout di riferimento. |
+| `rationale`     | object          | Sì           | Blocco "Perché è così" — contiene il solo campo `designDecisions`                          |
+
+**Valori ammessi per `platforms[]`.**
+
+| Valore              | Significato                                                                                  |
+|---------------------|----------------------------------------------------------------------------------------------|
+| `android`           | Versione Android (Material o pattern custom su Android)                                      |
+| `ios`               | Versione iOS pre-Liquid Glass (HIG classico o pattern custom su iOS)                         |
+| `ios-liquid-glass`  | Versione iOS con linguaggio Liquid Glass — trattata come platform separata, non come variante di `ios` |
+
+Quando un componente esiste su tutte e tre, va elencato in tutte e tre le chiavi di `figmaNodeIds`. Componenti single-platform (es. esclusivi di Liquid Glass) hanno `platforms` e `figmaNodeIds` con una sola chiave.
+
+**Esempio con `figmaLayouts`** (componente con più frame di layout, es. Alert sticky vs inline):
+
+```json
+"platforms": ["android", "ios"],
+"figmaNodeIds": {
+  "android": "6608:11109",
+  "ios": "6608:11109"
+},
+"figmaLayouts": {
+  "sticky": "6608:11109",
+  "inline": "6608:11431"
+},
+"usage": {
+  "commonPatterns": [
+    { "name": "error-feedback", "layout": "sticky", "description": "...", "composition": "..." },
+    { "name": "inline-validation", "layout": "inline", "description": "...", "composition": "..." }
+  ]
+}
+```
+
+`figmaNodeIds` punta al layout canonico per ogni platform (di solito il primo o quello più visibile). `figmaLayouts` enumera tutti i layout, layout-specifici. Per i componenti senza layout multipli (Button, Accordion, ecc.) `figmaLayouts` si omette.
 
 **Campi del blocco `rationale`**.
 
@@ -277,7 +319,7 @@ Lo schema del `metadata.json` segue il formato della skill **AI Component Metada
 | `component.type`                 | enum            | Sì           | `interactive`, `display`, `container`, `input`, `navigation`        |
 | `usage.useCases[]`               | array di string | Sì se `full` | Casi d'uso semantici, almeno 1 per componenti `full`                 |
 | `usage.requiredProps[]`          | array di string | No           | Props obbligatorie da passare sempre                                 |
-| `usage.commonPatterns[]`         | array di object | No           | Pattern d'uso comuni con `name`, `description`, `composition`, opzionale `images` (array di ID immagine, vedi sezione 5) |
+| `usage.commonPatterns[]`         | array di object | No           | Pattern d'uso comuni con `name`, `description`, `composition`, opzionale `images` (array di ID immagine, vedi sezione 5), opzionale `layout` (nome di una chiave di `figmaLayouts` quando il pattern è specifico di un layout) |
 | `usage.antiPatterns[]`           | array di object | No           | Con `scenario`, `reason`, `alternative`, opzionale `images` (array di ID immagine, vedi sezione 5) |
 | `composition.slots`              | object          | No           | Slot/subcomponenti con `required` e `description`                    |
 | `composition.nestedComponents[]` | array di string | No           | Componenti figli usati internamente                                  |
@@ -380,12 +422,12 @@ Un componente in stato `scaffold` ha la struttura prevista dallo schema ma il co
 **Cosa deve esserci in un componente `scaffold`.**
 
 - Tutti i file (`metadata.json`, `changelog.md`) esistono
-- Il `metadata.json` contiene i campi di repo-level (`slug`, `lastUpdated`, `status: scaffold`), i campi della skill (`component.name`, `component.category`, `component.type`) con gli array `useCases` e `antiPatterns` vuoti, e il blocco `rationale` presente come oggetto con stringhe vuote e `relatedComponents: []`
+- Il `metadata.json` contiene i campi di repo-level (`slug`, `lastUpdated`, `status: scaffold`, `platforms: []`, `figmaNodeIds: {}`), i campi della skill (`component.name`, `component.category`, `component.type`) con gli array `useCases` e `antiPatterns` vuoti, e il blocco `rationale` presente come oggetto con `designDecisions: ""`
 - Il `changelog.md` contiene **solo il frontmatter YAML** (`component`, `figma_id`, `last_updated`); il plugin Changelog Master appende le entry quando il team DS registra le prime modifiche
 
 **Cosa deve esserci in più in un componente `full`.**
 
-- `metadata.json` completamente compilato, inclusi `component.description`, almeno 1 `useCases[]`, `behavior`, `accessibility` e il blocco `rationale` con almeno `designDecisions` valorizzato
+- `metadata.json` completamente compilato, inclusi `component.description`, almeno 1 `useCases[]`, `behavior`, `accessibility`, `platforms[]` con almeno 1 OS supportato, `figmaNodeIds` con una chiave per ogni platform elencata, e il blocco `rationale` con `designDecisions` valorizzato quando esistono razionali documentati
 - Niente TODO residui in `rationale`
 - Idealmente almeno 1 elemento in `usage.antiPatterns[]`
 - Le immagini Do/Don't sono presenti e referenziate nel testo
@@ -409,11 +451,15 @@ Questo schema può evolvere. Quando viene modificato in modo non retrocompatibil
 La versione corrente dello schema è documentata qui:
 
 ```
-SCHEMA_VERSION: 3.0
+SCHEMA_VERSION: 3.2
 ```
 
 In caso di modifiche, aggiornare la versione e aggiungere una nota nel `CHANGELOG.md` della repo template.
 
 ---
+
+*SCHEMA v3.2 — Aggiunto campo opzionale `figmaLayouts{}` per componenti con più frame Figma di layout/placement (es. Alert sticky vs inline). Aggiunto campo opzionale `layout` dentro ogni `usage.commonPatterns[]`, che referenzia una chiave di `figmaLayouts`. Retrocompatibile con v3.1: i componenti senza layout multipli omettono `figmaLayouts`.*
+
+*SCHEMA v3.1 — Aggiunti due campi repo-level obbligatori: `platforms[]` (OS supportati: `android`, `ios`, `ios-liquid-glass`) e `figmaNodeIds{}` (mappa platform → ID nodo Figma). Liquid Glass iOS è trattato come platform separata, non come variante di `ios`. Lo schema v3.1 è retrocompatibile con metadata v3.0 a patto di aggiungere i due campi come `[]` e `{}` agli scaffold esistenti.*
 
 *SCHEMA v3.0 — Breaking change: `rationale-note.md` rimosso. Il contenuto "Perché è così" è ora rappresentato dal blocco `rationale` dentro `metadata.json`, con il solo campo `designDecisions` (string markdown). Eccezioni, note storiche e relazioni tra componenti sono state assorbite: eccezioni e note storiche dentro `designDecisions`, relazioni dentro i campi esistenti `composition.*` (`nestedComponents`, `commonPartners`, `parentConstraints`) e `usage.antiPatterns` (alternative). Naming immagini cambiato da `{slug}-{variant?}-{do|dont}-{n}.{ext}` a `{slug}{N}.{M}.{ext}`, con gli ID `N.M` referenziabili dal JSON via campo `images: ["N.M"]` (in commonPatterns/antiPatterns) o reference inline `[N.M]` (in `designDecisions`). I campi aggiuntivi della repo rispetto alla skill AI Component Metadata sono `slug`, `lastUpdated`, `status`, `rationale`.*

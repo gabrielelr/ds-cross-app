@@ -2,6 +2,8 @@
   "slug": "text-field",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Text Field",
     "category": "atoms",

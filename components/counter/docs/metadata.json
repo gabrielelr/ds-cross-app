@@ -1,42 +1,120 @@
 {
   "slug": "counter",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5814:100778",
+    "ios": "5814:100778"
+  },
+
   "component": {
     "name": "Counter",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Componente di display temporale: mostra un valore numerico (tipicamente countdown/elapsed) o una stringa temporale per dare feedback su durata, scadenza, urgenza o stato di attesa. 3 `Size` con layout strutturalmente diversi: `sm` (24h, due box digit con `:` separatore — countdown compatto), `lg` (32×32 due o tre box impilati con numero+label sotto, separatore `:` — countdown con etichette di unità tipo 'Giorni'/'Minuti'), `md` (24h, pill orizzontale con testo libero come 'Tomorrow by 10:00 AM' — non un countdown numerico ma una stringa temporale narrativa). Non è interattivo: nessun tap, nessuna State, nessuna interazione utente. Il consumer aggiorna il valore esternamente (timer/clock).",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "countdown-timer",
+      "elapsed-time-display",
+      "promo-expiration",
+      "product-availability-window",
+      "urgency-indicator"
+    ],
+    "requiredProps": ["size"],
+    "commonPatterns": [
+      {
+        "name": "product-card-time-label-md",
+        "description": "Counter `Size=md` dentro a una Card Product: pillola compatta con stringa temporale narrativa (es. 'Tomorrow by 10:00 AM', 'Available in 2h'). Tipografia caption 12px medium, bg light-green, radius 4. NON è un countdown live numerico — è un'etichetta testuale che indica la finestra di disponibilità o consegna del prodotto.",
+        "composition": "<Counter size=\"md\" textLabel=\"Tomorrow by 10:00 AM\" />"
+      },
+      {
+        "name": "card-promo-countdown-lg",
+        "description": "Counter `Size=lg` dentro a una Card Promo: due (o tre con `showThirdCounter=true`) box impilati 32×32 con bg dark-grey + text white, ognuno mostra numero (10px bold) sopra e label unità (10px regular) sotto (es. '03/Giorni : 12/Ore' o '03/Giorni : 12/Ore : 45/Minuti'). Separatore `:` in pBold (14px bold). Pensato per countdown a scadenza di una promo — l'urgenza visiva è data dal fill scuro contrastato dalla card colorata di sfondo.",
+        "composition": "<Counter size=\"lg\" days=\"03\" hours=\"12\" minutes=\"45\" showThirdCounter />"
+      },
+      {
+        "name": "compact-countdown-sm",
+        "description": "Counter `Size=sm` per countdown compatti in contesti densi: due box 24h con bg light-green, digit 12px medium dark, separatore `:` 14px bold. Senza label di unità (a differenza di lg) — l'unità è implicita dal contesto (es. 'MM:SS' o 'HH:MM'). Usato dove non c'è spazio verticale per gli stacked label.",
+        "composition": "<Counter size=\"sm\" first=\"03\" second=\"12\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "lg-without-promo-context",
+        "reason": "Il `Size=lg` ha bg dark-grey + text white — un trattamento ad alto contrasto pensato per emergere da una card colorata (Card Promo) come segnale di urgenza. Usato standalone su una pagina chiara, il dark-grey 32×32 diventa visivamente pesante e attira l'attenzione fuori contesto.",
+        "alternative": "Riservare `Size=lg` a card promo/hero a sfondo colorato. Per countdown su sfondo neutro usare `Size=sm` (bg light-green, più morbido) o un altro componente di display tempo (Badge Status con label 'In scadenza' etc.)."
+      },
+      {
+        "scenario": "md-as-numeric-countdown",
+        "reason": "Il `Size=md` è strutturalmente diverso da sm/lg: è un singolo pill con stringa libera (`textLabel`), non un layout NN:NN. Forzarlo a mostrare un countdown numerico (es. 'textLabel=\"03:12:45\"') lo fa sembrare un sm mal-spaziato — non c'è separatore stilizzato fra gruppi e la tipografia caption non è ottimizzata per numeri tabulari.",
+        "alternative": "Per countdown numerico vivo usare `Size=sm` (compatto NN:NN) o `Size=lg` (con label di unità). Per stringa testuale tipo 'Disponibile domani' usare `Size=md` — è il suo scopo originale."
+      },
+      {
+        "scenario": "long-textlabel-on-md",
+        "reason": "Il `Size=md` usa `whitespace-nowrap` con padding-h 4 (molto stretto): testi lunghi forzano la pill a crescere oltre la larghezza della card ospite, rompendo il layout. Tipicamente la Card Product ha vincoli di larghezza precisi.",
+        "alternative": "Mantenere `textLabel` breve (1-4 parole, es. 'Domani 10:00', 'Available now', 'In 2h'). Per messaggi più articolati usare un componente di testo dedicato o estendere il layout della card."
+      },
+      {
+        "scenario": "counter-as-interactive",
+        "reason": "Counter è display (`type=display`): non ha State (no Default/Pressed/Selected/Disabled), niente onPress, nessun accessibilityTrait `.button`. Trattarlo come interattivo (es. 'tap sul counter apre il dettaglio promo') è inaspettato per l'utente e non supportato dal componente.",
+        "alternative": "Se serve un'area tappabile, wrappare il Counter dentro a una Card o un container con onPress. Il counter rimane display, l'azione vive sul container."
+      },
+      {
+        "scenario": "lg-third-counter-without-need",
+        "reason": "`showThirdCounter=true` aggiunge un terzo box (es. 'Minuti') alla riga lg. Mostrare 3 box (Giorni/Ore/Minuti) quando il countdown è di poche ore (e i giorni sono 0) crea il caso 'Giorni: 00 Ore: 02 Minuti: 15' che spreca spazio e attenuamento dell'urgenza.",
+        "alternative": "Mostrare solo le unità con valore significativo. Per countdown <1 giorno togliere `showThirdCounter` o usare solo Ore:Minuti. Per countdown <1 ora considerare `Size=sm` MM:SS."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "DigitBox": {
+        "required": true,
+        "description": "Box con il/i numero/i del counter. In `Size=sm` è un'unica riga digit (caption 12px medium, due box separati da `:`). In `Size=lg` è uno stack verticale: digit (microCaptionBold 10px bold) sopra, label unità (microCaption 10px regular) sotto — la label sotto è opzionale tramite `showLabel`. Token colore via `counter/{sm|lg}/color/{bg|text}` (sm: bg light-green + text dark; lg: bg dark-grey + text white). Token size via `counter/{sm|lg}/size/{height|padding/horizontal|padding/vertical|border/radius}`."
+      },
+      "Separator": {
+        "required": false,
+        "description": "Carattere `:` tra due (o più) DigitBox, presente solo nelle Size sm e lg. Tipografia `typography/body/pBold` (14px bold), colore `counter/color/icon`. Width 4, height 12. Non è un componente separato — è glyph testuale."
+      },
+      "TextLabel": {
+        "required": true,
+        "description": "Solo per `Size=md`: stringa di testo libera all'interno della pill (es. 'Tomorrow by 10:00 AM', 'Available now'). Tipografia `typography/body/caption` (12px medium), colore `counter/md/color/text`. Single-line `whitespace-nowrap`. Il container md ha bg `counter/md/color/bg` (light-green) e padding 4/4, radius 4 (deriva dal token `counter/sm/size/border/radius`, NON esiste un `counter/md/size/border/radius` dedicato)."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Card Product", "Card Promo", "Hero", "Card Highlight"],
+    "parentConstraints": [
+      "Pensato per vivere dentro una card colorata (Card Promo per lg) o una card prodotto (Card Product per md). Standalone funziona ma perde contesto: il countdown ha senso quando l'utente sa a cosa si riferisce (la promo/prodotto contiene il riferimento)."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "value-update": "Il valore del counter è aggiornato dal consumer esternamente (timer tick, refresh dati). Il componente non gestisce internamente il decremento — riceve i numeri/stringa come prop e li mostra. Niente animazione di tick fra valori in Figma — la transizione è instantanea."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "text — è un display passivo di un valore temporale. Su iOS impostare `accessibilityTraits = .staticText` + `accessibilityValue` aggiornato dinamicamente con il valore corrente; su Android `Role.None` o `Modifier.semantics { liveRegion = LiveRegionMode.Polite }` per countdown live che cambiano. Per countdown attivi (lg in Card Promo) considerare `accessibilityLiveRegion = .polite` perché lo screen reader rilegga ad ogni tick rilevante — ma NON ad ogni secondo per evitare verbosity (es. solo a cambio minuto/ora).",
+    "screenReader": "Lo screen reader legge il valore corrente come testo. Per `Size=sm` ('03:12') è opportuno comporre un `accessibilityLabel` esplicito tipo '3 minuti e 12 secondi rimanenti' invece del raw '03:12' che lo screen reader leggerebbe come '03 due punti 12'. Per `Size=lg` con label di unità il read-out è più naturale ('03 Giorni 12 Ore'). Per `Size=md` ('Tomorrow by 10:00 AM') la stringa già naturale viene letta direttamente.",
+    "focusManagement": "Non focusable (non interattivo). Se incluso dentro a una card focusable, il counter fa parte dell'`accessibilityLabel` combinato del parent, non è un elemento accessibile separato.",
+    "touchTarget": "N/A — non è un target tappabile. Le dimensioni (sm 24h, md 24h, lg 32×32) sono pensate per leggibilità visiva, non per touch.",
+    "wcag": "AA — per `Size=lg` (bg dark-grey + text white) il contrasto è ampio. Per `Size=sm/md` (bg light-green + text dark) verificare WCAG AA col token risolto del brand corrente. Lo Status temporale è comunicato sia da numeri/testo che (in lg) da fill scuro a contrasto — non solo-colore."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["counter", "countdown", "timer", "elapsed time", "tempo rimanente", "scadenza", "promo timer"],
+    "context": "Usa Counter per mostrare un valore temporale: countdown numerico (`sm` compatto NN:NN, `lg` con label di unità Giorni/Ore/Minuti) o una stringa temporale narrativa (`md` 'Tomorrow by 10:00 AM'). 3 Size strutturalmente diverse, NON scalari: scegli in base al pattern, non alla densità. `Size=md` è usato in Card Product (label di disponibilità/consegna); `Size=lg` in Card Promo per countdown di urgenza (bg dark-grey contrasta con la card colorata). `Size=sm` per countdown compatti senza label di unità. Non interattivo: niente State, niente onPress — il consumer aggiorna il valore. Per countdown live esposti allo screen reader, valutare `accessibilityLiveRegion=polite` ma evitare verbosity al tick di ogni secondo. Quirk token: `counter/md/size/border/radius` NON esiste — md riusa `counter/sm/size/border/radius`."
   },
+
   "rationale": {
     "designDecisions": ""
   }

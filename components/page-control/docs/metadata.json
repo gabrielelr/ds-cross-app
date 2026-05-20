@@ -2,6 +2,8 @@
   "slug": "page-control",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Page Control",
     "category": "atoms",

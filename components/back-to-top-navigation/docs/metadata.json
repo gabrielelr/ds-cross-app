@@ -1,43 +1,100 @@
 {
   "slug": "back-to-top-navigation",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android"],
+  "figmaNodeIds": {
+    "android": "8206:634533"
+  },
+
   "component": {
     "name": "Back To Top Navigation",
     "category": "atoms",
-    "description": "",
+    "description": "Floating action button circolare (48×48) con icona freccia-su, sovrapposto al contenuto scrollabile e usato per riportare l'utente in cima a una pagina lunga. Disponibile solo su Android: su iOS non esiste come componente del DS perché il sistema operativo offre già un pattern nativo equivalente (tap sulla status bar per scrollare in cima).",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
+    "useCases": [
+      "long-list-scroll-to-top",
+      "long-page-scroll-to-top"
+    ],
     "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "commonPatterns": [
+      {
+        "name": "appear-after-scroll-threshold",
+        "description": "Il Back to Top compare con fade-in/slide-up dopo una soglia di scroll (tipicamente 1–2 viewport sotto la testata) e scompare quando l'utente è di nuovo vicino alla cima. Non resta mai visibile a scroll = 0.",
+        "composition": "<BackToTopNavigation visible={scrollY > viewportHeight} onPress={scrollToTop} />"
+      },
+      {
+        "name": "long-product-listing",
+        "description": "Listing prodotti o risultati di ricerca con molti item: dopo aver scrollato in profondità, il bottone permette il rientro in cima senza dover trascinare manualmente.",
+        "composition": "<BackToTopNavigation onPress={() => list.scrollToOffset({ offset: 0, animated: true })} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "short-page",
+        "reason": "Su pagine che entrano in 1–2 schermate il Back to Top occupa spazio senza dare valore: lo scroll necessario per tornare in cima è equivalente a un singolo flick. L'utente lo percepisce come rumore visivo.",
+        "alternative": "Mostrare il componente solo dopo una soglia di scroll significativa (tipicamente > 1 viewport). Su pagine brevi non includerlo affatto."
+      },
+      {
+        "scenario": "always-visible",
+        "reason": "Tenere il Back to Top sempre visibile (anche con la pagina già in cima) copre contenuto sotto di sé in modo permanente e segnala uno scroll utile che in realtà non c'è.",
+        "alternative": "Bind la visibilità alla posizione di scroll: appare oltre la soglia, scompare al ritorno in cima. Animazione di fade/slide per non essere brutale."
+      },
+      {
+        "scenario": "inside-modal-or-bottom-sheet",
+        "reason": "Modal e bottom-sheet hanno già un sistema di dismiss/scroll dedicato e uno scroll container limitato in altezza. Aggiungere un Back to Top dentro a un modal duplica i pattern di navigazione e confonde l'utente su 'cosa fa cosa'.",
+        "alternative": "Riservare il Back to Top alle pagine full-screen con scroll lungo. Dentro modal/bottom-sheet affidarsi al drag-to-dismiss o al pulsante di chiusura del contenitore."
+      },
+      {
+        "scenario": "used-on-ios",
+        "reason": "Su iOS esiste già il pattern nativo 'tap status bar → scroll to top' che gli utenti conoscono per default. Aggiungere un Back to Top custom su iOS introduce un secondo pattern, copre contenuto e va contro le HIG di Apple.",
+        "alternative": "Su iOS non implementare il componente; assicurarsi che lo `UIScrollView`/`scrollsToTop` sia attivo (default true) così il tap sulla status bar funziona. Documentare questa scelta nel team perché non emerga come 'feature mancante'."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Icon": {
+        "required": true,
+        "description": "Icona freccia-su (`icon / arrows / arrow-up`) 24×24, centrata nel container 48×48. È l'unico contenuto del componente: non c'è label, non c'è badge, non c'è slot text."
+      }
+    },
+    "nestedComponents": ["Icon"],
+    "commonPartners": ["Listing", "Search Results Listing", "Page"],
+    "parentConstraints": [
+      "Posizionato come overlay (floating) sopra un contenuto scrollabile, ancorato in basso. La posizione esatta (margini dal bordo, distanza da bottom nav) è decisione di prodotto, non variante Figma."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed"],
+    "interactions": {
+      "tap": "Tap esegue scroll-to-top animato del container scrollabile parent. La durata dell'animazione segue lo standard Material per scroll programmatici (~300ms). Dopo lo scroll, il componente si nasconde automaticamente (è sotto soglia di visibilità).",
+      "pressed": "Variante visiva Status=Pressed durante il touch: background passa dal token `backtotopnavigation/color/bg/default` al token `backtotopnavigation/color/bg/pressed`, conforme al ripple/feedback Material."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "button — su Android è una `Button` (o `FloatingActionButton`) con `contentDescription` localizzato ('Torna in cima' / 'Back to top'). Non è un Link e non porta a un'altra schermata: è un'azione che muove lo scroll.",
+    "screenReader": "TalkBack legge 'Torna in cima, pulsante'. Quando il componente è nascosto (sotto soglia di scroll) deve essere rimosso dall'accessibility tree (`importantForAccessibility = no` o non renderizzato), non solo nascosto visivamente con opacity 0, per non essere navigabile a vuoto.",
+    "focusManagement": "Dopo l'attivazione, spostare l'accessibility focus al primo elemento focusable della pagina (tipicamente l'header o il primo item della lista). Senza questo spostamento, l'utente TalkBack continua a sentirsi 'a fondo pagina' nonostante lo scroll visivo sia tornato in cima.",
+    "touchTarget": "48×48 — sopra il minimo Material di 48dp. Conforme senza padding aggiuntivo.",
     "wcag": "AA"
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "low",
+    "keywords": ["back to top", "scroll to top", "torna in cima", "fab", "floating action"],
+    "context": "Usa Back To Top Navigation SOLO su Android e SOLO su pagine/liste con scroll significativo (oltre 1 viewport). Bind la visibilità alla posizione di scroll: appare oltre la soglia, scompare al rientro in cima. Su iOS non usare questo componente: il pattern nativo è il tap sulla status bar (`scrollsToTop = true` sullo `UIScrollView`, abilitato di default). Non usarlo dentro modal o bottom-sheet."
   },
+
   "rationale": {
-    "designDecisions": ""
+    "designDecisions": "- **Android-only.** Il componente esiste solo nella variante Android perché iOS ha già un pattern nativo equivalente: il tap sulla status bar fa lo scroll-to-top dello `UIScrollView` attivo (proprietà `scrollsToTop`, default `true` sul primo scroll view della view hierarchy). Aggiungere un Back to Top custom su iOS introdurrebbe un secondo pattern in competizione con quello di sistema, andando contro le HIG di Apple e occupando un'area di schermo che l'utente iOS non si aspetta. Su Android lo stesso gesto di sistema non esiste, quindi il componente custom colma il gap."
   }
 }

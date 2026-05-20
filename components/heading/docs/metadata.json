@@ -2,6 +2,8 @@
   "slug": "heading",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Heading",
     "category": "atoms",

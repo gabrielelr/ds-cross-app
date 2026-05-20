@@ -1,42 +1,124 @@
 {
   "slug": "quicklink-navigation",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6280:4229",
+    "ios": "6280:4229"
+  },
+
   "component": {
     "name": "Quicklink Navigation",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Riga orizzontale di atomi Button Quicklink per navigare verso altre pagine come scorciatoie. Tipicamente vive in homepage; può diventare sticky in alto quando l'utente scrolla. Supporta overflow orizzontale quando ci sono più di tre item. Tre dimensioni booleane (`sticky`, `Scroll Overflow`, `Icon`) generano 5 varianti reali in Figma (non tutte le 8 combinazioni). Token namespace `quicklinkNavigation/*` per il container; gli stili degli item vengono dall'atomo via `buttonQuicklink/*`. Three-way naming: slug `quicklink-navigation`, frame 'Quicklink navigation', namespace `quicklinkNavigation/*`. A differenza di Page Navigation (single-choice, una sezione Selected), Quicklink Navigation è navigazione one-way: nessun item in 'Selected', il tap porta sempre a un'altra pagina.",
+    "type": "navigation"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "homepage-shortcuts",
+      "section-quick-links",
+      "cross-page-navigation",
+      "sticky-page-shortcuts"
+    ],
+    "requiredProps": ["items"],
+    "commonPatterns": [
+      {
+        "name": "homepage-shortcuts-with-icons",
+        "description": "Variante canonica `sticky=false, Scroll Overflow=true, Icon=true` (80h). Riga homepage di scorciatoie ad altre pagine (es. 'Bonus', 'Movimenti', 'Documenti', 'Promo'). Ogni Button Quicklink mostra icona + Badge Notification (quando c'è qualcosa di non visto) + label. Scroll orizzontale se gli item eccedono il viewport.",
+        "composition": "<QuicklinkNavigation sticky={false} scrollOverflow icon items={homepageShortcuts} />"
+      },
+      {
+        "name": "fits-without-scroll",
+        "description": "Variante `sticky=false, Scroll Overflow=false, Icon=true`: ≤3 item che stanno tutti nel viewport. Niente scroll orizzontale. Indicato per homepage con poche scorciatoie ad alto valore.",
+        "composition": "<QuicklinkNavigation sticky={false} icon items={[bonus, documenti, contoCheck]} />"
+      },
+      {
+        "name": "sticky-on-scroll",
+        "description": "Variante `sticky=true, Scroll Overflow=true, Icon=false` (64h): quando l'utente scrolla la homepage la riga si attacca in cima con border-bottom + shadow (`shadow/sm`) per separarla visivamente dal contenuto sotto. Le icone vengono rimosse per compattare verticalmente (64h vs 80h). Le label da sole sono sufficienti per la navigazione in sticky-mode dato che l'utente ha già visto le icone nella versione full.",
+        "composition": "<QuicklinkNavigation sticky scrollOverflow items={shortcuts} />"
+      },
+      {
+        "name": "sticky-fits",
+        "description": "Variante `sticky=true, Scroll Overflow=false, Icon=false` (64h): sticky + ≤3 item che entrano nel viewport, no scroll. Stessa logica della sticky-on-scroll ma per casi con poche scorciatoie.",
+        "composition": "<QuicklinkNavigation sticky items={[bonus, conto, profilo]} />"
+      },
+      {
+        "name": "ultra-compact-text-only",
+        "description": "Variante `sticky=false, Scroll Overflow=true, Icon=false` (36h): la più compatta. Solo label, niente icone, niente sticky chrome. Adatta a contesti già densi dove le scorciatoie servono ma non possono dominare il layout.",
+        "composition": "<QuicklinkNavigation scrollOverflow items={compactShortcuts} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "quicklink-navigation-with-selected-item",
+        "reason": "Gli atomi Button Quicklink non hanno `State=Selected` (a differenza di Button Square): non c'è il concetto di 'item attivo' in Quicklink Navigation perché ogni quicklink rimanda sempre a un'altra pagina. Forzare uno stile 'attivo' (es. evidenziarne uno con colori custom) rompe l'aspettativa di 'all-shortcuts-equivalent' del pattern.",
+        "alternative": "Se serve un cluster con concetto di 'item corrente', usare Page Navigation (Button Square con State Selected). Quicklink Navigation è solo per scorciatoie all-one-way verso altre pagine."
+      },
+      {
+        "scenario": "scroll-overflow-false-with-many-items",
+        "reason": "Con `Scroll Overflow=false` gli item entrano nel viewport (Button Quicklink ha `min-width: 88`, dunque ~4 item visibili senza scroll). Con più item, alcuni vengono tagliati e l'utente non sa che esistono.",
+        "alternative": "Per >3 item usare `Scroll Overflow=true` (scroll orizzontale, comportamento esplicito). Per ≤3 item `Scroll Overflow=false` è OK ma valutare se i 3 quicklink meritano davvero la riga dedicata (alternative: card singole)."
+      },
+      {
+        "scenario": "long-page-without-sticky",
+        "reason": "Su una homepage lunga dove le quicklink hanno valore di navigazione frequente, lasciare `sticky=false` significa che l'utente perde l'accesso rapido alle scorciatoie appena scrolla un po'. Il pattern Quicklink Navigation è progettato apposta per supportare sticky-on-scroll.",
+        "alternative": "Su homepage/pagina con scroll significativo, usare `sticky=true` quando l'utente scrolla oltre la posizione naturale del componente. La variante sticky è 64h (più compatta della 80h con icone), pensata apposta per occupare meno spazio in modalità ancorata."
+      },
+      {
+        "scenario": "icon-true-when-sticky",
+        "reason": "Le varianti `sticky=true` Figma esistono solo con `Icon=false`. Forzare icona + sticky non è un combinazione disegnata: il sticky mode è esplicitamente progettato per essere compatto (64h senza icone), non per duplicare la versione 80h con icone in cima.",
+        "alternative": "Quando passi a sticky, droppa le icone (le label da sole bastano in sticky-mode). Se l'utente ha bisogno di icone anche in sticky, riconsiderare se il pattern Quicklink Navigation è quello giusto (forse Page Navigation o Header con icon button)."
+      },
+      {
+        "scenario": "quicklink-navigation-for-actions",
+        "reason": "I Button Quicklink sono link di navigazione (vai a una pagina), non bottoni di azione (esegui qualcosa). Usare Quicklink Navigation come barra di azioni (es. 'Salva', 'Condividi', 'Elimina') confonde l'utente che si aspetta navigazione.",
+        "alternative": "Per azioni multiple usare Button Group o Action Bar dedicata. Riservare Quicklink Navigation a scorciatoie verso altre pagine/sezioni."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Items": {
+        "required": true,
+        "description": "Array di Button Quicklink allineati orizzontalmente con gap = token `quicklinkNavigation/size/gap` (8). Ogni item è `shrink-0` (mantiene `min-width: 88` dell'atomo). Quando `Icon=true`, ogni Button Quicklink mostra il proprio slot Icon (con Badge Notification opzionale, vedere doc badge-notification); quando `Icon=false`, viene mostrata solo la Label. Non c'è concetto di item Selected — tutti gli item sono in stato Default."
+      }
+    },
+    "nestedComponents": ["Button Quicklink", "Badge Notification"],
+    "commonPartners": ["Page", "Header"],
+    "parentConstraints": [
+      "Vive in modo inline dentro a una pagina, tipicamente sotto a un Header in homepage. Padding orizzontale gestito dai token `quicklinkNavigation/size/padding/horizontal/{left|right}`.",
+      "In modalità `sticky=true` si comporta da elemento ancorato al bordo top della viewport durante lo scroll: aggiunge `border-b` + `shadow/sm` come chrome di separazione dal contenuto sottostante."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-quicklink": "Tap su un Button Quicklink esegue il callback di navigazione associato (`onPress` dell'atomo). Lo stato visivo dell'item passa a `pressed` (vedere doc button-quicklink).",
+      "horizontal-scroll": "Con `Scroll Overflow=true`, la riga è scrollabile orizzontalmente con gesture nativa. Adatto a >3 item; con ≤3 item usare `Scroll Overflow=false`.",
+      "sticky-on-scroll": "Con `sticky=true`, durante lo scroll della pagina ospite la riga si ancora al bordo top del viewport (typicamente sotto l'Header se presente). Il container guadagna `border-bottom` + `shadow/sm` per staccarsi visivamente. Le icone vengono rimosse (sticky+Icon=true non è una combinazione Figma) per compattare l'altezza da 80 a 64."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "navigation (è una barra di navigazione fra pagine) con item interni `link`/`button`. Su iOS impostare `accessibilityElements` ordinati; su Android usare un container con `Role.Navigation` e item `Role.Button` o `Role.Link` a seconda del contratto.",
+    "screenReader": "Lo screen reader annuncia il container come 'Navigazione rapida' / 'Quick links' e per ogni item legge la Label + eventuale notifica del Badge ('Bonus, 3 non letti, pulsante'). Nella modalità sticky, l'annuncio non dovrebbe cambiare — il sticky è puramente visuale.",
+    "focusManagement": "Focusable: ogni Button Quicklink interno. Movimento focus orizzontale con gesture standard. Su riga scrollable, lo scroll segue il focus per portare l'item attivo in vista.",
+    "touchTarget": "Ogni Button Quicklink ha touch target garantito dalla propria area (min-width 88 × altezza che dipende da Icon e Sticky). Sopra-soglia in tutte le varianti visibili. Nella variante 36h ultra-compatta è opportuno verificare l'hit area effettiva.",
+    "wcag": "AA — in modalità sticky il `shadow/sm` aggiunge separazione visiva; per utenti con contrasto ridotto considerare anche il `border-bottom` come fallback semantico (che infatti il design espone esplicitamente)."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["quicklink navigation", "quicklink row", "homepage shortcuts", "navigazione rapida", "sticky shortcuts", "scorciatoie homepage"],
+    "context": "Usa Quicklink Navigation per costruire una riga di scorciatoie verso altre pagine, tipicamente in homepage. NON è una nav con concetto di 'sezione corrente' (per quello Page Navigation): qui ogni quicklink rimanda sempre a un'altra pagina e nessun item è in Selected. Scegli le varianti in base al contesto: `Icon=true` per la prima vista (homepage iniziale); `sticky=true` (senza icone, 64h) quando la riga si ancora in cima durante lo scroll; `Scroll Overflow=true` per >3 item, `false` per ≤3. Le combinazioni `sticky=true + Icon=true` e `sticky=false + Icon=false + Scroll Overflow=false` non sono disegnate in Figma — quindi non usarle. Il componente nesta Button Quicklink e (via icona) Badge Notification."
   },
+
   "rationale": {
     "designDecisions": ""
   }

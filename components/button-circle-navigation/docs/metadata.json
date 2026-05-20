@@ -1,42 +1,111 @@
 {
   "slug": "button-circle-navigation",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5782:63517",
+    "ios": "5782:63517"
+  },
+
   "component": {
     "name": "Button Circle Navigation",
     "category": "atoms",
-    "description": "",
+    "description": "Bottone di navigazione composto verticalmente da un Icon Button circolare 56×56 e una Label sotto (12px bold, allineata al centro). Usato per rimandare a determinate pagine/sezioni (es. shortcut homepage, scorciatoie del profilo). 3 `State`: Default, Pressed, Disabled. Una sola size. Tutti i token cromatici sono nel namespace `buttonCircle/*` — notare la discrepanza fra slug (`button-circle-navigation`) e namespace token (`buttonCircle`).",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "homepage-shortcut",
+      "menu-shortcut",
+      "section-entrypoint",
+      "profile-quick-link"
+    ],
+    "requiredProps": ["label", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "homepage-shortcut-row",
+        "description": "Riga orizzontale di Button Circle Navigation in homepage per dare accesso rapido a pagine principali (es. 'Calcio', 'Tennis', 'Slot', 'Casinò'). Tipicamente raggruppati in un Circle Button Group con gap tra item.",
+        "composition": "<ButtonCircleNavigation icon={<IconSlot />} label=\"Slot\" onPress={() => navigate('/slot')} />"
+      },
+      {
+        "name": "section-entrypoint",
+        "description": "Bottone singolo o piccolo gruppo dentro una sezione (es. account, scommesse aperte) che rimanda a una pagina di dettaglio o a un flusso secondario.",
+        "composition": "<ButtonCircleNavigation icon={<IconWallet />} label=\"Conto\" onPress={() => navigate('/account')} />"
+      },
+      {
+        "name": "disabled-pending-access",
+        "description": "`State=Disabled` quando la destinazione non è ancora accessibile (es. funzione legata a verifica documenti non ancora completata). La label resta visibile ma in tono grigio, comunicando che il quick-link esiste ma è temporaneamente non navigabile.",
+        "composition": "<ButtonCircleNavigation icon={<IconLock />} label=\"Bonus\" disabled />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "primary-action-cta",
+        "reason": "Button Circle Navigation è progettato per navigare (rimandare a pagine/sezioni), non per eseguire azioni primarie (conferma, invio, pagamento). Il fill chiaro con border sottile e la label piccola sotto sono volutamente a bassa enfasi rispetto a un Button primario.",
+        "alternative": "Per azioni primarie usare Button (variante solid/primary). Riservare Button Circle Navigation a entrypoint verso altre schermate."
+      },
+      {
+        "scenario": "no-label",
+        "reason": "L'icona da sola in un cerchio bianco bordato non comunica abbastanza la destinazione: utenti diversi interpretano le icone in modi diversi (es. una freccia può significare 'avanti', 'condividi', 'esporta'). La Label è ciò che disambigua.",
+        "alternative": "Sempre valorizzare la Label con una parola chiara. Se davvero la destinazione è ovvia e la label sarebbe ridondante (caso raro), usare Button Icon — che è il pattern senza label."
+      },
+      {
+        "scenario": "long-label-wrap",
+        "reason": "La label ha `word-break: break-word` e `w=min-content`: con testi lunghi va a capo su più righe, rompendo l'allineamento orizzontale del Circle Button Group e creando altezze diverse tra bottoni della stessa riga.",
+        "alternative": "Mantenere la label a 1 parola breve (idealmente ≤ 8 caratteri). Per destinazioni che richiedono spiegazione più lunga, usare una Card Entrypoint."
+      },
+      {
+        "scenario": "isolated-single-button",
+        "reason": "Visivamente il pattern lavora bene in gruppi (homepage row di shortcut, navigazione laterale): usarne uno isolato in mezzo a una pagina può sembrare un elemento smarrito senza contesto.",
+        "alternative": "Raggrupparli in Circle Button Group (3–5 bottoni) per costruire un cluster di scorciatoie riconoscibile. Per un singolo entrypoint forte usare Button o Card Entrypoint."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Icon": {
+        "required": true,
+        "description": "Icona dentro l'Icon Button 56×56 (slot `icon` 24×24, sostituibile). Il colore dell'icona è auto-derivato dallo State tramite token `buttonCircle/color/icon/{default|pressed|disabled}`. Senza prop `icon` viene mostrato un placeholder."
+      },
+      "Label": {
+        "required": true,
+        "description": "Testo sotto l'Icon Button, allineato al centro. Tipografia bold con token `typography/interaction/microButton` (12px, line-height 12). Gap fra Icon Button e Label = token `buttonCircle/size/gap` (4). Il colore del testo è auto-derivato dallo State tramite token `buttonCircle/color/text/{default|pressed|disabled}`. La larghezza della Label è `min-content` (può andare a capo su più righe se la parola è lunga)."
+      }
+    },
+    "nestedComponents": ["Icon"],
+    "commonPartners": ["Circle Button Group", "Header", "Card Detail"],
+    "parentConstraints": [
+      "Pensato per essere parte di un cluster orizzontale (Circle Button Group). Usabile anche singolarmente, ma il pattern visivo brilla in gruppi di 3–5 bottoni."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed", "disabled"],
+    "interactions": {
+      "tap": "Tap esegue la navigazione associata (`onPress`). Durante il touch attivo il bottone passa visivamente a `State=Pressed`: bg da `buttonCircle/color/bg/default` a `buttonCircle/color/bg/pressed`, border da `buttonCircle/color/border/default` a `buttonCircle/color/border/pressed`. Il rilascio fuori dall'hit area annulla la navigazione e ripristina lo State=Default.",
+      "disabled": "In `State=Disabled` il bottone non è tappabile: bg al token `buttonCircle/color/bg/disabled`, border `buttonCircle/color/border/disabled`, icona e testo al token `*/disabled` (più chiari, a bassa enfasi). Su Android l'elemento è `enabled=false`; su iOS `isUserInteractionEnabled=false` e `accessibilityTraits` include `.notEnabled`."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "button — è un'azione di navigazione. Su iOS impostare `accessibilityTraits = .button` (e `.notEnabled` quando Disabled); su Android usare un `Button` o `FrameLayout` con `Role.Button` per Compose. `accessibilityLabel` = la Label visibile (es. 'Slot, pulsante') o, se la Label non è autoesplicativa, una versione estesa (es. label visibile 'Conto' → annuncio 'Vai al conto').",
+    "screenReader": "Lo screen reader legge 'Label, pulsante'. Per `State=Disabled` aggiunge 'non disponibile' (iOS) o 'disabilitato' (Android). Non leggere l'icona come elemento separato: marcarla decorativa (l'informazione è già nella Label).",
+    "focusManagement": "Focusable in `State=Default` e `Pressed`, non focusable in `Disabled`. Il focus ring segue lo standard di piattaforma (iOS: focus visibile su accessibility focus; Android: ripple/outline). In un Circle Button Group il focus si muove orizzontalmente con i gesti standard di TalkBack/VoiceOver.",
+    "touchTarget": "Icon Button 56×56 — sopra il minimo 44pt iOS / 48dp Android. La Label sotto è informativa ma non aumenta l'hit area: l'area tappabile è quella dell'intero Button Circle Navigation (icona + label + gap), così l'utente che mira alla label centra comunque l'azione.",
     "wcag": "AA"
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["button circle navigation", "shortcut", "quick link", "circle button", "icon button with label", "scorciatoia", "navigazione rapida"],
+    "context": "Usa Button Circle Navigation per creare scorciatoie di navigazione verso pagine/sezioni (homepage, profilo, menu rapidi). NON per azioni primarie (per quelle c'è Button). Sempre con Label sotto l'icona — la label è ciò che disambigua la destinazione. Tipicamente in gruppo (3–5 bottoni in una riga orizzontale), tramite Circle Button Group. Per disabilitare una destinazione temporaneamente (es. funzione bloccata), usare `State=Disabled`."
   },
+
   "rationale": {
     "designDecisions": ""
   }

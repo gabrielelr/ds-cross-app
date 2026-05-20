@@ -1,42 +1,127 @@
 {
   "slug": "chip",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6005:37677",
+    "ios": "6005:37677"
+  },
+
   "component": {
     "name": "Chip",
     "category": "atoms",
-    "description": "",
+    "description": "Pill compatta rounded-square (radius 8) composta da una Label (`typography/body/pMedium`, 14px medium) e — opzionalmente — un Icon a sinistra (20×20) e/o un Dismiss outlet a destra (X, 20×20). 4 `State` (Default, Pressed, Selected, Disabled) × 2 `Size` (md 40h, sm 32h) = 8 combinazioni. Border sempre presente tranne in Pressed (durante il touch il bg passa a un verde chiaro e il border scompare). Il Dismiss outlet è disegnato in Figma SOLO per le varianti Selected e Disabled — non per Default o Pressed.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "filter-tag",
+      "dismissable-active-filter",
+      "category-toggle",
+      "compact-selectable",
+      "tag-display"
+    ],
+    "requiredProps": ["label", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "filter-chip-toggle",
+        "description": "Chip in `State=Default` che diventa `Selected` quando tappato. Pattern per filtri multi-select (es. filtrare risultati per categoria, tag prodotto). Lo Selected ha bg light-green + border brand. Tipicamente in cluster — vedere Chip Navigation.",
+        "composition": "<Chip size=\"sm\" label=\"Calcio\" state={isActive ? 'Selected' : 'Default'} onPress={toggle} />"
+      },
+      {
+        "name": "active-filter-with-dismiss",
+        "description": "Chip in `Selected` con Dismiss outlet visibile (`showDismissableOutlet=true`): tap sulla X rimuove il filtro attivo, tap sul resto del chip (o no action) lascia il filtro attivo. Pattern canonico per riga di filtri attivi sopra una lista filtrata.",
+        "composition": "<Chip size=\"sm\" label=\"Calcio\" state=\"Selected\" showDismissableOutlet onDismiss={removeFilter} />"
+      },
+      {
+        "name": "chip-with-icon",
+        "description": "Chip con `showIcon=true` per aggiungere supporto visivo al significato della label (es. icona sport accanto a 'Calcio', icona valuta accanto a 'EUR'). L'icona è 20×20, a sinistra della label.",
+        "composition": "<Chip size=\"md\" label=\"Calcio\" icon={<IconSoccer />} showIcon onPress={toggle} />"
+      },
+      {
+        "name": "disabled-not-yet-available",
+        "description": "Chip in `State=Disabled` quando l'opzione esiste ma non è attivabile (es. filtro che richiede dati non ancora caricati). Visualmente smorzato (token `*/disabled` per bg/border/text); il Dismiss outlet può rimanere visibile se la chip era già attiva e ora è diventata disabilitata.",
+        "composition": "<Chip size=\"sm\" label=\"Premium\" state=\"Disabled\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "dismiss-outlet-on-default-or-pressed",
+        "reason": "Il Dismiss outlet (X) è disegnato in Figma SOLO nelle varianti Selected e Disabled, non in Default o Pressed. Significato semantico: la X serve a 'rimuovere/disattivare' qualcosa che è attivo (Selected) o congelato (Disabled); non ha senso in un chip non ancora attivato (Default) né durante un touch (Pressed).",
+        "alternative": "Mostrare il Dismiss outlet solo quando lo State è Selected o Disabled. Per le altre State il tap sull'intera chip è già un'azione (toggle), non serve una X separata."
+      },
+      {
+        "scenario": "long-multiword-label",
+        "reason": "La Label è `whitespace-nowrap` 14px medium. Con padding-h 12 (md) o 8 (sm) e altezza fissa, label lunghe fanno crescere la chip a dismisura, rompono il ritmo di un cluster e — in cluster scrollabili — aumentano il tempo di scroll.",
+        "alternative": "Mantenere la label a 1-2 parole brevi (es. 'Calcio', 'Promo', 'Live'). Per testi più lunghi usare Card o Listing Item."
+      },
+      {
+        "scenario": "chip-as-primary-cta",
+        "reason": "Il Chip ha bg chiaro + border + label medium (non bold): è un'affordance a bassa enfasi pensata per scelte secondarie/filtri. Usarlo come CTA primaria ('Conferma', 'Salva') sotto-comunica l'importanza dell'azione e l'utente non lo riconosce come azione da fare.",
+        "alternative": "Per azioni primarie usare Button (variante solid/primary). Riservare Chip a filtri, toggle, tag selezionabili."
+      },
+      {
+        "scenario": "chip-without-cluster-or-context",
+        "reason": "Una singola chip isolata in mezzo a una pagina sembra un elemento smarrito: il pattern visivo del chip presuppone un set (filtri, tag, scelte) o un contesto contiguo (es. dentro a una card che spiega cosa la chip rappresenta).",
+        "alternative": "Pensare Chip in cluster (Chip Navigation, gruppi di filtri) o dentro a un Form Field / Listing Item. Per un singolo trigger isolato usare Button o Button Icon."
+      },
+      {
+        "scenario": "chip-for-binary-toggle-without-clear-state",
+        "reason": "Senza Dismiss outlet e con il solo passaggio Default → Selected, alcuni utenti faticano a distinguere se la chip è 'attiva' o no (la differenza è bg light-green vs bianco, sottile). Senza il segnale del dismiss outlet, lo Selected può sembrare semplice hover.",
+        "alternative": "Per filtri attivi mostrare il Dismiss outlet (X) — è il segnale più forte di 'questo filtro è attivo, premi X per toglierlo'. Per chip puramente decorative (tag display non interattivo) considerare l'uso di Badge Default o un componente non-interattivo."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Icon": {
+        "required": false,
+        "description": "Icona 20×20 a sinistra della Label, sostituibile via prop `icon`. Controllata da `showIcon` (default false in Default/Pressed, ma può essere abilitata in tutte le State). Il colore dell'icona segue il token `chip/color/icon/{default|pressed|selected|disabled}` (in Pressed/Default condividono lo stesso colore testo)."
+      },
+      "Label": {
+        "required": true,
+        "description": "Testo della chip, single-line `whitespace-nowrap`. Tipografia `typography/body/pMedium` (14px medium, NON bold come altri chip-like). Colore auto-derivato dallo State: `chip/color/text/{default|pressed|selected|disabled}`. Gap fra Icon e Label = token `chip/size/{md|sm}/gap` (8 in md, 4 in sm)."
+      },
+      "DismissOutlet": {
+        "required": false,
+        "description": "Icona X (`icon / Generic / x-close`) 20×20 a destra, controllata da `showDismissableOutlet`. Disegnata in Figma SOLO per le varianti `State=Selected` e `State=Disabled` (non per Default o Pressed). Tap sulla X esegue un callback di dismiss separato dal tap sull'intera chip — il consumer gestisce i due eventi distinti."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Chip Navigation", "Filter", "Form Field", "Listing"],
+    "parentConstraints": [
+      "Pensato per essere parte di un cluster (Chip Navigation per scrollable row, Filter per pannello filtri). Usabile anche standalone, ma il pattern visivo brilla in gruppi che permettono di scansionare/togglerare più chip."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed", "selected", "disabled"],
+    "interactions": {
+      "tap": "Tap sull'intera chip esegue `onPress`. Durante il touch passa visivamente a `State=Pressed`: bg da `chip/color/bg/default` a `chip/color/bg/pressed` (verde chiaro) e — peculiarità — il border scompare. Al rilascio, il consumer decide il nuovo State (tipicamente Selected per pattern toggle).",
+      "tap-dismiss": "Solo nelle varianti Selected e Disabled: tap sul Dismiss outlet (X) esegue un callback separato (`onDismiss`) — tipicamente rimuove il filtro/tag attivo. Il consumer deve gestire i due tap (chip vs X) come eventi distinti.",
+      "disabled": "In `State=Disabled` il chip non è tappabile. bg al token `chip/color/bg/disabled`, border `chip/color/border/disabled`, text e icon ai token `*/disabled`. Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` + `accessibilityTraits` include `.notEnabled`."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "button con `selected` quando attivo (su iOS `accessibilityTraits = [.button, .selected]` per State=Selected; su Android `Toggleable` / `Role.Checkbox` per Compose se il chip è multi-select toggleable; semplice `Role.Button` se è puramente azione). Per il pattern filter-chip-with-dismiss, il Dismiss outlet (X) va esposto come elemento accessibile separato con `accessibilityLabel = 'Rimuovi {label}'`.",
+    "screenReader": "Per State=Default/Selected: 'Label, [selezionato,] pulsante'. Per State=Disabled: '+ non disponibile'. Quando il Dismiss outlet è visibile, lo screen reader deve poterlo raggiungere come elemento successivo nell'ordine accessibilità (es. 'Rimuovi Calcio, pulsante'). Per cluster di chip filter, esplicitare nel container l'hint 'Tap per attivare/disattivare il filtro' per non far credere che la selezione sia esclusiva.",
+    "focusManagement": "Focusable in tutti gli State tranne Disabled. Il Dismiss outlet è un elemento focusable distinto: dopo la chip, il focus va sulla X (se visibile), poi sul successivo elemento del flusso.",
+    "touchTarget": "Md (40h) sopra-soglia (44pt iOS / 48dp Android — borderline su iOS). Sm (32h) SOTTO-soglia: per Size=sm in contesti critici, estendere l'hit area del wrapper a un'altezza visibile maggiore tramite padding del container parent. Il Dismiss outlet (20×20) è anch'esso sotto-soglia: prendere in considerazione che la X può essere difficile da centrare.",
+    "wcag": "AA — lo Selected è comunicato sia da colore (bg light-green, border brand) sia da semantica (`accessibilityTraits=selected`): per chi non distingue il verde, l'accessibility trait è il fallback. Il Dismiss outlet (X) è una forma riconoscibile universalmente, non solo-colore."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["chip", "filter chip", "tag", "selectable pill", "dismissable", "filtro chip"],
+    "context": "Usa Chip come elemento compatto selezionabile/toggleable per filtri, tag, scelte secondarie. 2 `Size`: md (40h) default, sm (32h) per contesti densi (ma attenzione al touch target sotto-soglia). 4 `State`: Default → Pressed durante touch → Selected quando attivo → Disabled quando non attivabile. Il Dismiss outlet (X) è DISEGNATO in Figma solo per Selected e Disabled — non aggiungerlo a Default/Pressed. Pensato per cluster (Chip Navigation, Filter), non per uso standalone in mezzo a una pagina. Per CTA primario usare Button, non Chip."
   },
+
   "rationale": {
     "designDecisions": ""
   }

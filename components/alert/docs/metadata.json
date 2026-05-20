@@ -1,42 +1,159 @@
 {
   "slug": "alert",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6608:11109",
+    "ios": "6608:11109"
+  },
+  "figmaLayouts": {
+    "sticky": "6608:11109",
+    "inline": "6608:11431"
+  },
+
   "component": {
     "name": "Alert",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Componente di feedback all'utente, disponibile in due layout (sticky, inline) e quattro state semantici (Error, Warning, Success, Info). Ogni layout ha due Type di densità (Default = Title + Paragraph + Action opzionale; Compact = single-line con solo Paragraph, più Action solo nel layout inline) e tre Size (md, sm, xs). Sticky è full-bleed con border-bottom e dismiss (X) sempre presente, pensato per essere ancorato a un bordo dello schermo; inline è un blocco con border completo e radius 8px che vive nel flusso del contenuto, senza dismiss.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
+    "useCases": [
+      "error-feedback",
+      "warning-message",
+      "success-confirmation",
+      "info-notice",
+      "validation-feedback",
+      "system-status"
+    ],
     "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "commonPatterns": [
+      {
+        "name": "error-feedback-sticky",
+        "layout": "sticky",
+        "description": "Errore che richiede attenzione e blocca o segnala una condizione globale (es. perdita di connessione, errore di pagamento). Sticky perché deve rimanere visibile finché l'utente non lo dismette o la condizione si risolve.",
+        "composition": "<Alert layout=\"sticky\" state=\"Error\" type=\"Default\" size=\"md\" showTitle showParagraph showAction title=\"Errore di pagamento\" paragraph=\"Riprova oppure cambia metodo.\" actionLabel=\"Riprova\" onDismiss={fn} />"
+      },
+      {
+        "name": "validation-error-inline",
+        "layout": "inline",
+        "description": "Errore di validazione localizzato dentro un form o una sezione (es. campo obbligatorio mancante). Inline perché va letto in prossimità del contenuto che lo ha generato.",
+        "composition": "<Alert layout=\"inline\" state=\"Error\" type=\"Default\" size=\"sm\" showTitle showParagraph title=\"Email non valida\" paragraph=\"Inserisci un'email nel formato nome@dominio.it.\" />"
+      },
+      {
+        "name": "success-confirmation-sticky",
+        "layout": "sticky",
+        "description": "Conferma di un'azione completata che l'utente potrebbe aver perso (es. dopo navigazione). Compact perché il messaggio è una sola riga; in sticky Compact non sono ammessi né Title né Action, quindi il testo va nel Paragraph. Auto-dismiss raccomandato dopo ~4 secondi.",
+        "composition": "<Alert layout=\"sticky\" state=\"Success\" type=\"Compact\" size=\"sm\" showParagraph paragraph=\"Ordine inviato\" onDismiss={fn} autoDismissMs={4000} />"
+      },
+      {
+        "name": "warning-inline",
+        "layout": "inline",
+        "description": "Avviso non bloccante che precede un'azione potenzialmente non desiderata (es. 'questa modifica non è reversibile') o segnala un cambio di stato (es. 'questo ordine è in attesa').",
+        "composition": "<Alert layout=\"inline\" state=\"Warning\" type=\"Default\" size=\"md\" showTitle showParagraph title=\"Azione irreversibile\" paragraph=\"Una volta confermata, la modifica non potrà essere annullata.\" />"
+      },
+      {
+        "name": "info-notice-compact",
+        "layout": "inline",
+        "description": "Informazione neutra che dà contesto su una sezione (es. 'questa lista mostra solo gli ordini degli ultimi 30 giorni'). Compact xs/sm per non rubare spazio. Nel layout inline Compact l'Action è ammessa e si posiziona inline sulla destra della riga.",
+        "composition": "<Alert layout=\"inline\" state=\"Info\" type=\"Compact\" size=\"xs\" showParagraph paragraph=\"Mostriamo solo gli ordini degli ultimi 30 giorni.\" />"
+      },
+      {
+        "name": "inline-compact-with-action",
+        "layout": "inline",
+        "description": "Avviso inline single-line con call-to-action accanto al testo (es. 'Nuova versione disponibile · Aggiorna'). Disponibile solo nel layout inline: in sticky Compact l'Action non è ammessa perché lo spazio a destra è occupato dal dismiss.",
+        "composition": "<Alert layout=\"inline\" state=\"Info\" type=\"Compact\" size=\"md\" showParagraph showAction paragraph=\"Nuova versione disponibile\" actionLabel=\"Aggiorna\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "error-for-non-error",
+        "reason": "L'State Error usa palette rossa e icona di pericolo: comunica un problema da risolvere. Applicarlo a messaggi neutri o informativi (es. 'sei stato disconnesso per inattività') genera allarme ingiustificato e svaluta il rosso quando serve davvero.",
+        "alternative": "Per messaggi reversibili o di stato usare Info; per condizioni a rischio (non ancora errore) usare Warning. Riservare Error a errori veri (validation fail, problemi di connessione, fallimento operazione)."
+      },
+      {
+        "scenario": "success-for-warning",
+        "reason": "Mescolare State Success (verde, conferma) con messaggi che invitano cautela manda segnali contrastanti: l'utente legge 'tutto ok' ma il testo dice 'attenzione'. Riduce la fiducia nel sistema di colori.",
+        "alternative": "Se c'è una conseguenza da considerare, usare Warning. Success solo per esiti positivi inequivocabili."
+      },
+      {
+        "scenario": "info-for-blocking-error",
+        "reason": "L'State Info usa palette neutra/blu e icona informativa. Usarlo per errori bloccanti (es. 'impossibile completare il pagamento') sotto-comunica la gravità e l'utente può scrollare oltre senza accorgersene.",
+        "alternative": "Errori bloccanti vanno con State=Error, layout=sticky (così persistono finché l'utente non agisce o dismette)."
+      },
+      {
+        "scenario": "sticky-for-non-blocking-info",
+        "reason": "Il layout sticky overlay sul contenuto e impegna un'area dello schermo finché l'utente non lo dismette. Usarlo per informazioni di basso impatto (es. 'nuova funzionalità disponibile') è invasivo, abbassa la tolleranza dell'utente verso le alert in generale e può oscurare contenuto importante.",
+        "alternative": "Per info contestuali a bassa priorità usare layout=inline, posizionato vicino al contenuto rilevante. Le sticky vanno riservate a messaggi globali o di alta priorità."
+      },
+      {
+        "scenario": "inline-for-async-completion",
+        "reason": "Quando un'azione si completa in modo asincrono (es. upload terminato, ordine processato), l'utente è spesso già scrollato altrove o su un'altra schermata. Un alert inline nella posizione originale non viene visto.",
+        "alternative": "Per feedback di completamento asincrono usare layout=sticky con auto-dismiss (3-5 secondi). Resta visibile sopra il contenuto corrente indipendentemente da dove l'utente sta guardando."
+      },
+      {
+        "scenario": "compact-with-title-or-sticky-compact-with-action",
+        "reason": "In Figma il Type=Compact non ha lo slot Title in nessun layout, e in sticky+Compact non ha neanche lo slot Action (lo spazio a destra è del Dismiss). Forzare un Title o un'Action su un Compact significa rompere il contratto del componente: lo sviluppatore non ha dove disegnarli e finisce per duplicarli nel Paragraph o per uscire dal DS.",
+        "alternative": "Se serve un Title, usare Type=Default. Se serve un'Action in uno sticky, usare Type=Default (Compact sticky è solo single-line + dismiss). In inline+Compact l'Action è invece supportata e si renderizza inline a destra del Paragraph."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
+    "slots": {
+      "Icon": {
+        "required": true,
+        "description": "Icona di stato (auto-derivata da `state`): danger per Error, warning per Warning, check per Success, info per Info. Size 20×20 nelle Size md/sm, 16×16 nella Size xs. Presente in tutte le combinazioni layout × type × size."
+      },
+      "Title": {
+        "required": false,
+        "description": "Titolo dell'alert in tipografia body/pbold (Roboto Bold 14px su md/sm, 12px su xs). Controllato da `showTitle`. Disponibile solo con Type=Default (sia sticky che inline); negli Type=Compact il Title non è presente nello slot tree Figma — usare il Paragraph come contenuto principale."
+      },
+      "Paragraph": {
+        "required": false,
+        "description": "Descrizione dell'alert in tipografia body/caption (Roboto Regular 12px). Controllato da `showParagraph`. In Type=Default è multilinea con go-a-capo automatico; in Type=Compact è single-line (allineato verticalmente al center) ed è di fatto il testo principale dell'alert visto che Title non esiste. Almeno uno tra Title e Paragraph deve essere visibile per dare significato all'alert."
+      },
+      "Action": {
+        "required": false,
+        "description": "Link di azione opzionale (es. 'Riprova', 'Apri impostazioni'). Tipografia interaction/link (Roboto Bold 14px sottolineato). Controllato da `showAction`. Disponibilità per combinazione (da Figma): sticky+Default sì (posizionato sotto il Body), sticky+Compact NO (lo slot non esiste, lo spazio a destra è occupato dal Dismiss), inline+Default sì (sotto il Body), inline+Compact sì (inline sulla destra della riga, accanto al Paragraph)."
+      },
+      "Dismiss": {
+        "required": false,
+        "description": "Icon Button (X) di dismiss. Presente SOLO nel layout `sticky`, sempre — sia in Default sia in Compact: il layout sticky è sempre dismissibile. Posizione: in Type=Default è ancorato in alto a destra (top/right 4px in md/sm, 0/0 in xs); in Type=Compact è ancorato a destra centrato verticalmente. Nel layout `inline` lo slot Dismiss non esiste e l'alert non è dismissibile dall'utente — si chiude solo per logica del consumer (es. quando l'errore di validazione viene risolto)."
+      }
+    },
+    "nestedComponents": ["Icon", "Link", "Icon Button"],
+    "commonPartners": ["Form", "Page", "Bottom Sheet", "Modal"],
     "parentConstraints": []
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-dismiss": "Tap sull'Icon Button di dismiss (solo layout=sticky, in entrambi Type=Default e Type=Compact) chiude l'alert. Idealmente animazione di slide-out o fade verso l'alto/basso a seconda della posizione di ancoraggio dello sticky.",
+      "tap-action": "Tap sul Link di azione (se presente) esegue il callback associato. L'alert non si chiude automaticamente al tap del link: la chiusura è una decisione esplicita del consumer in base al risultato dell'azione. La posizione del link dipende da layout × type: sotto il Body in Default (sticky e inline), inline a destra del Paragraph in inline+Compact, assente in sticky+Compact."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "Alert con state Error o Warning: VoiceOver `UIAccessibilityTraitNone` + announcement via `UIAccessibilityPostNotification(.announcement, …)` (iOS) o `AccessibilityEvent.TYPE_ANNOUNCEMENT` (Android), così lo screen reader interrompe per leggere immediatamente. Alert con state Info o Success: ruolo `status` (politeness `polite`), che attende il completamento della lettura corrente.",
+    "screenReader": "L'annuncio segue il pattern '<state>, <title>, <paragraph>, <action label>'. Es.: 'Errore. Pagamento fallito. Riprova oppure cambia metodo. Pulsante Riprova'. Il dismiss button espone un accessibilityLabel localizzato ('Chiudi avviso' / 'Dismiss alert').",
+    "focusManagement": "Sticky: quando l'alert appare in risposta a un'azione critica (Error), spostare l'accessibility focus sull'alert (iOS: `UIAccessibility.post(.layoutChanged, argument: alertView)`; Android: `requestAccessibilityFocus()`). Per Info/Success non spostare il focus, lascia che l'annuncio assertive/polite faccia il suo lavoro. Inline: mai spostare il focus — l'utente di screen reader incontrerà l'alert nel normale flusso di lettura della sezione.",
+    "touchTarget": "Sticky dismiss button: 32×32 con padding interno, sopra il minimo 44pt iOS / 48dp Android grazie all'hit area estesa di 4px sui lati (top-right corner 4/4 offset). Action link: hit area conforme grazie al padding verticale del Body.",
+    "dynamicType": "Tipografie body/pbold (14px) e body/caption (12px) scalano con Dynamic Type / Font Scale. Su font scale grandi il paragraph va a capo grazie a `word-break: break-word`; l'altezza dell'alert cresce per accogliere il testo (l'alert non tronca mai contenuto).",
     "wcag": "AA"
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["alert", "notification", "feedback", "toast", "banner", "snackbar", "validation", "errore", "avviso", "successo", "info"],
+    "context": "Scegli prima il LAYOUT in base alla persistenza richiesta: `sticky` per messaggi globali, asincroni o critici che devono restare visibili anche durante scroll/navigazione locale (sempre dismissibile via X); `inline` per messaggi contestuali a una sezione o a un campo form, leggibili nel flusso di lettura (mai dismissibile dall'utente). Scegli poi lo STATE in base alla semantica: `Error` per errori veri (bloccanti, validation fail, problemi di connessione), `Warning` per avvisi non bloccanti che invitano cautela, `Success` per conferme positive inequivocabili, `Info` per messaggi neutri/contestuali. La SIZE segue la quantità di testo: md per messaggi con title+paragraph+action, sm per messaggi più brevi, xs per note compatte (icona 16px). Il TYPE Compact è single-line e omette sempre il Title: in sticky+Compact omette anche l'Action (solo Paragraph + Dismiss), in inline+Compact l'Action è ammessa e si posiziona inline a destra del Paragraph. Se serve un'Action in uno sticky, usare Type=Default."
   },
+
   "rationale": {
     "designDecisions": ""
   }

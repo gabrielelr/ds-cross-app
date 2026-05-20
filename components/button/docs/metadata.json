@@ -1,42 +1,134 @@
 {
   "slug": "button",
   "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "status": "full",
+
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "5473:10855",
+    "ios": "5473:10855",
+    "ios-liquid-glass": "8354:2516"
+  },
+
   "component": {
     "name": "Button",
     "category": "atoms",
-    "description": "",
+    "description": "Elemento interattivo per attivare azioni. Le varianti Figma sono organizzate su quattro assi: Appearance (Neutral, Inverse, Brand, Accent, Danger), Hierarchy (Primary, Secondary, Ghost), Size (md, sm), State (Default, Pressed, Disabled).",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
+    "useCases": [
+      "primary-action",
+      "secondary-action",
+      "destructive-action",
+      "form-submission"
+    ],
     "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "commonPatterns": [
+      {
+        "name": "primary-brand-cta",
+        "description": "Azione principale di brand della schermata (es. 'Conferma', 'Continua', 'Acquista').",
+        "composition": "<Button appearance=\"Brand\" hierarchy=\"Primary\" size=\"md\">Conferma</Button>"
+      },
+      {
+        "name": "primary-neutral-action",
+        "description": "Azione principale neutra, quando il contesto non richiede l'accento brand (es. 'Salva', 'Applica' in flussi tecnici o di impostazioni).",
+        "composition": "<Button appearance=\"Neutral\" hierarchy=\"Primary\" size=\"md\">Salva</Button>"
+      },
+      {
+        "name": "secondary-alternative",
+        "description": "Azione alternativa o di annullamento accanto a una Primary (es. 'Annulla', 'Indietro', 'Non ora').",
+        "composition": "<Button appearance=\"Neutral\" hierarchy=\"Secondary\" size=\"md\">Annulla</Button>"
+      },
+      {
+        "name": "ghost-low-emphasis",
+        "description": "Azione contestuale a basso impatto visivo, tipicamente inline o in toolbar (es. 'Salta', 'Più tardi', 'Mostra altro').",
+        "composition": "<Button appearance=\"Neutral\" hierarchy=\"Ghost\" size=\"sm\">Mostra altro</Button>"
+      },
+      {
+        "name": "destructive-primary",
+        "description": "Azione distruttiva principale che rimuove dati o stato utente in modo irreversibile (es. 'Elimina account', 'Cancella ordine').",
+        "composition": "<Button appearance=\"Danger\" hierarchy=\"Primary\" size=\"md\">Elimina</Button>"
+      },
+      {
+        "name": "inverse-on-dark",
+        "description": "Button su sfondo scuro (hero scuri, modal con overlay scuro, sezioni in dark surface), per mantenere contrasto e leggibilità.",
+        "composition": "<Button appearance=\"Inverse\" hierarchy=\"Primary\" size=\"md\">OK</Button>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "multiple-primary-on-screen",
+        "reason": "La Hierarchy `Primary` esprime l'azione principale della schermata; presentarne più di una nello stesso viewport diluisce la gerarchia visiva, mette l'utente di fronte a una scelta ambigua e abbassa il tap rate sull'azione che ci si aspetta sia quella prevalente.",
+        "alternative": "Un solo button `Primary` per schermata. Le azioni concorrenti vanno con `Hierarchy=Secondary`; quelle contestuali a basso impatto con `Hierarchy=Ghost`."
+      },
+      {
+        "scenario": "secondary-for-primary-action",
+        "reason": "La Hierarchy `Secondary` è progettata per non competere visivamente con la Primary: usarla per l'azione che vogliamo l'utente compia rende il flusso meno guidato e riduce la probabilità che l'azione venga eseguita.",
+        "alternative": "Promuovere l'azione principale a `Hierarchy=Primary`; tenere `Secondary` per dismiss, alternative o azioni di pari rilevanza affiancate a una Primary."
+      },
+      {
+        "scenario": "danger-for-non-destructive-action",
+        "reason": "L'Appearance `Danger` comunica un'azione irreversibile o distruttiva (rosso = pericolo). Applicarla ad azioni standard (es. 'Logout', 'Annulla iscrizione' quando reversibile, 'Chiudi') genera allarme ingiustificato e a lungo termine svaluta il segnale rosso quando serve davvero.",
+        "alternative": "Riservare `Danger` ad azioni che cancellano dati utente, rompono uno stato, o sono irreversibili. Per azioni di uscita reversibili usare `Neutral` o `Brand` a seconda del contesto."
+      },
+      {
+        "scenario": "ghost-as-primary",
+        "reason": "La Hierarchy `Ghost` ha sfondo trasparente e contorno minimale: visivamente emerge poco e in molti contesti viene scambiata per un link testuale o ignorata. Usarla per l'azione principale fa letteralmente perdere il button nella pagina.",
+        "alternative": "L'azione principale richiede `Primary`. `Ghost` resta per azioni contestuali a basso impatto (es. 'Salta', 'Più tardi', 'Mostra altro') o per gruppi di azioni terziarie in toolbar."
+      },
+      {
+        "scenario": "inverse-on-light-background",
+        "reason": "L'Appearance `Inverse` è disegnata per il contrasto su sfondi scuri (testo chiaro su fondo scuro o viceversa secondo la gerarchia). Su sfondo chiaro il contrasto crolla, il button diventa difficilmente leggibile e si rompono i requisiti WCAG AA.",
+        "alternative": "`Inverse` solo su sfondi scuri (hero in dark surface, modal con overlay, dark mode). Su sfondi chiari usare `Neutral`."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
+    "slots": {
+      "Text": {
+        "required": true,
+        "description": "Label del button in tipografia interaction/button (Roboto Bold 14px, line-height 14px)"
+      },
+      "Left Icon": {
+        "required": false,
+        "description": "Icona opzionale alla sinistra del label (controllata da showLeftIcon in Figma). Size 24×24px."
+      },
+      "Right Icon": {
+        "required": false,
+        "description": "Icona opzionale alla destra del label (controllata da showRightIcon in Figma). Size 24×24px."
+      }
+    },
+    "nestedComponents": ["Icon Placeholder"],
     "commonPartners": [],
     "parentConstraints": []
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed", "disabled"],
+    "interactions": {
+      "tap": "Tap sull'intera area del button esegue l'azione associata. Il button in stato `disabled` non risponde al tap."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "UIAccessibilityTraitButton (iOS) / role=\"button\" (Android). Lo stato disabled aggiunge UIAccessibilityTraitNotEnabled (iOS) / setEnabled(false) (Android).",
+    "screenReader": "VoiceOver e TalkBack annunciano il label del button seguito dal trait button. Quando disabled, viene aggiunto l'annuncio 'disattivato' / 'dimmed'.",
+    "focusManagement": "Il button è raggiungibile via swipe (VoiceOver) / swipe + Tab (TalkBack); il focus accessibility resta sul button dopo l'attivazione finché non avviene una transizione di schermata o un cambio di stato esplicito.",
+    "touchTarget": "Size md ha altezza 48px (sopra Material 48dp / iOS HIG 44pt); size sm ha altezza 32px e va usato solo quando il button è inline con altri elementi compatti e l'hit area reale (incluso padding del contenitore) raggiunge comunque 44pt/48dp.",
+    "dynamicType": "Il label scala con Dynamic Type (iOS) e Font Scale (Android). Su scale font molto grandi, il label può andare a capo se il contenitore lo permette; altrimenti il button mantiene min-width 96px e l'eccesso va in overflow.",
     "wcag": "AA"
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["button", "cta", "action", "tap", "submit", "trigger", "bottone", "pulsante"],
+    "context": "Scegliere Button per ogni azione tappabile che esegue un comando (non navigazione testuale). Mapping consigliato: Appearance Brand per CTA primarie del prodotto, Neutral per azioni standard, Accent per azioni secondarie evidenziate, Danger per azioni distruttive, Inverse per button su sfondi scuri. Hierarchy Primary = azione principale della schermata, Secondary = alternative, Ghost = azione contestuale a basso impatto visivo. La platform `ios-liquid-glass` ha un set ridotto di varianti (solo Brand e Danger, solo Primary e Secondary, niente Ghost, niente Pressed/Disabled come variant esplicite) — su iOS Liquid Glass Pressed e Disabled sono gestiti a livello di sistema."
   },
+
   "rationale": {
     "designDecisions": ""
   }

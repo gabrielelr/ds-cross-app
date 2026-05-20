@@ -1,42 +1,112 @@
 {
   "slug": "tab-navigation",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "8211:717722",
+    "ios": "8211:717722"
+  },
+
   "component": {
     "name": "Tab Navigation",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Riga di tab orizzontali per raggruppare contenuto correlato dentro la stessa sezione (es. switchare tra 'In corso' / 'Completati' / 'Annullati' della stessa lista). Composta da N **Tab Navigation Item** allineati orizzontalmente — text-only, senza card/bg, con un sottile bottom-border (2px) visibile solo sull'item selezionato. A differenza di Page Navigation (top-level con Button Square cards), Tab Navigation è il pattern secondario/contestuale che vive dentro una sezione. 4 varianti su 2 dimensioni: `Size` (md 56h, sm 32h) × `Scroll Overflow` (True items shrink-0 con scroll orizzontale / False items `flex: 1` distribuiti nel viewport). Tre-way naming: slug `tab-navigation`, frame Figma 'Tab Navigation', token namespace `navigationTabItem/*` (solo item-level).",
+    "type": "navigation"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "in-section-content-switching",
+      "category-views-within-list",
+      "sub-tabs",
+      "filtered-views-of-same-data"
+    ],
+    "requiredProps": ["items", "selectedKey", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "list-status-tabs-fit",
+        "description": "Variante `Size=md, Scroll Overflow=False`: poche tab (2-4) che si distribuiscono nel viewport con `flex: 1`. Tipico per filtrare una lista per stato (es. 'In corso' / 'Completati' / 'Annullati'). Size md (56h) è il default leggibile.",
+        "composition": "<TabNavigation size=\"md\" items={[inCorso, completati, annullati]} selectedKey=\"inCorso\" onChange={setStatus} />"
+      },
+      {
+        "name": "many-categories-scrollable",
+        "description": "Variante `Size=md, Scroll Overflow=True`: molte categorie/viste correlate (5+) di una stessa lista, scroll orizzontale. Item con `shrink-0` mantengono il loro padding interno e la riga eccede il viewport.",
+        "composition": "<TabNavigation size=\"md\" scrollOverflow items={categories} selectedKey=\"all\" onChange={setCategory} />"
+      },
+      {
+        "name": "compact-sub-tabs",
+        "description": "Variante `Size=sm` (32h): tab compatte in contesti già densi (es. dentro a una card, sotto a un header già ricco di info). Riduce la presenza visiva pur mantenendo la struttura tab.",
+        "composition": "<TabNavigation size=\"sm\" items={subtabs} selectedKey=\"overview\" onChange={setView} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "tab-navigation-as-top-level",
+        "reason": "Tab Navigation è progettata come pattern secondario/contestuale dentro una sezione: l'unica differenziazione visiva del Selected è un bottom-border sottile, e l'item non ha card né bg distintivo. Usarla come navigazione top-level di pagina sottocomunica il salto di sezione e fa sembrare che l'utente stia 'rimanendo dov'è'.",
+        "alternative": "Per top-level (switch tra aree principali della pagina) usare Page Navigation — i Button Square cards con icona opzionale e State Selected pieno comunicano meglio il salto di sezione."
+      },
+      {
+        "scenario": "no-selected-item",
+        "reason": "Tab Navigation comunica la vista corrente tramite il bottom-border del Selected. Senza nessun item selezionato la riga sembra 'inattiva' e l'utente perde il contesto di quale tab è attivo.",
+        "alternative": "Sempre 1 item in Selected. Se non c'è una vista 'default', sceglierne una di partenza significativa (es. la prima, la 'tutto', la più frequentemente usata)."
+      },
+      {
+        "scenario": "multiple-selected-items",
+        "reason": "Tab Navigation è single-choice: una sola tab è 'quella attualmente vista'. Il pattern visivo border-bottom con più item selezionati confonde — l'utente non sa più qual è la vista corrente.",
+        "alternative": "Sempre esattamente 1 item Selected. Per pattern multi-select (filtri categoriali simultanei) usare Square Button Group o Chip Filter, non Tab Navigation."
+      },
+      {
+        "scenario": "scroll-overflow-false-with-many-items",
+        "reason": "Con `Scroll Overflow=False` gli item si distribuiscono con `flex: 1`. Con troppi item le label si comprimono e devono troncare/wrappare — perdono leggibilità e la riga sembra rotta.",
+        "alternative": "Per 2-4 tab usare `Scroll Overflow=False`. Per 5+ tab usare `Scroll Overflow=True` (scroll orizzontale con item a larghezza naturale)."
+      },
+      {
+        "scenario": "long-multiword-labels",
+        "reason": "Le label sono single-line `whitespace-nowrap` in `typography/body/pBold` (14px) con padding orizzontale fisso (24 in md, 16 in sm). Label lunghe fanno crescere l'item, e con `Scroll Overflow=False` riducono lo spazio per gli altri item; con `Scroll Overflow=True` aumentano il tempo di scroll.",
+        "alternative": "Mantenere label brevi (1-2 parole, es. 'In corso', 'Tutti', 'Bonus'). Per label più articolate o gerarchiche, considerare un menu segmentato o un dropdown."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Items": {
+        "required": true,
+        "description": "Array di Tab Navigation Item allineati orizzontalmente. Ogni item è semplicemente una label centrata (token `typography/body/pBold`, color `navigationTabItem/color/text`) sopra a un bottom-border (2px) reso visibile solo quando l'item è Selected. Single-choice: un solo item Selected alla volta. Con `Scroll Overflow=False` ogni item ha `flex: 1` (distribuzione nel viewport); con `Scroll Overflow=True` ogni item è `shrink-0` (mantiene padding interno, riga scrollabile)."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Page", "Listing", "Drawer"],
+    "parentConstraints": [
+      "Vive dentro una sezione/pagina, sopra al contenuto che organizza. Tipicamente sotto l'Header o sotto al titolo della sezione, sopra a una Listing o a un blocco di contenuto correlato."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-item": "Tap su una tab non-Selected esegue `onChange` con la key dell'item: il bottom-border 2px passa al nuovo item, il precedente perde il border. Il contenuto sotto la tab bar deve essere swap-ato dal consumer (Tab Navigation non gestisce il contenuto sottostante, solo la sua navigazione).",
+      "horizontal-scroll": "Con `Scroll Overflow=True`, la riga è scrollabile orizzontalmente con gesture nativa. Quando la tab Selected cambia da un tap esterno, lo scroll dovrebbe portarla in vista (snap o smooth-scroll)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "tablist (Tab Navigation è semanticamente un set di tab) con item interni `tab`. Su iOS: container con `accessibilityElements` ordinati, ogni item con `accessibilityTraits = [.button, .selected]` quando attivo; su Android: `Role.TabRow` per Compose, ogni item `Role.Tab` con `selected=true`.",
+    "screenReader": "Lo screen reader annuncia il container come 'Tab' / 'Selettore vista' e per ogni item legge 'Label, [selezionato,] tab, [posizione di N]'. Per Tab Navigation lo Selected è comunicato solo da bordo (2px verde) — è importante che `accessibilityTraits=selected` sia sempre impostato, perché un utente con daltonismo o screen reader non distinguerebbe il bordo dal niente.",
+    "focusManagement": "Il focus iniziale va sull'item Selected. Movimento focus orizzontale con gesture standard di TalkBack/VoiceOver. Su riga scrollable, lo scroll segue il focus.",
+    "touchTarget": "`Size=md` (56h) sopra-soglia su entrambe le piattaforme. `Size=sm` (32h) è sotto-soglia (44pt iOS / 48dp Android): valutare se aumentare l'hit area tramite padding del wrapper, oppure usare sm solo dove l'accesso preciso è meno critico (sub-tab in contesto già denso).",
+    "wcag": "AA — IMPORTANTE: lo Selected è comunicato solo da una linea sottile colorata. Per utenti con visione ridotta o daltonismo questa è un'affordance debole — il `accessibilityTraits=selected` (per screen reader) e il bold della tipografia (sempre presente, non differenza visiva) sono i fallback. Se il design viene esteso in futuro, considerare di rinforzare lo Selected anche con peso o background."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["tab navigation", "tabs", "sub-tabs", "view switcher", "in-section navigation", "tab bar contestuale"],
+    "context": "Usa Tab Navigation per organizzare contenuto correlato DENTRO la stessa sezione/pagina (es. switchare fra stati di una lista, viste di una stessa entità, sub-sezioni). NON per navigazione top-level di pagina (per quello c'è Page Navigation). Single-choice: una sola tab Selected. Scegli `Scroll Overflow` in base al numero di item: 2-4 → False (distribuzione viewport); 5+ → True (scroll orizzontale). Scegli `Size` in base alla densità del contesto: md (56h) default, sm (32h) per sub-tab in contesti già densi. Mantieni label brevi (1-2 parole). Tab Navigation non gestisce il contenuto sotto la tab: solo cambia la `selectedKey` via `onChange`, il consumer swap-a il contenuto."
   },
+
   "rationale": {
     "designDecisions": ""
   }

@@ -1,43 +1,113 @@
 {
   "slug": "segmented-control",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "8433:3394",
+    "ios": "6064:85468",
+    "ios-liquid-glass": "8433:3404"
+  },
+
   "component": {
     "name": "Segmented Control",
-    "category": "atoms",
-    "description": "",
+    "category": "molecules",
+    "description": "Set orizzontale di 2-5 segmenti pill, ognuno dei quali agisce come un button: usato per FILTRARE elementi della pagina (es. filtrare una lista per categoria/stato). Single-choice: un solo segmento è Selected in un dato momento (pill bianca sopra il bg grigio del container). 3 varianti OS-specifiche esplicitamente disegnate in Figma — `OS=ios`, `OS=android`, `OS=iosLiquidGlass` — con altezze e bg adattati alla piattaforma. Tutti i segmenti hanno `flex: 1` (distribuiti nel container, niente scroll overflow). Tre-way naming: slug `segmented-control`, frame Figma 'Segmented Control Navigation', token namespace `segmentedControl/*` per il container e `segmentedControlItem/*` per gli item.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "page-filter",
+      "list-filter-by-category",
+      "view-mode-switcher",
+      "binary-choice-filter"
+    ],
+    "requiredProps": ["items", "selectedKey", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "filter-list-by-state",
+        "description": "Segmented Control sopra una lista per filtrarla tra 2-3 stati esclusivi (es. 'Tutti' / 'Aperti' / 'Chiusi'). Single-choice: ogni tap cambia il filtro e ri-renderizza il contenuto sotto.",
+        "composition": "<SegmentedControl items={[tutti, aperti, chiusi]} selectedKey=\"tutti\" onChange={setFilter} />"
+      },
+      {
+        "name": "binary-view-mode",
+        "description": "Caso minimo: 2 segmenti per scegliere fra due viste/modalità mutualmente esclusive (es. 'Lista' / 'Mappa', 'Settimanale' / 'Mensile').",
+        "composition": "<SegmentedControl items={[lista, mappa]} selectedKey=\"lista\" onChange={setViewMode} />"
+      },
+      {
+        "name": "platform-aware-rendering",
+        "description": "Il componente espone visual differenti per piattaforma: su `ios-liquid-glass` il container è 36h con bg translucent (`segmentedControl/color/iosLiquidGlass/bg` = rgba nera 10%), su `ios`/`android` è 48h con bg solido. Il consumer deve scegliere la variante in base al target, oppure delegare a un layer che la sceglie automaticamente.",
+        "composition": "<SegmentedControl os={Platform.OS === 'ios-liquid-glass' ? 'iosLiquidGlass' : 'ios'} items={items} selectedKey={key} onChange={fn} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "segmented-control-as-primary-navigation",
+        "reason": "Segmented Control è progettato per FILTRARE elementi presenti nella pagina, non per navigare fra sezioni o cambiare pagina. Usarlo come navigazione top-level sotto-comunica il salto di contesto: il pill bianco su sfondo grigio segnala 'filtro attivo', non 'sezione corrente'.",
+        "alternative": "Per top-level (cambio di sezione/area) usare Page Navigation. Per switch di vista dentro a una sezione (sub-tab) usare Tab Navigation. Riservare Segmented Control al filtraggio in-pagina."
+      },
+      {
+        "scenario": "too-many-segments",
+        "reason": "Gli item hanno tutti `flex: 1` e sono distribuiti nel container (nessuno scroll overflow): oltre 4-5 segmenti, le label si comprimono e si rendono illeggibili, il pill bianco del Selected diventa piccolo e meno riconoscibile.",
+        "alternative": "Limitarsi a 2-4 segmenti, idealmente 2-3. Per filtri con 5+ valori categoriali usare Filter (componente dedicato) o Square Button Group con scroll overflow."
+      },
+      {
+        "scenario": "long-multiword-labels",
+        "reason": "Le label sono `whitespace-nowrap` 14px bold dentro a item di larghezza variabile (`flex: 1`). Label lunghe forzano l'item a crescere comprimendo gli altri, e a 14px bold con padding minimo diventano illeggibili quando si stringono.",
+        "alternative": "Label brevi (1 parola, max 2). Per nomi più lunghi accorciare (es. 'Conf' invece di 'Configurazione') o passare a un componente diverso (Tab Navigation, Filter)."
+      },
+      {
+        "scenario": "non-exclusive-segments",
+        "reason": "Segmented Control è single-choice per design: l'utente si aspetta che selezionare un segmento ne deselezioni un altro. Usarlo per filtri NON esclusivi (es. selezionare più categorie contemporaneamente) crea attese contrastanti — l'utente tappa per attivare un secondo segmento e vede il primo sparire.",
+        "alternative": "Per filtri multi-select usare Chip Filter, Square Button Group, o un Filter inline. Riservare Segmented Control a scelte esclusive."
+      },
+      {
+        "scenario": "missing-platform-aware-variant",
+        "reason": "Usare la variante `OS=ios` su un device che renderizza in Liquid Glass (o viceversa) rompe la coerenza nativa: il pill solido grigio su iOS Liquid Glass appare 'piatto' rispetto alle altre superfici del sistema, e il translucent di Liquid Glass su iOS classico appare 'sbiadito' rispetto agli sfondi pieni del sistema.",
+        "alternative": "Sceglie sempre la variante coerente con il target di runtime: `OS=ios` per iOS classico, `OS=iosLiquidGlass` quando Liquid Glass è attivo, `OS=android` su Android. Idealmente questa scelta è automatizzata dal layer di rendering del consumer."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Items": {
+        "required": true,
+        "description": "Array di 2-5 Segmented Control Item allineati orizzontalmente, ognuno con `flex: 1` (si distribuiscono uniformemente nel container). Ogni item ha 2 state — Default (no bg, solo label) e Selected (bg=`segmentedControlItem/color/bg`, pill `segmentedControlItem/size/border/radius`=128). Single-choice: un solo item Selected. Typography label: token `typography/body/pBold` (14px), color `segmentedControlItem/color/text`."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Listing", "Search Results Listing", "Filter", "Page"],
+    "parentConstraints": [
+      "Vive dentro una pagina/sezione, tipicamente sopra al contenuto che filtra (una Listing, una grid di card, una tabella). A tutta larghezza del container o ancorato a un margine; non scrollabile."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-item": "Tap su un item non-Selected esegue `onChange` con la key dell'item: l'item tappato passa a Selected (pill bianca), quello prima selezionato torna a Default. Il filtro del contenuto sotto NON è gestito dal componente — il consumer applica il filtro in base alla nuova `selectedKey`."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "tablist con item `tab` (è il pattern semantico più vicino su iOS/Android: gli utenti screen reader hanno aspettative chiare su 'tablist + tab selected'). Su iOS impostare `accessibilityTraits = [.button, .selected]` sull'item Selected e `.button` sugli altri; su Android `Role.Tab` con `selected=true` sull'attivo. Per la sua semantica di filtro, è anche legittimo descriverlo come 'filtro' nell'`accessibilityHint` del container.",
+    "screenReader": "Lo screen reader annuncia 'Label, [selezionato,] pulsante' (o 'tab' a seconda della role scelta). Il container può esporre un `accessibilityLabel` che lo descrive come 'Filtro' per dare contesto sulla funzione.",
+    "focusManagement": "Focusable in `Default` e `Selected`. Movimento focus orizzontale con gesture standard. Il focus iniziale va sull'item Selected.",
+    "touchTarget": "Item interni: 40h (ios/android md, dentro a container 48h con padding 4) o ~28h (iosLiquidGlass, dentro a container 36h con padding 4). 40h è sopra-soglia con cura; 28h è SOTTO-soglia (44pt iOS) — affidarsi al sistema Liquid Glass per il dimensionamento dell'hit area effettiva (depth tap area > visual bounds).",
+    "wcag": "AA — lo Selected è comunicato da un bg pill bianco contrastante sul container grigio. Su iOS Liquid Glass il container è translucent, quindi il contrasto del pill bianco varia col contenuto sotto: in scenari critici considerare un secondo segnale (peso tipografico Selected leggermente più forte, o accessibilityTraits=selected per screen reader come fallback)."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["segmented control", "segment", "pill switcher", "filter switcher", "filtro segmentato", "view toggle"],
+    "context": "Usa Segmented Control per FILTRARE elementi della pagina con una scelta single-choice tra 2-5 opzioni esclusive (es. 'Aperti' / 'Chiusi', 'Lista' / 'Mappa'). NON per navigazione di pagina (per quello c'è Page Navigation o Tab Navigation). NON per filtri multi-select (per quello c'è Chip Filter o Square Button Group). Il componente ha 3 varianti OS-specifiche disegnate esplicitamente in Figma: `OS=ios`, `OS=android`, `OS=iosLiquidGlass` — sceglie la coerente col target di runtime. Label brevi (1 parola). Il filtraggio del contenuto sotto è responsabilità del consumer (in `onChange` rispondere riducendo/riordinando i dati)."
   },
+
   "rationale": {
-    "designDecisions": ""
+    "designDecisions": "- **Tre varianti OS esplicite in Figma**, non subset di una versione 'generale'. La dimensione `OS` (`ios` / `android` / `iosLiquidGlass`) è una proprietà del componente, non un platform-specific Figma file separato come accade per Button Icon. iOS e Android condividono altezza (48) e bg solido (token `segmentedControl/color/{ios|android}/bg`), ma esistono separate per permettere fine-tuning futuro indipendente per piattaforma. iOS Liquid Glass è esplicitamente differente: 36h (più compatta) e bg translucent (token `segmentedControl/color/iosLiquidGlass/bg` con alpha) per integrarsi con il linguaggio Glass del sistema."
   }
 }

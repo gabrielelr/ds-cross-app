@@ -1,42 +1,112 @@
 {
   "slug": "chip-navigation",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6064:85174",
+    "ios": "6064:85174"
+  },
+
   "component": {
     "name": "Chip Navigation",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Riga orizzontale scrollabile di N atomi Chip per navigazione/filtraggio inline leggero. Pensata per filtrare, switchare fra categorie o esplorare contenuto secondario in modo compatto. Ogni chip ha 2 stati (Default / Selected) ed espone icona + label. La riga è sempre potenzialmente scrollable (`overflow-clip` sul container, item `shrink-0`): se gli item entrano nel viewport non si scrolla; se eccedono, scroll orizzontale. Tre-way naming: slug `chip-navigation`, frame Figma 'Chip Navigation', token namespace `navigationChip/*` per il container (solo `gap` e `padding/vertical`) — il resto degli stili viene dall'atomo Chip via `chip/*`.",
+    "type": "navigation"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "category-switching",
+      "inline-filter",
+      "secondary-content-exploration",
+      "compact-navigation"
+    ],
+    "requiredProps": ["items", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "category-single-choice",
+        "description": "Riga di Chip per switchare fra categorie correlate in modo single-choice (es. sotto un Header, 'Tutte' / 'Calcio' / 'Tennis' / 'Basket'). Un solo chip in Selected, tap su un altro sposta la selezione.",
+        "composition": "<ChipNavigation items={categories} selectedKey=\"tutte\" onChange={setCategory} />"
+      },
+      {
+        "name": "inline-multi-filter",
+        "description": "Riga di Chip per filtri inline multi-select (es. 'Promo' / 'Live' / 'Novità' attivabili insieme). Più chip in Selected contemporaneamente. La logica multi/single-choice è responsabilità del consumer — l'atomo Chip e il container Chip Navigation non la impongono.",
+        "composition": "<ChipNavigation items={filters} selectedKeys={selectedSet} onToggle={toggleFilter} />"
+      },
+      {
+        "name": "scrollable-many-categories",
+        "description": "Quando le categorie superano la larghezza del viewport, la riga eccede e scrolla orizzontalmente (`overflow-clip` + `shrink-0` sugli item). Nessuna variante 'Scroll Overflow' da scegliere: è il comportamento default del container.",
+        "composition": "<ChipNavigation items={[c1, c2, c3, c4, c5, c6, c7, c8]} selectedKey=\"c1\" onChange={setCategory} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "chip-navigation-as-top-level",
+        "reason": "Chip Navigation è leggera per design: chip 32h con border sottile, fill chiaro, label medium (non bold). Usarla come navigazione top-level fra aree principali della pagina sotto-comunica il salto di sezione — è pensata per livelli secondari/contestuali.",
+        "alternative": "Per top-level (sezioni principali di una pagina/app) usare Page Navigation. Per switch dentro a una sezione usare Tab Navigation. Riservare Chip Navigation a filtri inline o esplorazione di contenuto secondario."
+      },
+      {
+        "scenario": "chip-navigation-for-primary-actions",
+        "reason": "I chip sono pensati per filtri/switch, non per azioni primarie come 'Conferma', 'Salva'. Il tono visivo a bassa enfasi e la convenzione 'chip = filtro' farebbero passare inosservata un'azione di rilievo.",
+        "alternative": "Per CTA primario usare Button (variante solid/primary). Per azioni di filtraggio aprire un Drawer dedicato con Filter dentro, oppure usare Segmented Control / Square Button Group / Chip Navigation a seconda della densità."
+      },
+      {
+        "scenario": "long-multiword-labels",
+        "reason": "Le label sono `whitespace-nowrap` 14px medium in chip alti 32px con padding-h 8: label lunghe fanno crescere ogni chip a dismisura, aumentano il tempo di scroll e disallineano il ritmo della riga.",
+        "alternative": "Mantenere label brevi (1-2 parole). Per nomi più lunghi (es. 'Tutte le partite di calcio') accorciare ('Calcio') e usare la pagina di destinazione per il contesto esteso."
+      },
+      {
+        "scenario": "no-selected-chip-in-single-choice",
+        "reason": "Quando il pattern è single-choice (es. switch categoria), avere zero chip in Selected lascia l'utente senza contesto di 'dove sono nella categoria'. Diverso dal caso multi-select (filtri opzionali) dove 'nessuno selezionato' significa 'nessun filtro applicato' ed è legittimo.",
+        "alternative": "Per single-choice: garantire sempre un chip Selected (default sensato all'apertura, es. 'Tutte'). Per multi-select: zero selezionati è OK ed è lo stato 'no filter'."
+      },
+      {
+        "scenario": "isolated-single-chip",
+        "reason": "Una sola chip isolata in una riga 'Chip Navigation' sembra un'istanza incompleta del pattern (l'utente si aspetta una scelta multipla). E non sfrutta l'unico vero valore del contenitore: il gap fra item.",
+        "alternative": "Minimo 2 chip nella riga. Per un singolo tag/toggle isolato usare direttamente l'atomo Chip in standalone, non Chip Navigation come wrapper."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Items": {
+        "required": true,
+        "description": "Array di atomi Chip allineati orizzontalmente con gap = token `navigationChip/size/gap` (8). Ogni Chip è `shrink-0` (mantiene la propria larghezza naturale, non si comprime). Lo stato Selected dei chip è gestito dal consumer via prop (single-choice o multi-select). Per gli stati visivi e i token dell'atomo Chip vedere la doc di `chip`."
+      }
+    },
+    "nestedComponents": ["Chip"],
+    "commonPartners": ["Page", "Header", "Listing", "Search Results Listing", "Drawer"],
+    "parentConstraints": [
+      "Vive in modo inline dentro a una pagina/sezione, tipicamente sotto a un Header o sopra a una Listing di contenuto. Padding orizzontale gestito dal parent (il container Chip Navigation ha solo `padding/vertical`, non orizzontale)."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-chip": "Tap su un Chip attiva/disattiva la sua selezione tramite il callback del consumer. Il pattern single-choice vs multi-select è una scelta del consumer (vedere commonPatterns).",
+      "horizontal-scroll": "La riga è scrollabile orizzontalmente con gesture nativa quando gli item eccedono il viewport. Lo scroll è soft (no snap forzato): l'utente può fermarsi a metà di un chip — il pattern lo accetta per natura del 'browsing leggero'."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "Pattern semantico flessibile in base all'uso: per single-choice usare `tablist`/`tab` (come Tab Navigation e Page Navigation); per multi-select usare `group` con `button`/`toggle` (Android `Role.Checkbox` / iOS `accessibilityTraits = [.button, .selected]`). Il container dovrebbe esporre un `accessibilityLabel` che ne chiarisce la funzione (es. 'Categorie' o 'Filtri').",
+    "screenReader": "Lo screen reader legge per ogni chip 'Label, [selezionato,] pulsante'. Importante: quando il pattern è multi-select, esplicitare nello hint del container ('Tap per attivare/disattivare il filtro') per non far credere all'utente che la selezione sia esclusiva.",
+    "focusManagement": "Focusable in `Default` e `Selected`. Su riga scrollable lo scroll segue il focus per mantenere visibile il chip attivo. Movimento focus orizzontale con gesture standard.",
+    "touchTarget": "Chip atom 32h × larghezza variabile. Sotto-soglia (44pt iOS / 48dp Android): valutare di estendere l'hit area tramite container tappabile, oppure ammettere il sotto-soglia in cambio del visual compatto. Vedere le note touchTarget di chip per riferimento.",
+    "wcag": "AA — lo Selected è comunicato da bg + border colorati; per chi non distingue il verde, `accessibilityTraits=selected` è il fallback. Vedere anche le note WCAG dell'atomo Chip."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["chip navigation", "chip row", "filter chips", "category chips", "navigazione chip", "filtro inline"],
+    "context": "Usa Chip Navigation per navigazione/filtraggio inline leggero (filtri, switch categoria, esplorazione contenuto secondario). NON per top-level di pagina (Page Navigation). NON per CTA primario (Button). Single-choice o multi-select è scelta del consumer: il componente non lo impone. Pensato per ≥2 item; per 1 chip standalone usare direttamente l'atomo Chip. La riga scrolla orizzontalmente quando gli item eccedono il viewport, niente variante 'Scroll Overflow' da scegliere. Per design considerations dello stato Selected (contrasto, screen reader fallback) vedere la doc dell'atomo Chip."
   },
+
   "rationale": {
     "designDecisions": ""
   }

@@ -1,42 +1,138 @@
 {
   "slug": "dropdown",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5914:4977",
+    "ios": "5914:4977",
+    "itemsList": "5848:210081"
+  },
+
   "component": {
     "name": "Dropdown",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Input di selezione singola da una lista predefinita: trigger compatto (Dropdown Input) che, al tap, apre un menù a tendina (Dropdown Items List) ancorato sotto. Composto da due frame Figma distinti — l'Input (5 `State` × 2 `OS`, totale 10 varianti) e l'Items List (single-state, contenitore con 2-10 item via prop `showItemN`). Lo `State=Selected` dell'Input non significa 'un item è stato scelto' ma 'la lista è aperta' (border passa al brand-green per segnalare il focus + lista in mostra). Tre namespace token distinti: `dropdown/*` (trigger), `dropdownItem/*` (singolo item della lista), `dropdownItemList/*` (container popover). Differenze OS strutturali: iOS 44h con icona ↕ (chevron-up-down stacked) e label/title interna; Android 56h con icona ▼/▲ (chevron singolo che si gira a aperto/chiuso) e Title visibile sopra l'input.",
+    "type": "input"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "single-select-from-predefined-list",
+      "form-categorical-input",
+      "country-selector",
+      "filter-single-choice",
+      "settings-enum-value"
+    ],
+    "requiredProps": ["items", "value", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "form-single-select",
+        "description": "Dropdown dentro un form per scegliere una singola opzione da una lista chiusa (es. nazione, valuta, lingua). Stato `Default` finché l'utente non tappa; al tap passa a `Selected` (= aperto), si renderizza Dropdown Items List sotto l'input; al tap su un item la lista chiude e il valore tappato sostituisce il placeholder nell'input (torna a `Default`).",
+        "composition": "<Dropdown label=\"Nazione\" placeholder=\"Seleziona\" items={countries} value={selected} onChange={setSelected} />"
+      },
+      {
+        "name": "validation-error",
+        "description": "`State=Error` quando il valore richiesto manca al submit di un form (es. 'Seleziona una nazione' obbligatorio). Border e text/label passano al token error (rosso). L'error message va comunicato a parte sotto l'input (responsabilità del Form Field, non del Dropdown).",
+        "composition": "<Dropdown label=\"Nazione\" value={null} error errorMessage=\"Devi selezionare una nazione\" />"
+      },
+      {
+        "name": "disabled-conditional",
+        "description": "`State=Disabled` quando l'opzione esiste ma non è ancora attivabile (es. 'Provincia' disabilitato finché non è stata scelta una Nazione). Bg passa al token disabled (grigio chiaro), border al token disabled (grigio chiarissimo), text/label/icon al token disabled.",
+        "composition": "<Dropdown label=\"Provincia\" value={null} disabled />"
+      },
+      {
+        "name": "list-overflow-scrollable",
+        "description": "L'Items List Figma supporta fino a 10 item visibili tramite `showItem3..showItem10` (i primi 2 sono sempre presenti). Con liste più lunghe il container scrolla verticalmente — è responsabilità del consumer impostare una max-height ragionevole e rendere il contenuto scrollable (non un nuovo Figma frame, è un'estensione runtime).",
+        "composition": "<Dropdown items={longCountryList} value={selected} onChange={setSelected} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "dropdown-with-2-options",
+        "reason": "Per 2 sole opzioni il Dropdown è overkill: richiede un tap per aprire + un tap per scegliere = 2 tap per fare ciò che un Toggle, un Segmented Control o due Radio Button risolvono in 1 tap. Inoltre nasconde la seconda opzione finché l'utente non scopre da solo che è un dropdown.",
+        "alternative": "Per 2 opzioni usare Segmented Control (binario visibile) o Toggle. Per 3-5 opzioni di breve testo Segmented Control resta più scopribile del Dropdown. Riservare Dropdown a liste lunghe (≥5-6 item) o item con testo articolato."
+      },
+      {
+        "scenario": "dropdown-for-multi-select",
+        "reason": "Il Dropdown è single-select per design: il tap su un item chiude la lista. Forzarlo a multi-select (es. checkbox dentro a ogni item) rompe l'aspettativa e introduce un secondo modello mentale ('quando esce dalla lista?') che il pattern Dropdown non risolve.",
+        "alternative": "Per multi-select usare un componente dedicato: Filter (in Drawer), una lista di Checkbox in Form Field, o un Chip Navigation con multi-select. Il Dropdown rimane esclusivamente single-select."
+      },
+      {
+        "scenario": "very-long-option-labels",
+        "reason": "Ogni Dropdown Item è altezza fissa 44 e text 16px pLead a single-line (le righe non wrappano in Figma). Label molto lunghe vengono troncate visivamente e l'utente non riesce a distinguere fra opzioni che condividono il prefisso.",
+        "alternative": "Mantenere label brevi e distintive (1-3 parole essenziali). Per opzioni con dettagli complessi usare un'altra UI (es. una pagina di selezione full-screen con Listing items con title + caption)."
+      },
+      {
+        "scenario": "selected-state-as-active-value",
+        "reason": "Lo `State=Selected` dell'Input NON significa 'questo valore è stato scelto' — significa 'la lista è aperta'. Trattarlo come indicatore di selezione finita confonde l'utente e il design: il border verde sparisce non appena la lista chiude.",
+        "alternative": "Quando un valore è stato scelto, l'Input mostra il testo del valore nel campo text (sostituendo il placeholder) e torna a `State=Default`. Lo 'è stata fatta una scelta' è comunicato dal contenuto, non dallo State del border."
+      },
+      {
+        "scenario": "dropdown-as-navigation-menu",
+        "reason": "Il Dropdown è un input di selezione di un valore, non un menù di navigazione/azioni. Usarlo per espandere un menù di link/azioni (es. 'Account → Profilo / Impostazioni / Esci') confonde l'utente che si aspetta che scegliere un'opzione inserisca un valore nel form.",
+        "alternative": "Per menù di azioni/link usare Drawer (bottom sheet con Action List) o un menù contestuale dedicato. Riservare Dropdown a input value-selection."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Title": {
+        "required": false,
+        "description": "Etichetta sopra il campo input. Su Android è visibile nelle varianti Figma (es. 'Dropdown Title' nella riga sopra l'input). Su iOS non è disegnata nel frame (il Title viene tipicamente gestito a livello Form Field esterno). Tipografia `typography/body/caption` (12px regular), colore via token `dropdown/color/label/{default|pressed|selected|disabled|error}`. Diventa rossa in `State=Error`, verde-brand in `State=Selected` (aperto), grigia in `Disabled`."
+      },
+      "TextValue": {
+        "required": true,
+        "description": "Testo dentro l'Input: mostra il valore corrente del Dropdown (o un placeholder grigio prima della scelta). Tipografia `typography/body/pLead` (16px regular), colore via token `dropdown/color/text/{default|pressed|selected|disabled|error}`. Single-line (testi lunghi vengono troncati)."
+      },
+      "ChevronIcon": {
+        "required": true,
+        "description": "Icona a destra dell'input che segnala la natura 'expandable' del controllo. Su iOS è chevron-up-down stacked (↕), invariata fra `Default` e `Selected`. Su Android è chevron singolo che ruota: ▼ in `Default`/`Pressed`/`Disabled`/`Error`, ▲ in `Selected` (aperto). Colore via token `dropdown/color/icon/{state}`. Dimensione 20×20 (icon container)."
+      },
+      "ItemsList": {
+        "required": false,
+        "description": "Container popover che si renderizza sotto l'Input quando `State=Selected` (aperto). Frame Figma separato 'Dropdown items List' (5848:210081). Bg bianco token `dropdownItemList/bg`, border `dropdownItemList/border`, radius 8 token `dropdownItemList/size/border/radius`, padding 4/4 token `dropdownItemList/size/{padding/horizontal|vertical/padding}`, ombra `shadow/md` per elevarsi sopra il contenuto sottostante. Contiene N Dropdown Item (2 base + 8 opzionali via `showItem3..showItem10`)."
+      },
+      "Item": {
+        "required": true,
+        "description": "Singolo item interno alla Items List. Altezza fissa 44 token `dropdownItem/size/height`, padding-h 12 token `dropdownItem/size/padding/horizontal`, radius 4 token `dropdownItem/size/border/radius`. Tipografia `typography/body/pLead` (16px regular), colore `dropdownItem/color/text/default`. In Figma esiste solo lo state Default — gli effetti hover/press in runtime sono gestiti dal layer di rendering, non disegnati nei Figma frame."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Form Field", "Drawer", "Filter", "Page"],
+    "parentConstraints": [
+      "Tipicamente dentro a un Form Field (che gestisce error message + helper text + spaziatura verticale del form). Standalone funziona ma il messaggio di errore deve essere reso da qualche altra parte.",
+      "L'Items List è un overlay/popover ancorato sotto l'Input. Larghezza tipica = larghezza dell'Input (343 nei frame Figma). In runtime il consumer deve gestire il caso 'lista che esce dal viewport' (es. flip-up se non c'è spazio sotto)."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed", "selected", "disabled", "error"],
+    "interactions": {
+      "tap-input": "Tap sull'Input apre la lista: lo State passa da `Default` a `Selected` (border verde-brand, icona ▲ su Android), e la Dropdown Items List viene renderizzata sotto l'input. Tap di nuovo (o tap fuori) chiude la lista — torna a `Default`.",
+      "tap-item": "Tap su un Dropdown Item dentro la Items List: il valore tappato viene assegnato al campo TextValue dell'Input, la lista chiude, lo State torna a `Default`. Nessuna animazione visiva sull'item premuto in Figma (lo State Pressed dell'item non è disegnato).",
+      "disabled": "In `State=Disabled` il componente non è tappabile. Bg, border, text, label, icon vanno tutti ai token `*/disabled`. Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` + `accessibilityTraits` include `.notEnabled`.",
+      "error": "`State=Error` non è uno stato interattivo, ma uno stato di validazione applicato dal consumer (es. valore obbligatorio mancante al submit). Border, label, text passano ai token `*/error` (rosso). L'icona rimane su un token neutro (`dropdown/color/icon/error` allineato al colore icon dello State Default), non passa al rosso. L'error message va comunicato a parte (Form Field sotto l'input)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "combobox / popup-button — su iOS impostare `accessibilityTraits = .button` + `accessibilityHint = 'Tocca per aprire la lista'` + `accessibilityValue` = label del valore corrente (o placeholder se vuoto); su Android usare `Role.DropdownList` o `Role.Button` con `Modifier.semantics { stateDescription = isExpanded ? 'aperto' : 'chiuso' }`. Quando la lista è aperta, esporre `accessibilityElementsHidden=false` sul popover e mettere il focus screen reader sul primo item.",
+    "screenReader": "Per l'Input lo screen reader legge 'Label, [valore corrente o 'nessuna selezione'], pulsante, [aperto/chiuso]'. Per ogni Dropdown Item legge il `itemLabel` come pulsante. Per `State=Error` aggiungere nell'accessibilityHint o nel messaggio sotto cosa fare (es. 'Errore: devi selezionare una nazione'). Quando il valore cambia, idealmente annunciare la nuova scelta tramite `accessibilityNotification` (iOS) o `liveRegion` (Android).",
+    "focusManagement": "Focusable in tutti gli State tranne Disabled. All'apertura della lista, su tastiera (iPad con tastiera, Android con TalkBack) il focus dovrebbe entrare nel primo item; frecce su/giù navigano fra item; tap/Enter sceglie; Esc o tap fuori chiudono la lista e tornano il focus all'Input.",
+    "touchTarget": "Input iOS 44h (alla soglia 44pt), Input Android 56h (sopra-soglia 48dp). Item della lista 44h (sopra-soglia su iOS, leggermente sotto-soglia 48dp su Android — l'altezza item è la stessa su entrambe le piattaforme nonostante il diverso minimum). L'intera riga dell'item è tappabile, non solo il testo.",
+    "wcag": "AA — lo `Selected` è comunicato sia da colore (border verde) sia da semantica (`accessibilityExpanded=true`) sia, su Android, da forma (chevron che ruota). Lo `Error` è comunicato sia da colore (rosso) sia da semantica (`accessibilityInvalid=true` + error message). Non solo-colore in nessuno State."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["dropdown", "select", "picker", "combobox", "select input", "menu a tendina", "selezione singola"],
+    "context": "Usa Dropdown per single-select da una lista predefinita (≥5-6 item, label brevi). Composto da 2 frame Figma: 'Dropdown input' (5 State × 2 OS) e 'Dropdown items List' (popover con 2-10 item). ATTENZIONE: `State=Selected` NON significa 'un valore è stato scelto' — significa 'la lista è APERTA' (border verde + lista visibile sotto). Il valore scelto è comunicato dal contenuto del campo TextValue, non dallo State. Differenze OS: iOS 44h con chevron ↕ stacked (statica), Android 56h con chevron ▼/▲ singolo (ruota a aperto). Title visibile su Android, gestita esternamente su iOS. Items List ha shadow/md per elevarsi sul contenuto sottostante. Per multi-select, scelta esclusiva fra ≤4 item, o menù di azioni/link, NON usare Dropdown (usa Filter / Segmented Control / Drawer rispettivamente). Per liste >10 item gestire scroll/max-height a livello consumer (Figma supporta fino a 10 item disegnati)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

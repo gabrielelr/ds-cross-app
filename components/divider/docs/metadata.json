@@ -1,42 +1,115 @@
 {
   "slug": "divider",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "7782:52088",
+    "ios": "7782:52088"
+  },
+
   "component": {
     "name": "Divider",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Linea sottile (spessore 1) usata per separare visivamente sezioni di contenuto, item di una lista, gruppi di azioni o blocchi di un form. Due `orientation` (horizontal full-width / vertical full-height). Colore di default via token `divider/color/bg` (grigio neutro), ma il designer può applicare un token colore alternativo coerente col contesto in cui il divider vive (es. su superfici scure, dentro card colorate, su sfondo brand). Componente passivo: niente interazione, niente State.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "list-item-separator",
+      "section-divider",
+      "form-group-separator",
+      "inline-text-separator",
+      "card-internal-separator"
+    ],
+    "requiredProps": ["orientation"],
+    "commonPatterns": [
+      {
+        "name": "list-item-separator",
+        "description": "Divider `horizontal` tra item consecutivi di una Listing (es. lista movimenti, lista documenti). Sottolinea la separazione fra entry mantenendo bassa enfasi grafica. Tipicamente con padding orizzontale ereditato dal container parent per non toccare i bordi della card.",
+        "composition": "<Divider orientation=\"horizontal\" />"
+      },
+      {
+        "name": "section-divider",
+        "description": "Divider `horizontal` per separare sezioni semanticamente diverse di una pagina (es. tra heading + content e il blocco successivo). Pattern classico di scansione: l'occhio rileva il cambio di sezione anche senza titolo esplicito.",
+        "composition": "<Divider orientation=\"horizontal\" />"
+      },
+      {
+        "name": "form-group-separator",
+        "description": "Divider `horizontal` tra gruppi di campi correlati in un form (es. tra 'Dati anagrafici' e 'Indirizzo di consegna'). Aiuta lo scanning e riduce il senso di 'wall of input'.",
+        "composition": "<Divider orientation=\"horizontal\" />"
+      },
+      {
+        "name": "inline-vertical-separator",
+        "description": "Divider `vertical` tra elementi inline a riga singola (es. footer link 'Privacy | Termini | Cookie', meta-info '12 maggio · 14:30'). Spessore 1 pensato per non dominare il testo accanto.",
+        "composition": "<Divider orientation=\"vertical\" />"
+      },
+      {
+        "name": "context-aware-color",
+        "description": "Divider con color token sovrascritto rispetto al `divider/color/bg` di default, scelto dal designer per coerenza col contenitore (es. su una card a sfondo scuro un token più chiaro; dentro a una sezione brand un token che echeggia il colore di sfondo). Il componente espone il colore come token, non è hardcoded — è una scelta cosciente del designer in fase di applicazione.",
+        "composition": "<Divider orientation=\"horizontal\" color={token('surface/onDark/divider')} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "divider-as-decoration",
+        "reason": "Il Divider è un separatore semantico (segnale 'qui finisce X, comincia Y'). Usarlo solo per decorazione (es. linee orizzontali random per riempire spazio) confonde l'utente sul significato: l'occhio cerca la separazione fra cose, non c'è.",
+        "alternative": "Usare Divider quando c'è davvero un cambio di gruppo/sezione. Per pause visive senza valore semantico usare semplice spaziatura (gap/padding)."
+      },
+      {
+        "scenario": "divider-every-item-in-tight-list",
+        "reason": "In liste molto dense (es. 10+ item ravvicinati), un divider per ogni item crea rumore visivo (ogni linea compete per attenzione) e l'occhio non riesce più a saltare gruppi.",
+        "alternative": "Per liste dense usare alternanza di sfondo (zebra) o solo divider fra gruppi/categorie, non fra ogni singolo item. Per item visivamente già ben separati (card con shadow/padding) il divider non serve."
+      },
+      {
+        "scenario": "default-color-on-dark-surface",
+        "reason": "Il token `divider/color/bg` di default è un grigio chiaro pensato per superfici chiare. Su sfondo scuro (es. card promo dark, hero scuro) il default scompare visivamente o, peggio, si nota in modo sbagliato (linea grigia che galleggia).",
+        "alternative": "Sovrascrivere il color token con uno coerente al contesto (es. un token `divider` per dark surface fornito dal sistema di colori). Il design system espone il token colore come variabile proprio per permettere questo override contestuale."
+      },
+      {
+        "scenario": "divider-with-heavy-background-difference",
+        "reason": "Un Divider 1px tra due aree con background fortemente diverso (es. card chiara accanto a card scura) è superfluo — il salto di colore di sfondo già delimita le aree. Aggiungere il divider crea una doppia separazione visivamente rumorosa.",
+        "alternative": "Affidarsi al cambio di superficie per la separazione. Il Divider serve quando le due aree hanno lo stesso sfondo e si distinguono solo per contenuto."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Line": {
+        "required": true,
+        "description": "Linea singola di spessore `divider/size/width` (1px) e colore `divider/color/bg`. Per `orientation=horizontal` la linea occupa la larghezza disponibile del container parent (height fissa 1px); per `orientation=vertical` occupa l'altezza disponibile (width fissa 1px). Il colore è un token: il default `divider/color/bg` è il valore base, ma il designer può applicare un token alternativo via override quando il contesto lo richiede (su superfici scure, dentro card brand, ecc.)."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Listing", "Form Field", "Card", "Drawer", "Page", "Footer"],
+    "parentConstraints": [
+      "Il Divider è un atomo di flusso: prende le proprie dimensioni dal container parent (full-width o full-height). Il padding orizzontale/verticale è responsabilità del parent — il Divider non lo gestisce internamente."
+    ]
   },
+
   "behavior": {
     "states": [],
     "interactions": {},
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "separator — su iOS impostare `accessibilityElementsHidden = true` se decorativo, altrimenti esporlo come elemento con `accessibilityTraits = .none` e `accessibilityLabel` vuoto; su Android usare `Modifier.semantics { invisibleToUser() }` quando puramente decorativo, oppure `Role.None` con annunci espliciti via Modifier se semantico. Per gli screen reader, in HTML semantico il ruolo equivalente è `<hr>` (separator).",
+    "screenReader": "Per default nascondere il Divider allo screen reader (è informazione puramente visuale, lo screen reader naviga per heading/landmark che già spaccano la struttura). Se la separazione ha valore semantico forte (es. fra sezioni distinte di un form), esporre il Divider come separator dichiarato — ma evitare verbosity ('separatore separatore separatore' tra ogni item è rumore).",
+    "focusManagement": "Non focusable (non interattivo).",
+    "touchTarget": "N/A — non è un target tappabile.",
+    "wcag": "AA — quando usato come segnale visivo principale di separazione fra gruppi, il colore del Divider deve avere contrasto sufficiente con lo sfondo. Per il token default `divider/color/bg` (grigio chiaro) il contrasto su sfondo bianco è basso (è voluto: il divider è low-emphasis), il che è OK perché la separazione semantica non si appoggia SOLO sul divider — c'è anche spaziatura, raggruppamento e (se serve) heading. Per chi non distingue il colore, la posizione/spaziatura rimane il fallback."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "low",
+    "keywords": ["divider", "separator", "linea", "separatore", "hr", "rule"],
+    "context": "Usa Divider per separare visivamente sezioni, item di una lista, gruppi di un form o elementi inline (footer link, meta-info). Due `orientation`: `horizontal` (full-width 1px) e `vertical` (full-height 1px). Colore via token `divider/color/bg`: è un default, ma il designer PUÒ sovrascriverlo con un token alternativo quando il contesto lo richiede (es. su superfici scure usare un token divider chiaro). Non è interattivo — niente State, niente onPress, non focusable. Per screen reader nasconderlo per default (è informazione visuale); esporlo come `separator` solo quando la separazione ha valore semantico. NON abusare: in liste dense, fra superfici di colore diverso o solo per decorazione, il divider crea rumore — preferire spaziatura."
   },
+
   "rationale": {
     "designDecisions": ""
   }

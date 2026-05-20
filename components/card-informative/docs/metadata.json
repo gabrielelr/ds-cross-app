@@ -2,6 +2,8 @@
   "slug": "card-informative",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Card Informative",
     "category": "atoms",

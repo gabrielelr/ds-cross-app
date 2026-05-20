@@ -1,42 +1,111 @@
 {
   "slug": "button-quicklink",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6573:8694",
+    "ios": "6573:8694"
+  },
+
   "component": {
     "name": "Button Quicklink",
     "category": "atoms",
-    "description": "",
+    "description": "Link evidenziato a forma di card compatta (rounded-square, radius 12, min-width 88, border sempre presente) per dare accesso rapido a destinazioni chiave dell'interfaccia. Composizione verticale: slot icona (con badge di notifica opzionale, riusa il componente Badge Notification) + Label corta sotto. Disponibile in 2 `State`: `default` e `pressed` (notare: nomi lowercase, inconsistenti con la convenzione `Default`/`Pressed` degli altri button). Una sola size. Può essere usato singolarmente o in un set per costruire una griglia di scorciatoie.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "quick-access-key-destinations",
+      "personal-area-shortcuts",
+      "homepage-shortcuts",
+      "section-shortcuts"
+    ],
+    "requiredProps": ["label", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "personal-area-shortcuts",
+        "description": "Set di Button Quicklink in area personale per dare accesso rapido a sezioni dell'account (es. 'Movimenti', 'Documenti', 'Bonus'). L'icona Notification Badge Icon permette di mostrare un count quando c'è qualcosa di non visto (es. 3 documenti nuovi).",
+        "composition": "<ButtonQuicklink label=\"Bonus\" icon={<IconGift />} notificationCount={3} onPress={() => navigate('/bonus')} />"
+      },
+      {
+        "name": "homepage-quick-access",
+        "description": "Griglia 2×N di Button Quicklink in homepage per esporre destinazioni di alta priorità (es. 'Calcio', 'Tennis', 'Casinò', 'Live'). Senza badge di notifica quando le sezioni non hanno content da segnalare.",
+        "composition": "<ButtonQuicklink label=\"Calcio\" icon={<IconSoccer />} showIcon onPress={() => navigate('/sport/calcio')} />"
+      },
+      {
+        "name": "single-quicklink-callout",
+        "description": "Un singolo Button Quicklink isolato che fa da entry point evidente per una destinazione specifica (es. 'Verifica documenti' in un banner di onboarding). Usato in modo selettivo: il pattern dà il meglio in gruppo, ma può funzionare standalone se la destinazione merita risalto.",
+        "composition": "<ButtonQuicklink label=\"Verifica\" icon={<IconCheckCircle />} onPress={() => navigate('/kyc')} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "quicklink-as-primary-cta",
+        "reason": "Button Quicklink ha border sottile e bg bianco a bassa enfasi: è un link evidenziato, non un'azione primaria. Usarlo come CTA principale (es. 'Conferma pagamento') sotto-comunica l'importanza dell'azione.",
+        "alternative": "Per azioni primarie usare Button (variante solid/primary). Riservare Button Quicklink a navigazione/discovery di destinazioni."
+      },
+      {
+        "scenario": "long-multiword-label",
+        "reason": "La Label è `whitespace-nowrap` in tipografia `typography/interaction/microButton` (12px bold) e il container ha `min-width=88` ma cresce poco oltre. Label lunghe (>1 parola corta) escono dal contenitore o lo rendono visivamente fuori dal grid.",
+        "alternative": "Mantenere la label a 1 parola breve (es. 'Bonus', 'Documenti', 'Movimenti'). Per testi più articolati usare Card Entrypoint o Listing Item."
+      },
+      {
+        "scenario": "notification-badge-with-zero-count",
+        "reason": "Lo slot icona usa Badge Notification: mostrare il badge quando count=0 segnala falsa novità (vedi anti-pattern di badge-notification). L'utente apre la destinazione e non trova nulla.",
+        "alternative": "Nascondere il badge quando non c'è nulla da segnalare. Mostrarlo solo quando il count > 0 (Type=number/99+) o c'è davvero un nuovo content (Type=circle)."
+      },
+      {
+        "scenario": "no-icon-low-discoverability",
+        "reason": "`showIcon=false` lascia solo la Label dentro al box: il quicklink perde la sua firma visiva (icona + label verticali) e diventa visivamente simile a un Button Square o a una chip. La densità informativa cala e la discoverability anche.",
+        "alternative": "Tenere `showIcon=true` come default. Se davvero non c'è un'icona sensata da abbinare alla destinazione, riconsiderare se Button Quicklink è il componente giusto (forse Button Square o Chip)."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "NotificationBadgeIcon": {
+        "required": false,
+        "description": "Riusa il componente Badge Notification (Icon 24×24 con badge sovrapposto opzionale). Controllato dalla prop `showIcon` (default true). Il badge di notifica interno è opzionale: si valorizza solo quando c'è un count o una novità da segnalare. Per la semantica e i Type del badge interno (number/99+/circle) vedere la doc di Badge Notification."
+      },
+      "Label": {
+        "required": true,
+        "description": "Testo sotto l'icona, allineato al centro. Tipografia bold con token `typography/interaction/microButton` (12px, line-height 12). Il colore è auto-derivato dal token `buttonQuicklink/color/text`. Single-line `whitespace-nowrap`."
+      }
+    },
+    "nestedComponents": ["Badge Notification"],
+    "commonPartners": ["Quicklink Navigation", "Header", "Page"],
+    "parentConstraints": [
+      "Pensato per essere parte di un cluster Quicklink Navigation (riga orizzontale, eventualmente scrollabile e/o sticky in homepage). Usabile anche singolarmente come callout di una destinazione, ma il pattern visivo brilla in gruppi.",
+      "In Quicklink Navigation non c'è concetto di item Selected: l'atomo Button Quicklink non ha lo stato Selected per design (vedere differenza con Button Square)."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed"],
+    "interactions": {
+      "tap": "Tap esegue la navigazione associata (`onPress`). Durante il touch il bottone passa visivamente a `State=pressed`: bg da `buttonQuicklink/color/bg/default` a `buttonQuicklink/color/bg/pressed`. Il border (`buttonQuicklink/color/border`) e il text color (`buttonQuicklink/color/text`) non cambiano fra i due stati. Il rilascio fuori dall'hit area annulla la navigazione."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "button — è un'azione di navigazione verso una destinazione. Su iOS `accessibilityTraits = .button`; su Android `Role.Button`. `accessibilityLabel` = Label visibile + eventuale info sul badge di notifica (es. 'Bonus, 3 non letti, pulsante'). L'icona interna va marcata decorativa; il badge di notifica entra nella label combinata, non viene letto come elemento separato.",
+    "screenReader": "Lo screen reader legge 'Label, [N non letti,] pulsante'. Per gruppi di quicklink in una griglia, il movimento del focus segue il flusso di lettura (riga per riga, sinistra → destra in LTR).",
+    "focusManagement": "Focusable in `default` e `pressed`. Non c'è State=Disabled in Figma: per disabilitare temporaneamente un quicklink, gestirlo a livello di consumer (es. rimuoverlo dal set, o sostituirlo con un altro componente).",
+    "touchTarget": "Min-width 88 × height ~68 (8h padding-h, 12 padding-v, gap 8, icona 24, label 12). Sopra-soglia su entrambe le piattaforme — l'area tappabile copre tutto il container, label inclusa.",
     "wcag": "AA"
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["button quicklink", "quicklink", "scorciatoia", "link evidenziato", "fast access", "shortcut card"],
+    "context": "Usa Button Quicklink per creare scorciatoie di navigazione verso destinazioni chiave (homepage shortcut, area personale, sezioni). Pensato per il riuso in gruppi (Quicklink Navigation in griglia 2×N), ma usabile anche singolarmente. Lo slot icona ospita un Badge Notification: quando la destinazione ha qualcosa di non letto/nuovo, valorizzare il badge — altrimenti nasconderlo. Niente State=Disabled in Figma: per nascondere/disabilitare un quicklink lavorare a livello di consumer. Per azioni primarie usare Button, non Quicklink (che è secondario/di navigazione)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

@@ -1,42 +1,123 @@
 {
   "slug": "checkbox",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5830:207986",
+    "ios": "5830:207986"
+  },
+
   "component": {
     "name": "Checkbox",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Input binario per selezionare/deselezionare un'opzione. Composto da uno Switch interno 18×18 (forma circolare, radius 128 — non un quadrato come da convenzione, è una scelta di design del DS) e una Label a destra (tipografia `typography/body/pLead` 16px regular). 5 `State`: Default (unchecked), Pressed (touch feedback), Selected (= checked), Disabled, Error. Il Checkbox Switch interno ha anche una dimensione OS (ios/android) nei propri token (`checkbox/size/checkboxSwitch/*/ios`), ma a livello componente l'OS è gestito dal layer di rendering del consumer.",
+    "type": "input"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "form-boolean-input",
+      "consent-acceptance",
+      "multi-select-list-item",
+      "filter-option-toggle",
+      "settings-on-off"
+    ],
+    "requiredProps": ["label", "checked", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "form-consent",
+        "description": "Checkbox per consenso esplicito (es. 'Accetto i termini e condizioni', 'Invia comunicazioni promozionali'). `State=Default` non spuntato all'apertura del form; l'utente deve toccarlo per acconsentire. Lo State=Error si attiva se il consenso obbligatorio non viene dato al submit.",
+        "composition": "<Checkbox label=\"Accetto i Termini e Condizioni\" checked={consenso} onChange={setConsenso} required />"
+      },
+      {
+        "name": "multi-select-list",
+        "description": "Una Checkbox per ogni item di una lista per consentire selezione multipla (es. selezionare partite, conti, documenti). State Selected per gli item attivi.",
+        "composition": "<Checkbox label={item.name} checked={selectedIds.has(item.id)} onChange={() => toggle(item.id)} />"
+      },
+      {
+        "name": "validation-error",
+        "description": "`State=Error` quando un consenso obbligatorio non è stato dato e l'utente ha tentato il submit. Lo Switch passa a bg rosso anche in stato non-checked (visibile sia nella variante checked che unchecked, vedi atomo Switch).",
+        "composition": "<Checkbox label=\"Accetta la privacy policy\" checked={false} onChange={fn} error errorMessage=\"Devi accettare per procedere\" />"
+      },
+      {
+        "name": "disabled-pending-condition",
+        "description": "`State=Disabled` quando l'opzione esiste ma non è ancora attivabile (es. checkbox 'Ricevi newsletter settimanale' grigio finché non si è verificata l'email). Il bg passa a un tono grigio chiaro e text/icon vanno in tono disabilitato.",
+        "composition": "<Checkbox label=\"Ricevi newsletter\" checked={value} onChange={fn} disabled />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "checkbox-for-single-choice",
+        "reason": "Checkbox è un input binario (on/off) per UNA singola opzione: usare più checkbox in mutua esclusività (selezionarne una deseleziona le altre) è il pattern di Radio Button, non di Checkbox. L'utente vede 'pallini quadrati' e si aspetta multi-select.",
+        "alternative": "Per scelta esclusiva (uno tra N) usare Radio Button. Riservare Checkbox a singola opzione on/off o a multi-select dove più item possono essere attivi contemporaneamente."
+      },
+      {
+        "scenario": "checkbox-as-toggle-switch",
+        "reason": "Checkbox segnala una scelta che diventa effettiva al submit del form (consenso, opzione di una lista). Usarlo come toggle di sistema (es. attivare immediatamente una funzione) confonde l'utente che si aspetta un cambio differito.",
+        "alternative": "Per toggle che applica subito una modifica (es. attivare notifiche, dark mode) usare Toggle (componente dedicato), non Checkbox."
+      },
+      {
+        "scenario": "missing-label-or-only-icon",
+        "reason": "Lo Switch 18×18 da solo, senza la Label, non comunica cosa l'utente sta acconsentendo/selezionando. È un'area cliccabile minuscola e priva di contesto.",
+        "alternative": "Sempre con Label valorizzata e leggibile. La label è parte intoccabile del componente — è sia il contesto che parte dell'hit area (vedere touchTarget)."
+      },
+      {
+        "scenario": "error-without-message",
+        "reason": "`State=Error` segnala visivamente un problema (Switch rosso, label rossa) ma non spiega cosa fare. L'utente vede il rosso e non sa se deve spuntare il checkbox o cambiarne il valore.",
+        "alternative": "Sempre accoppiare lo State=Error a un messaggio di errore sotto la label (es. 'Devi accettare per procedere'). Il messaggio è responsabilità del consumer (Form Field), non del Checkbox stesso."
+      },
+      {
+        "scenario": "tiny-hit-area-only-on-switch",
+        "reason": "Lo Switch è 18×18, sotto-soglia rispetto al minimo 44pt iOS / 48dp Android. Se l'area tappabile è solo lo Switch, l'utente fatica a centrarlo, specialmente con dita grandi o in mobilità.",
+        "alternative": "L'intera riga Switch + gap + Label è tappabile e attiva il toggle. Garantire che il container espanda la hit area a tutto l'inline (almeno 44pt di altezza verticale)."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Switch": {
+        "required": true,
+        "description": "Toggle visivo 18×18 (interno, non un componente di repo separato). Forma circolare (radius 128 — non quadrato, è una scelta di design del DS). Stati visibili: Default (border grigio, bg bianco, no icon), Pressed (touch feedback), Selected/Checked (bg brand, icon check bianco), Disabled (bg grigio chiaro, icon grigio), Error (bg rosso, icon bianco). Lo Switch espone token OS-aware: `checkbox/size/checkboxSwitch/{height|border/radius|border/width}/ios` (Android usa propri token analoghi). Token color: `checkbox/color/checkboxSwitch/{bg|border|icon}/{default|checked/default|checked/pressed|checked/disabled|checked/error}`."
+      },
+      "Label": {
+        "required": true,
+        "description": "Testo accanto allo Switch, allineato al centro verticalmente. Tipografia `typography/body/pLead` (16px regular). Colore auto-derivato dallo State tramite token `checkbox/color/text/{default|pressed|selected|disabled|error}`. Single-line `whitespace-nowrap` (per testi più lunghi gestire a livello container)."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Form Field", "Listing Item", "Filter", "Drawer"],
+    "parentConstraints": [
+      "Tipicamente vive dentro un Form Field (che aggiunge l'eventuale error message sotto la label) o dentro a un Listing Item come elemento di selezione multipla."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pressed", "selected", "disabled", "error"],
+    "interactions": {
+      "tap": "Tap sull'intera riga (Switch + gap + Label) attiva il toggle: l'item passa da `Default` (unchecked) a `Selected` (checked) e viceversa. Durante il touch passa visivamente a `Pressed` (touch feedback).",
+      "disabled": "In `State=Disabled` il componente non è tappabile. Switch va al token `checkbox/color/checkboxSwitch/bg/checked/disabled`, label al token `checkbox/color/text/disabled`. Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` + `accessibilityTraits` include `.notEnabled`.",
+      "error": "`State=Error` non è uno stato interattivo, ma uno stato di validazione applicato dal consumer (es. quando un consenso obbligatorio non viene dato al submit). Switch e Label passano ai token `*/error`. L'error message va comunicato a parte (Form Field sotto la riga)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "checkbox — su iOS impostare `accessibilityTraits = .button` + `accessibilityValue = '1' / '0'` per checked/unchecked (iOS non ha trait nativo `.checkbox`, ma una combinazione standard è button + value); su Android usare `Role.Checkbox` con `Toggleable` (Compose) o `CheckBox` widget (View). `accessibilityLabel` = la Label visibile.",
+    "screenReader": "Lo screen reader legge 'Label, checkbox, [selezionato/non selezionato]'. Per `State=Disabled` aggiunge 'non disponibile' (iOS) o 'disabilitato' (Android). Per `State=Error` esplicitare nel `accessibilityHint` o nel messaggio sotto qual è il problema (es. 'Errore: devi accettare per procedere').",
+    "focusManagement": "Focusable in tutti gli State tranne Disabled. Movimento focus standard di piattaforma. Su Form Field, il focus segue il flusso del form.",
+    "touchTarget": "Lo Switch da solo è 18×18, sotto-soglia (44pt iOS / 48dp Android). L'intera riga Switch + gap + Label è tappabile e deve coprire almeno 44pt verticali — questo è il vero touch target del componente. Implementare il wrapper tappabile con padding-vertical sufficiente.",
+    "wcag": "AA — lo Selected è comunicato sia da colore (bg brand) che da forma (icon check visibile): per chi non distingue il verde resta riconoscibile dall'icon. Lo State=Error usa rosso + bg pieno + icon: anche qui non solo-colore. La label rossa nello State Error rafforza il segnale via tipografia oltre il colore."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["checkbox", "consenso", "accept terms", "multi-select", "binary input", "form input", "spunta"],
+    "context": "Usa Checkbox come input binario on/off per UNA singola opzione o come elemento di multi-select in una lista. NON usarlo per scelta esclusiva (per quello c'è Radio Button) né per toggle di sistema con effetto immediato (per quello c'è Toggle). Stati: `Default` (unchecked), `Pressed` (touch feedback), `Selected` (checked), `Disabled` (non attivabile), `Error` (validazione fallita, abbinare a un messaggio). Sempre con Label valorizzata. La forma dello Switch è circolare (radius 128 — convenzione del DS, non un quadrato come ci si aspetterebbe da altri DS). L'hit area effettiva è l'intera riga (Switch + Label), non solo lo Switch 18×18."
   },
+
   "rationale": {
     "designDecisions": ""
   }

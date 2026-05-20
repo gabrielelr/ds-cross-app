@@ -1,41 +1,116 @@
 {
   "slug": "accordion",
   "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "status": "full",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Accordion",
-    "category": "atoms",
-    "description": "",
+    "category": "molecules",
+    "description": "Sezione collassabile composta da un header con titolo numerato e icona chevron, che rivela un contenuto secondario quando attivata.",
     "type": "interactive"
   },
   "usage": {
-    "useCases": [],
+    "useCases": [
+      "faq",
+      "progressive-disclosure",
+      "collapsible-sections",
+      "secondary-detail-reveal"
+    ],
     "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "commonPatterns": [
+      {
+        "name": "single-collapsible",
+        "description": "Singolo Accordion per nascondere un dettaglio secondario senza far perdere il contesto della pagina",
+        "composition": "<Accordion><Accordion.Header number=\"01\" title=\"Titolo\"/><Accordion.Body>Contenuto</Accordion.Body></Accordion>"
+      },
+      {
+        "name": "numbered-faq",
+        "description": "Più Accordion stackati con numerazione progressiva per pattern FAQ o liste di istruzioni",
+        "composition": "<AccordionList>{items.map((it, i) => <Accordion key={i} number={String(i+1).padStart(2,'0')} title={it.q}>{it.a}</Accordion>)}</AccordionList>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "essential-content-hidden",
+        "reason": "Nascondere contenuti essenziali dietro un toggle riduce scopribilità e accessibilità — l'utente potrebbe non aprirli mai",
+        "alternative": "Mostrare il contenuto essenziale direttamente; usare Accordion solo per dettagli opzionali o di approfondimento"
+      },
+      {
+        "scenario": "nested-accordions",
+        "reason": "Accordion annidati uno dentro l'altro confondono la gerarchia visiva e rendono l'interazione touch fragile",
+        "alternative": "Riorganizzare il contenuto in sezioni piatte; se necessaria una gerarchia, usare una pagina di dettaglio"
+      },
+      {
+        "scenario": "all-open-by-default",
+        "reason": "Se tutti gli Accordion sono aperti all'ingresso in pagina, la metafora del progressive disclosure perde senso e la pagina diventa lunga e rumorosa",
+        "alternative": "Aprire al massimo un Accordion di default (es. il primo, o quello più probabile per il contesto); lasciare gli altri collassati"
+      }
+    ]
   },
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
+    "slots": {
+      "Number": {
+        "required": false,
+        "description": "Numerazione progressiva opzionale che precede il titolo (es. '01', '02'). Tipografia heading/h3 extrabold. Usato in pattern FAQ numerate."
+      },
+      "Title": {
+        "required": true,
+        "description": "Testo principale del header in tipografia body/p extrabold, troncato a max 260px. Descrive il contenuto rivelato dall'Accordion."
+      },
+      "Icon": {
+        "required": true,
+        "description": "Chevron indicatore di stato: chevron-down quando collapsed, chevron-up quando expanded. 24×24px."
+      },
+      "Body": {
+        "required": true,
+        "description": "Contenuto rivelato quando expanded. In Figma è un Swap Component per ospitare contenuti arbitrari (testo, liste, card, illustrazioni)."
+      }
+    },
+    "nestedComponents": [
+      "Text Box",
+      "Icon Chevron",
+      "Divider"
+    ],
+    "commonPartners": [
+      "Accordion List",
+      "FAQ",
+      "Listing"
+    ],
     "parentConstraints": []
   },
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": [
+      "collapsed",
+      "expanded"
+    ],
+    "interactions": {
+      "tap": "Tap sull'intera area del header esegue il toggle tra collapsed ed expanded"
+    },
     "responsive": {}
   },
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "Header come accessibility button (UIAccessibilityTraitButton su iOS, role=\"button\" su Android); body come container raggruppato (UIAccessibilityElement / ViewGroup con accessibilityRole=\"region\" o equivalente)",
+    "screenReader": "VoiceOver (iOS) e TalkBack (Android) annunciano il header con il pattern '<numero> <titolo>, espanso' oppure 'compresso'. All'attivazione il read-out annuncia il nuovo stato; quando expanded, lo screen reader prosegue nella lettura del body. iOS: aggiornare `accessibilityValue` con 'espanso'/'compresso'. Android: usare `setAccessibilityState({ expanded: true|false })` o `AccessibilityNodeInfo.setExpandableState`.",
+    "focusManagement": "L'accessibility focus rimane sul header dopo il toggle, non si sposta automaticamente sul body — evita lo spaesamento dell'utente screen reader e mantiene il punto di lettura. Quando un Accordion viene aperto, il focus successivo via swipe-right (VoiceOver) o swipe-down (TalkBack) raggiunge il body.",
+    "touchTarget": "Header con padding verticale 16px e tipografia heading/h3 a 18px line-height: hit area ~50px, sopra i minimi raccomandati (iOS HIG 44pt, Material 48dp)",
+    "dynamicType": "Le tipografie del header (heading/h3, body/p) scalano con Dynamic Type (iOS) e Font Scale (Android). Numero e titolo si troncano a 260px di larghezza massima — su scale font molto grandi il titolo va a capo invece di troncare",
+    "reducedMotion": "L'animazione di apertura/chiusura del body (default ~200ms ease-out) viene disabilitata quando l'utente ha attivato Reduce Motion (iOS) o Remove Animations (Android): il toggle diventa istantaneo",
     "wcag": "AA"
   },
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": [
+      "accordion",
+      "collapse",
+      "expand",
+      "toggle",
+      "disclosure",
+      "faq",
+      "collapsible",
+      "fisarmonica"
+    ],
+    "context": "Scegliere Accordion quando il contenuto è secondario, opzionale o di approfondimento e nasconderlo aiuta la lettura della pagina principale (FAQ, dettagli avanzati di prodotto, sezioni di impostazioni). Non usare per contenuti essenziali al task primario dell'utente."
   },
   "rationale": {
     "designDecisions": ""

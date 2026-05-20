@@ -2,6 +2,8 @@
   "slug": "search-bar",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Search Bar",
     "category": "atoms",

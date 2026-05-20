@@ -2,6 +2,8 @@
   "slug": "circle-button-group",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Circle Button Group",
     "category": "atoms",

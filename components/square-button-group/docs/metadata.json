@@ -2,6 +2,8 @@
   "slug": "square-button-group",
   "lastUpdated": "2026-05-14",
   "status": "scaffold",
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "Square Button Group",
     "category": "atoms",

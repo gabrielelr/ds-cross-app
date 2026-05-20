@@ -1,42 +1,92 @@
 {
   "slug": "avatar",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "8206:634325",
+    "ios": "8206:634325"
+  },
+
   "component": {
     "name": "Avatar",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Rappresentazione visiva di una persona o entità tramite immagine circolare. Disponibile in tre Size (sm 40×40, md 56×56, lg 64×64). Non ha stati interattivi né varianti oltre alla Size: è un atomo di display la cui unica responsabilità è mostrare l'immagine ritagliata a cerchio.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "user-identity",
+      "list-item-leading",
+      "profile-header",
+      "comment-author"
+    ],
+    "requiredProps": ["image"],
+    "commonPatterns": [
+      {
+        "name": "list-leading",
+        "description": "Avatar come leading element di un List Item (es. lista contatti, lista conversazioni). Size sm per liste dense, md per liste con più info per riga.",
+        "composition": "<Avatar size=\"sm\" image={user.photoUrl} alt={user.fullName} />"
+      },
+      {
+        "name": "profile-header",
+        "description": "Avatar in alto in una pagina profilo o dettaglio account, dove l'identità è il focus della schermata. Size lg.",
+        "composition": "<Avatar size=\"lg\" image={user.photoUrl} alt={user.fullName} />"
+      },
+      {
+        "name": "comment-author",
+        "description": "Avatar accanto a nome autore e testo di un commento o messaggio. Size sm per non rubare spazio al contenuto testuale.",
+        "composition": "<Avatar size=\"sm\" image={author.photoUrl} alt={author.fullName} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "avatar-as-generic-image",
+        "reason": "Avatar è ritagliato a cerchio e progettato per ritratti di persone/entità: usarlo per immagini generiche (prodotti, copertine, icone illustrative) impone un crop circolare che spesso taglia contenuto rilevante e comunica semanticamente 'persona' a uno screen reader che si aspetta un alt descrittivo.",
+        "alternative": "Per immagini di prodotto usare la Card Product; per copertine o thumbnail rettangolari usare un Image component con border-radius coerente con il contesto (non 128px)."
+      },
+      {
+        "scenario": "lg-in-dense-list",
+        "reason": "Size=lg (64×64) in una lista con molte righe occupa troppa altezza verticale, riduce il numero di item visibili e rompe il ritmo della lista. lg è dimensionato per essere il focus della schermata, non un elemento ricorrente.",
+        "alternative": "In liste usare Size=sm (40×40) come default; passare a md (56×56) solo se la lista ha pochi item ricchi (es. card-list con descrizione lunga sotto il titolo)."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Image": {
+        "required": true,
+        "description": "Immagine del soggetto, riempita per coprire l'intera area (`object-fit: cover`) e ritagliata a cerchio dal container con `border-radius: 128px` (cerchio pieno data la dimensione w=h del container). In Figma non esiste fallback per initials o icona placeholder: il consumer deve passare un'image valida o gestire il fallback esternamente al componente."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
+    "commonPartners": ["Listing Item", "Header", "Card Detail", "Card Informative"],
     "parentConstraints": []
   },
+
   "behavior": {
     "states": [],
     "interactions": {},
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
+    "role": "image — Avatar è un elemento di display. Su iOS impostare `accessibilityTraits = .image`; su Android contentDescription dell'ImageView. Se l'Avatar è wrappato in un elemento tappabile (es. apre il profilo), il ruolo del wrapper diventa button/link, e l'Avatar interno è marcato come decorativo (`isAccessibilityElement = false` su iOS, `importantForAccessibility = no` su Android) per non duplicare la lettura.",
+    "screenReader": "L'alt text deve essere il nome del soggetto rappresentato (es. 'Anna Rossi'), non una descrizione visiva ('foto di una donna sorridente'). Se l'avatar è puramente decorativo accanto a un nome già letto dallo screen reader, marcarlo come decorativo per evitare la lettura doppia.",
+    "focusManagement": "L'Avatar di per sé non è focusable. Quando è dentro un container tappabile, il focus va sul container, non sull'Avatar.",
+    "touchTarget": "Quando l'Avatar è tappabile (es. apre la pagina profilo), garantire un hit area di almeno 44pt iOS / 48dp Android: in Size=sm (40×40) bisogna estendere l'hit area del wrapper, perché l'Avatar in sé è sotto-soglia.",
     "wcag": "AA"
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["avatar", "profile", "user", "photo", "foto profilo", "utente", "account"],
+    "context": "Usa Avatar per mostrare l'identità di una persona o entità tramite una sua immagine. Scegli la SIZE in base al contesto: `sm` (40×40) per liste, commenti, chip; `md` (56×56) per header di card o sezioni; `lg` (64×64) per profilo o dettaglio account dove l'identità è il focus. Avatar è un display atom: non ha stati interattivi propri, se serve renderlo tappabile va wrappato in un container tappabile. Non usare Avatar per immagini generiche non-persona: il crop circolare e la semantica 'soggetto' lo rendono inadatto a thumbnail di prodotto o copertine."
   },
+
   "rationale": {
     "designDecisions": ""
   }
