@@ -1,44 +1,135 @@
 {
   "slug": "card-entrypoint",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5822:205623",
+    "ios": "5822:205623"
+  },
+
   "component": {
     "name": "Card Entrypoint",
-    "category": "atoms",
-    "description": "",
+    "category": "molecules",
+    "description": "Card SINGLE-USE pensata per evidenziare UN prodotto specifico tramite IMMAGINE FULL-BLEED prominent + testo di supporto. Container 343 wide × `cardEntrypoint/size/height` (160h) con immagine di fondo (full-bleed), radius `cardEntrypoint/size/border/radius` (12), padding `cardEntrypoint/size/padding/horizontal|vertical` (16/16). Sopra l'immagine: Title in `typography/display/d2` (24px ExtraBold Mulish, color `cardHighlight/color/text` bianco) + Paragraph in `typography/body/p` (14px regular Roboto, bianco) + Jackpot Info pill in basso (es. 'JACKPOT 99.000.000€', token namespace `jackpotInfo/*`). SOTTO al container: Caption (`typography/body/caption` 12px regular, color `cardEntrypoint/color/caption/color/text` dark) + icon decorativa a destra. 2 `Promo Border`: `False` (default, niente border, niente badge promo) / `True` (border 2px color `cardHighlight/color/border` arancione + Badge Ribbon 'Promo' in alto-sinistra che riusa `badgeRibbon/color/promo/*`). Riusa molti token `cardHighlight/*` per il content interno (color text bianco, color icon bianco), distinto dalla Card Highlight per l'aggiunta di Jackpot info, Caption esterna, Badge Ribbon Promo opzionale, e il pattern SINGLE-USE (NON in cluster). Three-way naming: slug `card-entrypoint`, frame Figma 'Card Entrypoint', namespace `cardEntrypoint/*` (camelCase singolare — distinto da `cardDetails/*` plurale e `cardHighlight/*`).",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "highlight-single-product",
+      "homepage-product-callout",
+      "promo-jackpot-entry-point",
+      "product-with-visual-emphasis"
+    ],
+    "requiredProps": ["title", "paragraph", "imageUrl", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "single-product-highlight-with-jackpot",
+        "description": "Pattern canonico: Card Entrypoint isolata nel layout per mettere in evidenza UN prodotto specifico (es. una slot col jackpot più alto del giorno). Immagine prominent del prodotto come background, Title nome del prodotto, Paragraph claim breve, Jackpot info pill col valore corrente del jackpot. Sotto al container, Caption con info extra (es. 'Aggiornato 10 minuti fa'). Tap → naviga al dettaglio prodotto.",
+        "composition": "<CardEntrypoint imageUrl={slotImg} title=\"Mega Fire Blaze\" paragraph=\"Vinci fino a 99M€\" jackpotValue=\"99.000.000€\" caption=\"Aggiornato 10 min fa\" onPress={openSlot} />"
+      },
+      {
+        "name": "promo-border-with-ribbon",
+        "description": "Variant `Promo Border=True`: aggiunge un Badge Ribbon 'Promo' in alto-sinistra + border 2px arancione (`cardHighlight/color/border`). Pattern per evidenziare prodotti in promo speciale, dove il border + ribbon comunicano subito 'questo è in offerta'. Tutto il resto del layout (immagine, testo, jackpot, caption) rimane identico al Variant False.",
+        "composition": "<CardEntrypoint promoBorder imageUrl={slotImg} title=\"Mega Fire Blaze\" paragraph=\"Promo del giorno\" jackpotValue=\"99.000.000€\" onPress={openPromo} />"
+      },
+      {
+        "name": "single-use-in-layout",
+        "description": "Regola dal design system (catturata in description): Card Entrypoint è SINGLE-USE — un solo elemento nel layout, non in cluster/grid. È un callout di rilievo. Posizionata in homepage tra Hero e altre sezioni, oppure nella sezione dedicata di una categoria (es. sotto al Heading 'Slot del mese').",
+        "composition": "{singleHighlightedProduct ? <CardEntrypoint {...product} /> : null}"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "card-entrypoint-in-grid-or-cluster",
+        "reason": "Regola DS esplicita: 'single-use elements'. Mettere N Card Entrypoint affiancate in grid/cluster dilui completamente il significato di 'highlight' — l'utente vede tante card visivamente forti e nessuna emerge davvero. Inoltre il Caption esterno + icon decorativa sotto al container è disegnato come unità isolata, non come row di lista.",
+        "alternative": "Una sola Card Entrypoint per layout/sezione. Per pattern di N prodotti in cluster usare Card Product (grid), Listing Item Variant=Image (lista), o un carosello di Hero (homepage hero scroll)."
+      },
+      {
+        "scenario": "missing-image-or-low-quality",
+        "reason": "Il pattern è 'primarily through an IMAGE' — l'immagine occupa tutto il container 160h ed è il vero protagonista. Senza immagine la card è un rettangolo grigio con testo bianco (illeggibile sul placeholder) — il valore del componente sparisce.",
+        "alternative": "Sempre con un'immagine di alta qualità del prodotto (cover slot, copertina gioco, etc.). Se l'immagine non è disponibile o di bassa qualità, usare un componente diverso (es. Card Highlight senza immagine prominent, Banner Race con illustration laterale, Card Detail variant custom)."
+      },
+      {
+        "scenario": "promo-border-without-actual-promo",
+        "reason": "Variant `Promo Border=True` aggiunge Badge Ribbon 'Promo' + border 2px arancione: comunica visivamente 'questo è in offerta'. Usarlo decorativamente su prodotti non-promo tradisce l'aspettativa e svaluta il segnale del ribbon quando appare su prodotti realmente in promo.",
+        "alternative": "Promo Border=True SOLO per prodotti effettivamente in promozione. Per prodotti highlight non-promo usare Variant False (più sobrio, niente ribbon)."
+      },
+      {
+        "scenario": "long-title-or-paragraph",
+        "reason": "Lo spazio testuale sopra l'immagine 160h è limitato: Title display/d2 (24px) + Paragraph body/p (14px) + Jackpot info pill devono coesistere nel padding 16/16. Title lunghi (>3-4 parole) o Paragraph multi-riga lunghi spingono fuori la pill jackpot o coprono troppa immagine — riducendo il valore visivo del componente.",
+        "alternative": "Title corto (1-3 parole, es. 'Mega Fire Blaze'), Paragraph breve (1 riga, es. 'Vinci fino a 99M€'). Se servono claim articolati spostarli nella pagina destinazione."
+      },
+      {
+        "scenario": "use-without-jackpot-or-numeric-callout",
+        "reason": "Il pattern Figma include sempre la JACKPOT INFO PILL in basso — è parte centrale del design. Usare la card SENZA un valore numerico/jackpot (es. solo Title + Paragraph) lascia la pill vuota o assente, creando un vuoto visivo nel layout.",
+        "alternative": "Card Entrypoint funziona meglio per prodotti con un VALORE NUMERICO ATTRATTIVO (jackpot, montepremi, % di payout). Per prodotti senza numero da evidenziare considerare Card Highlight (pattern simile ma senza jackpot pill) o Card Product."
+      },
+      {
+        "scenario": "tap-on-caption-or-decorative-icon",
+        "reason": "La Caption + icon decorativa SOTTO al container sono display puro (info accessoria tipo 'Aggiornato 10 min fa'). Renderle tappabili come azioni separate confonde — l'utente non sa più cosa è 'l'entry point' della card.",
+        "alternative": "La SOLA affordance tappabile è la card container intera (`onPress` che apre il prodotto). Caption e icon decorativa sono info passive."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "ImageContainer": {
+        "required": true,
+        "description": "Container principale 343-346 wide × `cardEntrypoint/size/height` (160h), radius `cardEntrypoint/size/border/radius` (12), padding `cardEntrypoint/size/padding/horizontal|vertical` (16/16). Bg = IMMAGINE FULL-BLEED del prodotto (asset consumer). In Variant=`Promo Border=True` aggiunge border 2px (`cardEntrypoint/size/border/width`) color `cardHighlight/color/border` (arancione promo)."
+      },
+      "TextOverlay": {
+        "required": true,
+        "description": "Testo sovrapposto all'immagine, posizionato in basso-sinistra del container. Title in `typography/display/d2` (24px ExtraBold Mulish, line-height 28). Paragraph in `typography/body/p` (14px regular Roboto, line-height 18). Entrambi nel token `cardHighlight/color/text` (bianco) per contrasto sull'immagine. Gap interno `cardHighlight/size/gap` (8)."
+      },
+      "JackpotInfo": {
+        "required": true,
+        "description": "Pill informativa in basso-sinistra (sotto al TextOverlay): 'JACKPOT' label + valore (es. '99.000.000€') in `typography/body/captionBold` (12px Bold) o `typography/body/microCaptionBold` (10px Bold). Token namespace `jackpotInfo/*`: padding `*/size/padding/horizontal|vertical` (4/4), radius `*/size/border/radius` (4), border `*/size/border/width` (1). Riusa colori brand jackpot. È parte intrinseca del pattern — la card è pensata per prodotti con jackpot/montepremi."
+      },
+      "PromoRibbon": {
+        "required": false,
+        "description": "SOLO in Variant=`Promo Border=True`: Badge Ribbon 'Promo' in alto-sinistra, sovrapposto all'angolo del container con effetto 'nastro arancione' diagonale. Riusa token `badgeRibbon/color/promo/bg` (arancione) e `*/color/promo/text` (quasi nero). Riusa l'atomo Badge Ribbon (componente Badge Ribbon `Promo`)."
+      },
+      "Caption": {
+        "required": false,
+        "description": "Testo sotto al container (FUORI dal box dell'immagine): `typography/body/caption` (12px regular Roboto), color `cardEntrypoint/color/caption/color/text` (dark). Pensato per info accessoria/contesto (es. 'Aggiornato 10 minuti fa', 'Esclusiva Sisal'). Accompagnato da un'icon 24×24 decorativa a destra, color `cardEntrypoint/color/caption/color/icon` (dark)."
+      }
+    },
+    "nestedComponents": ["Badge Ribbon"],
+    "commonPartners": ["Page", "Heading"],
+    "parentConstraints": [
+      "SINGLE-USE in layout: una sola Card Entrypoint per sezione/pagina. NON in grid o cluster.",
+      "Posizionata tipicamente in homepage (es. sotto Hero, fra sezioni) o in pagine di categoria come callout di UN prodotto specifico.",
+      "Larghezza tipica 343 (Variant False) o 346 (Variant True con border 2px in più), padding orizzontale verso bordi pagina gestito dal parent."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap": "Tap sull'INTERA card (ImageContainer) esegue `onPress` — tipicamente naviga al dettaglio del prodotto/promo. La Caption e l'icon decorativa sotto NON sono interattive (display puro).",
+      "no-state-visuals": "NIENTE State Pressed disegnato in Figma. Il feedback di touch è gestito dal pattern nativo di piattaforma (lieve opacity change iOS, ripple Android)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "button (l'intera card è tappabile come unità di navigazione) — su iOS `accessibilityTraits = .button` + `accessibilityLabel` combinato (Title + Paragraph + JackpotInfo + Promo se presente, es. 'Mega Fire Blaze, vinci fino a 99 milioni, jackpot 99.000.000 euro, promo, pulsante'). Su Android `Role.Button` con `contentDescription` analoga. L'immagine background è semantica (rappresenta il prodotto) — esporne label se l'immagine NON è già coperta dal Title; altrimenti marcarla decorativa. Caption + icon decorativa esterne lette dopo come testo statico.",
+    "screenReader": "Annuncio: '[Promo,] [Title], [Paragraph], jackpot [Value], pulsante. [Caption]'. La Caption esterna viene letta come elemento statico DOPO il pulsante (essendo fuori dal container tappabile).",
+    "focusManagement": "Container è l'unico elemento focusable. Caption esterna non focusable. La PromoRibbon non è focusable (è etichetta visuale).",
+    "touchTarget": "Container 343-346 × 160 — abbondantemente sopra-soglia 44pt iOS / 48dp Android. Hit area = tutto il container ImageContainer (la Caption esterna NON fa parte del touch target).",
+    "wcag": "AA — Title/Paragraph bianchi su immagine richiedono che l'immagine abbia contrasto sufficiente (consumer responsibility: usare immagini con zone scure dove vive il testo, o aggiungere overlay scuro come Hero). Jackpot pill ha bg dedicato che garantisce contrasto del valore. Promo ribbon ha contrasto AA per design (arancione + text quasi-nero). Border arancione su Variant=True comunica 'promo' sia per colore sia per FORMA (ribbon diagonale) — non solo-colore."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["card entrypoint", "entry point card", "product highlight card", "jackpot card", "single-use card", "callout card"],
+    "context": "Card SINGLE-USE per evidenziare UN prodotto specifico tramite immagine full-bleed prominent + testo di supporto. 343 wide × 160h. Composta da: ImageContainer (background image full-bleed, radius 12, padding 16/16) + TextOverlay (Title display/d2 24px Mulish + Paragraph body/p 14px, entrambi bianchi su immagine, riusa tokens `cardHighlight/*`) + JackpotInfo pill in basso (valore numerico tipo jackpot/montepremi, token `jackpotInfo/*`) + Caption esterna sotto + icon decorativa. 2 `Promo Border`: False (default) / True (border 2px arancione + Badge Ribbon 'Promo' in alto-sinistra, riusa Badge Ribbon atom). USO SINGLE-USE: una sola Card Entrypoint per layout/sezione — NON in grid/cluster (per quello usa Card Product o Hero scroll). Pattern dedicato a prodotti con VALORE NUMERICO ATTRATTIVO (jackpot, montepremi). Senza un numero da evidenziare considerare Card Highlight invece. Three-way naming: slug `card-entrypoint`, frame 'Card Entrypoint', namespace `cardEntrypoint/*` (camelCase singolare — distinto da `cardDetails/*`). Solo il container è tappabile (intera card → onPress); Caption esterna è display puro."
   },
+
   "rationale": {
     "designDecisions": ""
   }

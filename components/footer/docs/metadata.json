@@ -1,0 +1,108 @@
+{
+  "slug": "footer",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6507:24627",
+    "ios": "6507:24627"
+  },
+
+  "component": {
+    "name": "Footer",
+    "category": "atoms",
+    "description": "Footer di compliance per le app di gioco. Contiene loghi istituzionali (ADM concessionaria, ADM watermark, logo 'Responsabili Insieme'/'Let's Play Responsibly', +18), il warning regolamentare 'IL GIOCO è VIETATO AI MINORI E PUÒ CAUSARE DIPENDENZA PATOLOGICA' e la Concessione legale (ragione sociale, sede, P.IVA, codice GAD). 3 varianti `brand` in Figma: `sisal`, `pokerstars`, `snai` — eccezione rispetto al pattern multibrand standard del DS: qui il brand cambia il contenuto (testo legale + logo responsabilità) NON solo i token colore, perché ogni brand ha una sua entità legale italiana e GAD distinto regolato da ADM. Container 360 × 140, border-top, padding orizzontale 40 (token `footer/size/padding`), gap verticale 8 fra le righe.",
+    "type": "display"
+  },
+
+  "usage": {
+    "useCases": [
+      "app-level-compliance-footer",
+      "regulatory-disclosure",
+      "brand-legal-info"
+    ],
+    "requiredProps": ["brand"],
+    "commonPatterns": [
+      {
+        "name": "page-footer-sticky-bottom",
+        "description": "Footer ancorato in fondo a ogni pagina principale dell'app. Tipicamente presente sotto al contenuto scrollable della Page; non è sticky-on-scroll, ma scrolla con la pagina (è l'ultimo elemento del flusso). Variante `brand` scelta a livello build/init dell'app coerentemente con la build branded corrente (sisal vs pokerstars vs snai).",
+        "composition": "<Footer brand={appBrand} />"
+      },
+      {
+        "name": "in-modal-flow-end",
+        "description": "Footer mostrato in modali/full-page sheet di onboarding o di registrazione, dove l'utente deve vedere le info regolamentari prima/durante il flusso (es. KYC, accettazione termini). Stessa variante `brand` dell'app.",
+        "composition": "<Footer brand={appBrand} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "hide-or-omit-footer",
+        "reason": "Il Footer contiene informazioni REGOLAMENTARI obbligatorie per le app di gioco autorizzate in Italia (warning '+18 / dipendenza patologica', concessione GAD, ragione sociale). Nasconderlo per ragioni estetiche o di spazio non è una scelta di design — è non-compliance.",
+        "alternative": "Includere il Footer in ogni schermata pertinente (pagine principali dell'app, flussi di registrazione/pagamento). Per layout dense considerare di renderlo collapsable solo se la regolamentazione lo permette — verificare con legal/compliance prima."
+      },
+      {
+        "scenario": "wrong-brand-content",
+        "reason": "Ogni variante `brand` ha contenuto legale SPECIFICO della ragione sociale (Sisal Italia / TSG Italy / Snaitech) e del codice GAD (16020 / 16023 / 16032). Usare la variante sbagliata = mostrare la concessione di un altro operatore = non-compliance + rischio legale.",
+        "alternative": "La variante `brand` deve corrispondere alla build branded dell'app corrente. Tipicamente è impostata a livello globale (config/theme) e non scelta a livello componente — non lasciarla configurabile da UI o da feature flag dinamici."
+      },
+      {
+        "scenario": "edit-legal-text-from-code",
+        "reason": "Il contenuto del Footer (warning, ragione sociale, indirizzo, P.IVA, GAD) NON è copy editabile da product/design — è testo regolato. Modificarlo via stringa hardcoded in codice senza passare da legal/compliance può portare a non-compliance ADM.",
+        "alternative": "Trattare il contenuto del Footer come stringa di compliance: gestita da legal, versionata, aggiornata solo via process formale. La variante `brand` cambia stringa nel design — non è una decisione di copywriting."
+      },
+      {
+        "scenario": "footer-as-navigation",
+        "reason": "Non è un footer di navigazione (link a sezioni dell'app, link social, etc.) — è un footer di compliance. Aggiungere link di navigazione o azioni sotto/dentro al Footer ne diluisce la funzione regolamentare e confonde l'utente.",
+        "alternative": "Per link di navigazione globali usare Header o un'area dedicata. Il Footer rimane esclusivamente compliance/legal."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "LoghiRow": {
+        "required": true,
+        "description": "Prima riga: 4 loghi istituzionali allineati con `justify-between` su tutta la larghezza. Da sinistra: (1) ADM concessionaria 38×38 — 'Custom-element/Istituzionali / ADM1'; (2) ADM watermark/seal 38×41 — 'Custom-element/Istituzionali / ADM2'; (3) logo di gioco responsabile 74×20 ('Responsabili Insieme' per sisal/pokerstars, 'Let's Play Responsibly' per snai); (4) +18 24×24. I loghi sono asset PNG/SVG, non token icon — sono asset istituzionali brand/ADM."
+      },
+      "WarningRow": {
+        "required": true,
+        "description": "Seconda riga: warning 'IL GIOCO è VIETATO AI MINORI E PUÒ CAUSARE DIPENDENZA PATOLOGICA' in Roboto Bold 8px, color `footer/color/elements` (dark), centrato. Identico in tutte le 3 varianti brand. Testo regolamentare ADM — non editare."
+      },
+      "ConcessioneRow": {
+        "required": true,
+        "description": "Terza riga: stringa legale della ragione sociale (es. 'Sisal Italia S.p.A. - Via Ugo Bassi 6, 20159 Milano - P.I. 02433760135 - Conc. GAD: 16020'). Roboto Regular 8px, color `footer/color/text` (grigio), centrato. Contenuto specifico per `brand` — ogni brand ha la propria entità legale e codice GAD."
+      }
+    },
+    "nestedComponents": [],
+    "commonPartners": ["Page", "Header"],
+    "parentConstraints": [
+      "Pensato per essere l'ultimo elemento del flusso verticale di una Page (sotto al contenuto, scrolla con la pagina — non sticky). Border-top per separarsi visivamente dal contenuto sopra (token `footer/color/border`).",
+      "Il bg interno è `footer/color/bg`: se la pagina ospite ha sfondo diverso, il Footer mantiene il proprio bg chiaro per leggibilità del testo 8px (necessità di compliance, non solo estetica)."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {},
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "contentinfo — su iOS impostare il container come `accessibilityElement=true` con `accessibilityTraits = .staticText`; su Android `Role.None` con i contenuti come testo statico. I loghi istituzionali (ADM, +18, Responsabili Insieme) sono asset con valenza compliance ma graficamente non testuali — esporli con `accessibilityLabel` esplicito per non lasciarli muti allo screen reader (es. 'Logo ADM concessionaria', 'Vietato ai minori di 18 anni', 'Programma Responsabili Insieme').",
+    "screenReader": "Lo screen reader dovrebbe poter leggere in sequenza: (1) i loghi con labels esplicite; (2) il warning di legge ('Il gioco è vietato ai minori e può causare dipendenza patologica'); (3) la concessione con ragione sociale e codice GAD. Considerare di raggruppare tutto in un unico elemento accessibile con `accessibilityLabel` combinato per evitare che lo screen reader sintetizzi il footer in modo frammentato — ma valutare con accessibility/legal se è preferibile lettura granulare per compliance.",
+    "focusManagement": "Non focusable (nessun elemento interattivo nel Footer). Se il design futuro aggiungerà link (es. 'Privacy', 'Termini'), quelli saranno elementi focusable separati con ordine di lettura naturale.",
+    "touchTarget": "N/A — niente elementi tappabili in questa variante atom del Footer.",
+    "wcag": "AA — testo 8px è sotto la soglia di leggibilità consigliata (WCAG AA suggerisce minimo 12-14px per body text), ma è una decisione di design legata alla densità del footer di compliance. Per garantire AA il contrasto fra `footer/color/elements`/`footer/color/text` e `footer/color/bg` deve essere alto (entrambi i token sono scuri/grigio su bg chiaro). Verificare contrasto con i token risolti del brand corrente."
+  },
+
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["footer", "compliance footer", "ADM", "concessione", "responsabili insieme", "gioco vietato minori", "regolamentare"],
+    "context": "Usa Footer come elemento di compliance regolamentare per app di gioco italiane: loghi istituzionali (ADM, +18, Responsabili Insieme), warning di legge, ragione sociale + codice GAD. 3 varianti `brand`: sisal / pokerstars / snai — eccezione al pattern multibrand del DS: qui il brand cambia CONTENUTO (testo legale, logo responsabilità) non solo i token colore, perché ogni brand è una concessionaria distinta con propria entità legale e GAD. La variante `brand` deve corrispondere alla build branded dell'app — NON lasciare configurabile da UI o feature flag (rischio compliance). Il contenuto testuale è regolamentato, NON editabile da product/design senza process legal/compliance. Non interattivo, niente State. Tipicamente in fondo a ogni Page principale, scrolla con la pagina."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

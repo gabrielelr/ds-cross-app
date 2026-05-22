@@ -1,0 +1,127 @@
+{
+  "slug": "link",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5805:90661",
+    "ios": "5805:90661"
+  },
+
+  "component": {
+    "name": "Link",
+    "category": "atoms",
+    "description": "Testo tappabile inline o standalone, sempre sottolineato, usato ESCLUSIVAMENTE per navigazione — a un'altra pagina, a un'ancora nella stessa pagina, a un indirizzo email, a un numero di telefono o a una risorsa esterna. NON usare Link per azioni (submit form, salva, cancella, apri modale) — per le azioni esiste Button. 2 `Size` × 2 `State` = 4 varianti in Figma: Size `md` (14px Bold Roboto, line-height 18) o `sm` (12px Bold Roboto microLink, line-height 16), State `Default` o `Disabled`. NON c'è State Pressed disegnato in Figma per il Link (a differenza di Button) — il feedback di touch resta affidato al pattern nativo di piattaforma (es. lieve opacity change su iOS, ripple su Android). Il Link può apparire come parola singola dentro a un testo (es. 'leggi i Termini e Condizioni') o come call-to-action standalone (es. 'Scopri di più', 'Vedi tutti').",
+    "type": "interactive"
+  },
+
+  "usage": {
+    "useCases": [
+      "navigate-to-page",
+      "anchor-in-same-page",
+      "mailto-or-tel",
+      "external-resource",
+      "see-more-callout",
+      "inline-reference-in-paragraph"
+    ],
+    "requiredProps": ["label", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "inline-link-in-paragraph",
+        "description": "Link come parola/frase tappabile dentro a un paragrafo di testo (es. 'La partecipazione al programma è regolata da questi Termini e Condizioni'). Il Link si distingue per il sottolineato; tappando si va alla pagina/sezione collegata. Tipicamente Size=md per allinearsi alla tipografia body del paragrafo ospite.",
+        "composition": "<Paragraph>La partecipazione al programma è regolata da questi <Link label=\"Termini e Condizioni\" onPress={openTerms} /></Paragraph>"
+      },
+      {
+        "name": "standalone-see-more",
+        "description": "Link standalone come callout di approfondimento (es. 'Scopri di più' alla fine di una card informativa, 'Vedi dettagli' sotto a un sommario). Size=md per il pattern canonico, sm per contesti più densi (footer, riga compatta).",
+        "composition": "<Link label=\"Scopri di più\" onPress={() => navigate('/dettagli')} />"
+      },
+      {
+        "name": "mailto-or-tel",
+        "description": "Link a `mailto:` o `tel:` per esporre un indirizzo email o numero di telefono tappabile (es. 'Scrivici: support@example.com', 'Chiamaci: 800123456'). Sul tap iOS/Android, il sistema apre l'app mail o il dialer rispettivamente. Il Link è il modo corretto di esporre questi target, NON un Button.",
+        "composition": "<Link label=\"support@example.com\" onPress={() => Linking.openURL('mailto:support@example.com')} />"
+      },
+      {
+        "name": "compact-microlink-in-footer",
+        "description": "Link Size=sm (microLink 12px Bold) per contesti dove la densità tipografica è elevata (footer compliance link, riga meta compatta, label secondaria sotto a un campo). Mantiene la riconoscibilità del Link (sottolineato + Bold) ma occupa meno spazio verticale.",
+        "composition": "<Link size=\"sm\" label=\"Cookie Policy\" onPress={openCookiePolicy} />"
+      },
+      {
+        "name": "disabled-temporary-unavailable",
+        "description": "Link in `State=Disabled` quando la destinazione è temporaneamente non raggiungibile (es. 'Termini e Condizioni' grigio finché il documento PDF non è disponibile, 'Verifica documenti' disabilitato finché il caricamento non è completo). Colore al token `link/color/text/disabled`. Non tappabile.",
+        "composition": "<Link label=\"Termini e Condizioni\" disabled />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "link-for-action-cancel-save-submit",
+        "reason": "Link è SEMANTICAMENTE per navigazione. Usarlo per azioni (cancel, save, submit, delete, conferma, ecc.) tradisce l'aspettativa dell'utente che impara 'sottolineato = mi porta da qualche parte'. Esempio Don't dal design system: usare 'Cancella' come Link sotto a un Button 'Salva' in un form — l'utente potrebbe confondersi pensando di tornare alla pagina precedente invece di annullare l'input.",
+        "alternative": "Per azioni usare Button (variante e size appropriata: solid/primary per azione principale, ghost/tertiary per azione secondaria). Il pattern 'Salva + Cancella' deve usare 2 Button (un solid + un ghost), NON un Button + un Link."
+      },
+      {
+        "scenario": "link-without-underline-or-styled-differently",
+        "reason": "Il Link è riconosciuto come tale dall'utente PRIMA per il sottolineato, DOPO per il bold. Rimuovere il sottolineato (es. 'voglio un link senza underline per estetica') gli toglie la sua firma visiva — diventa indistinguibile da testo statico o da una label di button.",
+        "alternative": "Il Link è sempre sottolineato nei design Figma. Se serve un trigger tappabile senza sottolineato (es. titolo cliccabile, riga di card tappabile), usare l'intero container tappabile (es. Card con onPress), NON il Link senza la sua firma."
+      },
+      {
+        "scenario": "link-as-primary-cta",
+        "reason": "Il Link ha enfasi bassa (testo sottolineato 14px Bold) — non è progettato per essere la CTA primaria di una schermata. Usarlo come unica CTA (es. 'Conferma pagamento' come Link al posto di un Button solid) sotto-comunica l'importanza dell'azione e fa fatica all'utente nel riconoscerla come prossimo step.",
+        "alternative": "Per CTA primarie usare Button solid/primary. Riservare Link a navigazione di accompagnamento (callout di approfondimento, link inline, mailto/tel)."
+      },
+      {
+        "scenario": "long-multiline-link",
+        "reason": "Il Link standalone è tipicamente 1 riga corta. Quando un link inline dentro un paragrafo si estende su 2-3 righe, il sottolineato sotto a tutte le righe diventa visivamente pesante e l'utente fa fatica a riconoscere dove inizia/finisce il target tappabile. Inoltre l'hit area diventa molto irregolare.",
+        "alternative": "Mantenere il Link a 1-4 parole. Se la frase di context da rendere tappabile è lunga, accorciare la 'parte link' alle parole chiave (es. invece di 'leggi tutti i nostri Termini e Condizioni del servizio del 2026' usare 'leggi i Termini e Condizioni') o spostare il link in un callout standalone dopo il paragrafo."
+      },
+      {
+        "scenario": "link-with-icon-as-button-alternative",
+        "reason": "Il Link Figma è puro testo sottolineato — NON ha slot icona disegnato (a differenza di Button). Aggiungere un'icona accanto al Link (es. chevron, external arrow) lo rende visivamente simile a un Button Quicklink o a un Heading con outlet — confonde il pattern e tradisce l'aspettativa di 'Link = parola sottolineata'.",
+        "alternative": "Per icona + label tappabile usare Button (variante ghost/tertiary con icona) o Heading con `Outlet=Link`/`Outlet=Icon`. Il Link rimane puro testo."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Label": {
+        "required": true,
+        "description": "Testo del link, sempre sottolineato (text-decoration: underline). Tipografia dipende da Size: `Size=md` usa `typography/interaction/link` (14px Bold Roboto, line-height 18); `Size=sm` usa `typography/interaction/microLink` (12px Bold Roboto, line-height 16). Colore via token `link/color/text/{default|disabled}`. Single-line nel pattern standalone; può wrappare quando il Link è inline dentro a un paragrafo (eredita il wrap del testo ospite)."
+      }
+    },
+    "nestedComponents": [],
+    "commonPartners": ["Paragraph", "Card", "Footer", "Form Field", "Hero"],
+    "parentConstraints": [
+      "Il Link può vivere INLINE dentro a un blocco di testo (paragrafo, descrizione di card, body di Hero/Banner) o STANDALONE come callout di navigazione (es. 'Scopri di più' sotto a una card, 'Vedi tutti' in una riga heading — anche se in quel caso l'Outlet del Heading è già un Link gestito dal componente Heading).",
+      "Quando inline, il Link eredita line-height e color del paragrafo ospite per il flow normale del testo, ma il `link/color/text/default` resta — tipicamente il design garantisce che il link inline sia coerente con il color del paragrafo per non spezzare il flow."
+    ]
+  },
+
+  "behavior": {
+    "states": ["default", "disabled"],
+    "interactions": {
+      "tap": "Tap esegue `onPress` — tipicamente una navigazione (push a un'altra pagina, scroll a un'ancora, apertura di `mailto:` / `tel:` / URL esterno). NON usare il tap del Link per azioni (submit, save, cancel, ecc.).",
+      "no-pressed-state": "Non c'è uno `State=Pressed` disegnato in Figma — il feedback di touch è affidato al pattern nativo di piattaforma (lieve opacity change su iOS, ripple su Android). A differenza di Button e degli altri componenti interattivi del DS, il Link non ha una transizione visiva esplicita durante il touch.",
+      "disabled": "In `State=Disabled` il Link non è tappabile. Color label al token `link/color/text/disabled` (grigio chiaro), sottolineato mantenuto. Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` + `accessibilityTraits` include `.notEnabled`."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "link — su iOS impostare `accessibilityTraits = .link` (NON `.button`, è importante per la distinzione semantica); su Android usare `Role.Button` con `Modifier.semantics { role = Role.Button }` ma idealmente `Role.None` + announcement esplicito 'link' come parte dell'accessibilityLabel. `accessibilityLabel` = la Label visibile. Per `mailto:` / `tel:` aggiungere hint contestuale (es. 'Apre l'app mail per scrivere a support@example.com').",
+    "screenReader": "Lo screen reader legge 'Label, link' (vs Button che è 'Label, pulsante'). Questa distinzione semantica aiuta l'utente a capire se l'interazione lo porterà altrove (link) o eseguirà un'azione (button). Per `State=Disabled` aggiungere 'non disponibile' (iOS) o 'disabilitato' (Android).",
+    "focusManagement": "Focusable in `Default`, non focusable in `Disabled`. Movimento focus standard di piattaforma. Inline dentro a un paragrafo, il Link è raggiungibile come elemento separato nell'ordine di lettura — lo screen reader può saltarci sopra con la navigazione 'per link' (sia iOS che Android espongono questa modalità).",
+    "touchTarget": "Link Size=md è ~18h (line-height 18), Size=sm è ~16h — entrambi sotto-soglia (44pt iOS / 48dp Android). Per Link STANDALONE estendere l'hit area del wrapper tappabile tramite padding verticale (almeno 44pt totali). Per Link INLINE dentro a un paragrafo, l'hit area è naturalmente il bounding-box del testo, che è sotto-soglia ma accettabile per il pattern (il sottolineato + bold rende il target visivamente distinto).",
+    "wcag": "AA — il Link è comunicato sia da colore (token `link/color/text/default`) sia da forma (sottolineato + Bold): per chi non distingue il colore, l'underline è il fallback. Lo State=Disabled è comunicato sia da colore (grigio) sia da semantica (`accessibilityTrait .notEnabled`). Il contrasto del `link/color/text/default` su superficie chiara è ampio."
+  },
+
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["link", "hyperlink", "anchor", "navigation link", "scopri di più", "vedi tutti", "mailto", "tel"],
+    "context": "Usa Link ESCLUSIVAMENTE per navigazione: ad un'altra pagina, ancora nella stessa pagina, email (`mailto:`), telefono (`tel:`), risorsa esterna. NON usarlo per azioni (submit, save, cancel, delete, apri modale) — per quelle c'è Button. Regola dal design system: 'Use links for navigation, not actions.' 2 `Size`: `md` (14px Bold Roboto) per il pattern canonico, `sm` (12px Bold microLink) per contesti densi. 2 `State`: Default + Disabled — NON c'è `State=Pressed` disegnato (a differenza di Button, il feedback touch è gestito dal pattern nativo di piattaforma). Sempre sottolineato (firma visiva del Link, NON rimuovere). Può apparire INLINE dentro a un paragrafo (parola/frase tappabile) o STANDALONE come callout di navigazione. NON aggiungere icone — il Link è puro testo (per icone+label usa Button o Heading.outlet). Role accessibilità: `link` (NON `button`) per garantire che lo screen reader distingua semanticamente."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

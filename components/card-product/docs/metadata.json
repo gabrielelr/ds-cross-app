@@ -1,44 +1,164 @@
 {
   "slug": "card-product",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "777:8189",
+    "ios": "777:8189"
+  },
+
   "component": {
     "name": "Card Product",
-    "category": "atoms",
-    "description": "",
+    "category": "molecules",
+    "description": "Card di prodotto per liste/griglie/caroselli (es. slot, eventi sportivi, partite). 3 `Size` × 2 `Promo Outline` = 6 varianti. Size: `sm` (160×167, image 90h, padding 0, gap 8 — versione compatta per griglie dense); `md` (152×229, image 152h, padding 8/8, gap 8 — versione media con info pills sovrapposte all'image); `lg` (160×237, image 160h, gap 8 — versione larga, stesso pattern md ma più alta). `Promo Outline`: false (default, niente border) / true (border 2px color `cardProduct/color/border` arancione + Badge Ribbon 'Promo' in alto-sinistra). Composizione canonica: Counter pill sopra (es. 'Tomorrow by 10:00 AM' in `counter/md/*`) + Image del prodotto + Favorite Badge top-right (heart su dark `cardProduct/color/favoriteBadge/bg` 80% trasparente) + (solo md/lg) BingoInfo + JackpotInfo pills sovrapposti in basso sull'image + Caption + info-icon sotto l'image + Price (Da X,XX€). Token namespace `cardProduct/*`. A differenza di Card Entrypoint (SINGLE-USE, una sola card per layout), Card Product è progettata per CLUSTER/GRIDS/CAROSELLI: N card affiancate in liste di prodotti.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "product-grid-listing",
+      "slot-list-item",
+      "event-card-in-listing",
+      "carousel-product-tile",
+      "search-results-product"
+    ],
+    "requiredProps": ["size", "title", "imageUrl", "price", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "sm-compact-grid",
+        "description": "Variant `Size=sm` (167h compatta) per pattern di griglie dense (es. 3 colonne su mobile, lista compatta di slot). Niente info pills interne — solo Counter sopra + image + Caption + price. Adatta a contesti dove la quantità di card sullo schermo è prioritaria sulla profondità info per card.",
+        "composition": "<Grid cols={3}>{slots.map(s => <CardProduct size=\"sm\" {...s} />)}</Grid>"
+      },
+      {
+        "name": "md-lg-with-jackpot-info",
+        "description": "Variant `Size=md` o `lg`: aggiungono BingoInfo + JackpotInfo pills sovrapposte in basso sull'image. Adatte a prodotti con valore numerico da evidenziare (es. slot col jackpot corrente, partita con quota). md è 229h, lg 237h — differenza marginale, lg è la 'hero' della griglia (es. prima card di una sezione).",
+        "composition": "<CardProduct size=\"md\" title={t} image={i} jackpot=\"99.000.000€\" price=\"0,50€\" {...} />"
+      },
+      {
+        "name": "promo-outline-callout",
+        "description": "`Promo Outline=true` per evidenziare prodotti in promozione: border 2px arancione + Badge Ribbon 'Promo' in alto-sinistra dell'image. Pattern utile in griglie miste promo+non-promo per attirare attenzione sui prodotti in offerta. La promo outline funziona su tutte le Size.",
+        "composition": "<CardProduct size=\"md\" promoOutline {...promoProduct} />"
+      },
+      {
+        "name": "with-favorite-badge",
+        "description": "Favorite Badge in alto-destra dell'image: icon heart 24×24 (color `cardProduct/color/favoriteBadge/icon` bianco) su bg circolare scuro semi-trasparente (`*/bg`, dark 80% per leggibilità su immagini variabili). Tap toggle preferito (consumer-managed). Visibile in tutte le Size.",
+        "composition": "<CardProduct {...product} isFavorite={isFav} onFavoriteToggle={toggle} />"
+      },
+      {
+        "name": "horizontal-carousel-of-products",
+        "description": "Card Product in carosello orizzontale scrollable (es. 'Slot in evidenza', 'Partite di oggi'). Tipicamente Size=md o lg, con header Heading sopra che dà titolo alla sezione + outlet Link 'Vedi tutti'. La griglia scrolla orizzontalmente con gesture nativa.",
+        "composition": "<Heading title=\"Slot del giorno\" outlet=\"Link\" linkLabel=\"Vedi tutti\" /><HorizontalScroll>{slots.map(s => <CardProduct size=\"md\" {...s} />)}</HorizontalScroll>"
+      },
+      {
+        "name": "by-context-2col-grid-templates",
+        "description": "Card Product organizzata in GRIGLIE 2-COL BY CONTEXT (template di sezione/categoria, frame Figma 'Card Product Grid Template' 6257:46239). 7 Context disegnati con stessa STRUTTURA (2-col grid 328 wide, gap fra card, Heading di sezione sopra) ma CONTENUTO category-specific: `Homepage` (8 card, NO Counter — slot generici senza orario), `Lotterie` (8 card, CON Counter 'Tomorrow by 10:00 AM' per orario estrazione), `Virtual` (8 card no-Counter), `Giochi di carte` (8 card), `Bingo` (8 card), `Casinò` (8 card), `Gratta e vinci` (6 card — sezione più corta). NON sono nuovi componenti — sono PATTERN D'USO della Card Product replicata in griglia. La differenza strutturale rilevante: il Counter pill sopra ogni card è VISIBILE in contesti con orario di disponibilità (Lotterie, eventualmente eventi sportivi), HIDDEN in contesti senza orario (Homepage, Casinò, Bingo, ecc.). Il consumer sceglie se mostrare il Counter in base al category context.",
+        "composition": "<Heading title={categoryName} /><Grid cols={2}>{products.map(p => <CardProduct size=\"md\" showCounter={categoryHasSchedule} {...p} />)}</Grid>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "card-product-as-single-callout",
+        "reason": "Card Product è disegnata per liste/griglie/caroselli — N card ripetute della stessa natura. Usarla isolata (una sola card in un layout) la fa sembrare orfana — il pattern visivo presuppone vicini omogenei.",
+        "alternative": "Per highlight isolato di UN prodotto usare Card Entrypoint (SINGLE-USE, immagine prominent + jackpot). Per Card Product mantenere il pattern N>=2 in cluster/grid."
+      },
+      {
+        "scenario": "mixed-sizes-in-same-grid",
+        "reason": "Mescolare Card Product sm/md/lg nella stessa griglia crea righe di altezza variabile — l'occhio fatica a scansionare verticalmente quando le card hanno altezze diverse (167/229/237).",
+        "alternative": "Mantenere una sola Size per griglia/sezione. Per gerarchia visiva (es. prima card più grande) considerare Card Highlight come prima + Card Product Size=md per il resto."
+      },
+      {
+        "scenario": "sm-with-internal-info-pills",
+        "reason": "Size=sm NON ha disegnato BingoInfo / JackpotInfo pills sovrapposti (l'image 90h è troppo piccola per ospitarli leggibilmente). Forzare le pills su sm spacca l'image e rende il testo illeggibile.",
+        "alternative": "Per prodotti con jackpot/montepremi prominenti usare Size=md o lg. Riservare sm a prodotti senza info numeriche da evidenziare nell'image (es. slot senza jackpot, eventi senza meta numerico)."
+      },
+      {
+        "scenario": "promo-outline-without-actual-promo",
+        "reason": "Promo Outline=true aggiunge border arancione + Badge Ribbon 'Promo': comunica visivamente 'in offerta'. Usarlo decorativamente su prodotti non-promo svaluta il segnale quando appare su prodotti realmente in offerta — l'utente impara che il ribbon non significa nulla.",
+        "alternative": "Promo Outline=true SOLO per prodotti effettivamente in promozione attiva. Per altri pattern di highlighting non-promo (es. 'Nuovo', 'In evidenza') usare Badge Default con label custom."
+      },
+      {
+        "scenario": "long-caption-overflow",
+        "reason": "Caption sotto l'image è in caption 12px regular e ha spazio orizzontale limitato (width della card, 152-160). Caption lunghi wrappano su 2+ righe e fanno crescere la card oltre l'altezza disegnata, spaccando l'allineamento della griglia.",
+        "alternative": "Mantenere Caption a 1 riga breve (es. nome slot, nome partita). Per descrizioni più articolate usare la pagina dettaglio raggiungibile dal tap sulla card."
+      },
+      {
+        "scenario": "use-as-cta-button",
+        "reason": "Card Product è un entry-point al prodotto (tap → naviga al dettaglio) — non un Button di azione. Trasformarla in CTA primaria (es. 'Compra ora', 'Gioca') confonde il modello mentale del pattern.",
+        "alternative": "Per CTA di acquisto/gioco usare Button (variante primary). Card Product rimane navigazione verso il dettaglio del prodotto; l'azione avviene poi nella pagina destinazione."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Counter": {
+        "required": false,
+        "description": "Pill informativa sopra l'image (es. 'Tomorrow by 10:00 AM' — orario di disponibilità del prodotto). Riusa l'atomo Counter Variant=md (`counter/md/*` — bg light-green, text dark 12px medium, height 24, radius 4, padding 4/4). Pattern dedicato a prodotti con finestra di disponibilità (es. estrazioni Lotto, partite con orario, slot a tempo)."
+      },
+      "Image": {
+        "required": true,
+        "description": "Immagine del prodotto (asset consumer) come elemento visivo principale della card. Altezza dipende dalla Size: `cardProduct/size/sm/height` 90, `*/md/height` 152, `*/lg/height` 160. Border-radius `cardProduct/size/{size}/border/radius` (8 in tutte le Size). In Variant `Promo Outline=true` border 2px (`cardProduct/size/{size}/border/width`) color `cardProduct/color/border` (arancione)."
+      },
+      "FavoriteBadge": {
+        "required": false,
+        "description": "Icon heart 24×24 in alto-destra dell'image, su bg circolare semi-trasparente. Color icon `cardProduct/color/favoriteBadge/icon` (bianco), color bg `cardProduct/color/favoriteBadge/bg` (dark 80% trasparente — per leggibilità su immagini variabili), radius `cornerRadius/full` (128 fully-round). Tap toggle preferito (consumer-managed, NON disegnato come state visivo distinto in Figma — è il consumer a gestire heart filled vs outlined)."
+      },
+      "PromoRibbon": {
+        "required": false,
+        "description": "SOLO in Variant `Promo Outline=true`: Badge Ribbon 'Promo' in alto-sinistra dell'image, sovrapposto all'angolo con effetto 'nastro arancione' diagonale. Riusa token `badgeRibbon/color/promo/bg` (arancione) + `*/color/promo/text` (quasi nero). Comunica visivamente 'prodotto in promozione'."
+      },
+      "BingoInfo": {
+        "required": false,
+        "description": "SOLO Size=md/lg: pill in basso sull'image (es. 'Bingo €9,99' — costo cartella bingo o equivalente). Token namespace `bingoInfo/*`: padding 4/4, radius 4, gap 4, bg `bingoInfo/color/bg` (bianco 50% trasparente per overlay sull'image), color text `bingoInfo/color/text` (quasi nero per contrasto). Non presente in Size=sm."
+      },
+      "JackpotInfo": {
+        "required": false,
+        "description": "SOLO Size=md/lg: pill 'JACKPOT 99.000.000€' sotto BingoInfo (sovrapposta in basso sull'image). Token namespace `jackpotInfo/*`: padding 4/4, radius 4, border 1px `*/color/border` (grigio chiaro), bg `*/color/bg` (bianco 50% trasparente), color text/icon `*/color/text|icon` (quasi nero), label 'JACKPOT' in microCaptionBold (10px Bold) + valore in captionBold (12px Bold). Pattern dedicato a slot/giochi col jackpot progressivo."
+      },
+      "Caption": {
+        "required": true,
+        "description": "Testo nome prodotto/contesto sotto l'image. Tipografia `typography/body/caption` (12px regular Roboto) o `*/captionBold` (12px bold) per emphasis. Color `cardProduct/color/text` (dark). 1 riga (whitespace-nowrap o ellipsis per testi lunghi). Accompagnato da un'icon info 24×24 a destra (decorativa o tap-to-show-info — scelta del consumer)."
+      },
+      "Price": {
+        "required": false,
+        "description": "Testo prezzo sotto la Caption (es. 'Da 0,50€'). 'Da' in caption regular + valore in captionBold (12px Bold) per emphasis. Color `cardProduct/color/text` (dark). Pattern dedicato a prodotti con costo associato (slot con scommessa minima, evento con quota minima)."
+      }
+    },
+    "nestedComponents": ["Counter", "Badge Ribbon"],
+    "commonPartners": ["Heading", "Listing", "Page"],
+    "parentConstraints": [
+      "Card Product è progettata per VIVERE IN CLUSTER (griglie 2-3 colonne, caroselli orizzontali scrollable, liste di prodotti). Non è un componente standalone — per UN singolo prodotto highlight usare Card Entrypoint (SINGLE-USE).",
+      "Tipicamente preceduta da un Heading di sezione che dà titolo al gruppo (es. 'Slot del giorno', 'Partite di oggi'). Heading.outlet=Link 'Vedi tutti' apre la pagina dedicata con la lista completa.",
+      "Larghezza fissata dal Size (sm/md/lg: 152-160). Il container parent (grid/carousel) gestisce il layout (gap fra card, colonne, scroll)."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-card": "Tap sull'intera card esegue `onPress` — tipicamente navigazione al dettaglio del prodotto (pagina Hero Detail con info complete). NIENTE State Pressed disegnato in Figma — feedback nativo della piattaforma.",
+      "tap-favorite-badge": "Tap sul FavoriteBadge (heart icon, top-right) esegue `onFavoriteToggle` SEPARATO dal tap sulla card. Aggiunge/rimuove il prodotto dai preferiti del consumer. Il consumer gestisce lo stato filled/outlined del heart (non disegnato come variante distinta in Figma).",
+      "tap-info-icon": "Tap sull'icon info a destra della Caption può essere mappato a un'azione contestuale (es. apri tooltip con info aggiuntive) o lasciato decorativo. Scelta del consumer — il pattern Figma lo disegna ma non specifica il behavior."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "button (l'intera card è un entry-point tappabile) — su iOS `accessibilityTraits = .button` + `accessibilityLabel` combinato (Counter + Caption + Price + Jackpot se presente + Promo se presente, es. 'Domani alle 10, Mega Fire Blaze, da 0 euro e 50, jackpot 99 milioni di euro, promo, pulsante'). Su Android `Role.Button`. FavoriteBadge è elemento accessibile SEPARATO con `Role.Button` + label 'Aggiungi/Rimuovi dai preferiti'. PromoRibbon è etichetta (lettura inclusa nell'accessibilityLabel combinato della card).",
+    "screenReader": "Annuncio combinato della card + lettura separata del Favorite Badge come elemento successivo. In griglia/lista di Card Product, gli annunci diventano ripetitivi — considerare di aggregare con `collectionInfo` (Android) per dichiarare al TalkBack che è una lista di N elementi.",
+    "focusManagement": "Card intera è 1 elemento focusable. FavoriteBadge è elemento focusable SEPARATO (dopo la card nell'ordine di lettura). Info-icon: focusable se è un'azione contestuale, marcato decorativo se no.",
+    "touchTarget": "Card 152-160 × 167-237 — abbondantemente sopra-soglia. FavoriteBadge 24×24 con bg circolare — sotto-soglia 44pt iOS / 48dp Android: estendere hit-area del badge tramite padding del wrapper. Info-icon stesso problema.",
+    "wcag": "AA — Counter pill ha contrasto AA per design (verde chiaro + dark text). Bingo/Jackpot info pills usano bg semi-trasparente (50%) — il contrasto del testo dipende dall'immagine sottostante; il pattern presuppone immagini con zone sufficientemente uniformi nella parte bassa (consumer responsibility nella scelta dell'asset). FavoriteBadge bg dark 80% garantisce contrasto del heart bianco. Promo border arancione 2px è visibile per design."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["card product", "product card", "slot card", "event card", "grid card", "carousel tile", "carta prodotto"],
+    "context": "Card di prodotto per LISTE/GRIGLIE/CAROSELLI (a differenza di Card Entrypoint che è SINGLE-USE). 3 `Size`: `sm` (167h compatta, niente info pills interne, per griglie dense), `md` (229h, con BingoInfo + JackpotInfo pills sovrapposte all'image), `lg` (237h, stesso pattern md ma più alta — 'hero della griglia'). 2 `Promo Outline`: false / true (border 2px arancione + Badge Ribbon 'Promo'). Slot ricco: Counter sopra (es. orario disponibilità, riusa atom Counter md), Image, FavoriteBadge top-right (heart su bg dark trasparente), PromoRibbon top-left (solo Promo Outline=true), BingoInfo + JackpotInfo pills (solo md/lg, sovrapposte in basso image), Caption sotto + info-icon, Price (Da X,XX€). USO in CLUSTER (2-3 colonne grid, carousel orizzontale) — minimo 2 card. NON come single callout (per quello c'è Card Entrypoint). NON mescolare Size nella stessa griglia (rompe il ritmo). Promo Outline solo per prodotti effettivamente in promo. Affordance tappabili: card intera (onPress → dettaglio), FavoriteBadge separato (toggle preferito), eventuale info-icon (consumer). Nesta Counter e Badge Ribbon (riusa anche bingoInfo/* e jackpotInfo/* tokens)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

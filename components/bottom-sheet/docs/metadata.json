@@ -1,0 +1,140 @@
+{
+  "slug": "bottom-sheet",
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "6013:45178",
+    "ios": "6013:45178",
+    "header": "6013:45091"
+  },
+
+  "component": {
+    "name": "Bottom Sheet",
+    "category": "molecules",
+    "description": "Pannello modale che sale dal bordo bottom dello schermo per mostrare contenuto contestuale, filtri, scelte o feedback dell'utente, senza navigare via dalla pagina. Composto da 3 zone verticali: Header (handle bar di drag, Title in `heading/h3`, Close icon X), Body (slot principale con padding e gap interno) e ButtonGroup sticky in fondo (Button Group `sticky` con 2 Button md affiancati, tipicamente Annulla + Conferma). L'Header è un atomo Figma separato (`Drawer / Header`, 6013:45091) con 3 `OS` (android 36h handle-only, ios 72h con Title+X, iosLiquidGlass 72h con Title+X in stile liquid glass) — radius top corners differente per OS (`bottomSheet/size/header/border/radius/{android}=28`, `/{ios|iosLiquidGlass}=40`). Rinominato da `drawer` (terminologia desktop/side-panel) a `bottom-sheet` (terminologia mobile-native canonica). Three-way naming: slug `bottom-sheet`, frame Figma 'Bottom Sheet/Default', namespace `bottomSheet/*`.",
+    "type": "container"
+  },
+
+  "usage": {
+    "useCases": [
+      "filter-panel",
+      "feedback-display",
+      "contextual-options",
+      "compact-form",
+      "confirmation-dialog",
+      "selection-from-list"
+    ],
+    "requiredProps": ["title", "children", "isOpen", "onClose"],
+    "commonPatterns": [
+      {
+        "name": "filter-panel",
+        "description": "Bottom Sheet per filtraggio: aperto dal tap su un Button Filter / Chip / icona filter di una pagina lista. Header con Title 'Filtri', Body con form di filtri (Checkbox group, Chip Navigation, Dropdown, ranges), ButtonGroup sticky bottom con 'Annulla' (secondary outline) + 'Applica' (primary solid). Tap su Applica esegue la selezione e chiude il Bottom Sheet; tap su X o Annulla chiude senza applicare.",
+        "composition": "<BottomSheet title=\"Filtri\" isOpen onClose={close}>{filterForm}<BottomSheet.StickyActions onCancel={close} onConfirm={applyFilters} confirmLabel=\"Applica\" /></BottomSheet>"
+      },
+      {
+        "name": "feedback-display",
+        "description": "Bottom Sheet per mostrare feedback all'utente dopo un'azione (es. 'Pagamento riuscito', 'Conferma deposito') con dettaglio + CTA di proseguimento. Il pattern modale del bottom-sheet contiene visivamente l'esito senza navigare via dalla pagina corrente. Tipicamente con Feedback component nel Body + ButtonGroup sticky con 1-2 Button.",
+        "composition": "<BottomSheet title=\"Esito\" isOpen onClose={close}><Feedback state=\"Success\" title=\"Conferma deposito\" paragraph=\"Il deposito è andato a buon fine.\" /><BottomSheet.StickyActions onConfirm={openReceipt} confirmLabel=\"Vedi ricevuta\" /></BottomSheet>"
+      },
+      {
+        "name": "contextual-options-menu",
+        "description": "Bottom Sheet che apre un menù di azioni contestuali (es. tap su un item della Listing → 'Modifica', 'Condividi', 'Elimina'). Body con Listing Item Variant=Block o lista verticale di azioni. Niente ButtonGroup sticky in questo pattern (le azioni sono nel body, non come CTA principali) oppure solo un 'Annulla' minimal.",
+        "composition": "<BottomSheet title=\"Azioni\" isOpen onClose={close}><Listing items={[{title:'Modifica',onPress:edit},{title:'Condividi',onPress:share},{title:'Elimina',onPress:remove}]} /></BottomSheet>"
+      },
+      {
+        "name": "android-handle-only-no-title",
+        "description": "Variante Header `OS=android` (36h): SOLO handle bar (drag indicator), niente Title, niente X. Pattern Material per bottom sheet leggeri dove il contesto è già evidente (es. selezione data, picker). Aderente alla guideline Material — su iOS si preferisce sempre Title + X esplicita (72h).",
+        "composition": "<BottomSheet title={null} headerVariant=\"handle-only\" isOpen onClose={close}>{content}</BottomSheet>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "bottom-sheet-for-navigation",
+        "reason": "Il Bottom Sheet è MODALE: contiene contenuto contestuale che, una volta gestito, viene chiuso (tap X / Annulla / swipe down). NON è un canvas di navigazione: usarlo per push di pagine, navigation drawer (menù principale di sezioni) o pagine separate rompe l'aspettativa di 'pannello temporaneo che si chiude' e fa accumulare modali sopra modali.",
+        "alternative": "Per navigation drawer principale (menù lateral con sezioni dell'app) usare un pattern dedicato (es. side drawer su Android, tab bar fissa). Per push di pagina usare la navigation stack della Page. Riservare Bottom Sheet a contesti temporanei (filter, feedback, options)."
+      },
+      {
+        "scenario": "long-scrollable-content-without-sticky-actions",
+        "reason": "Quando il Body contiene contenuto scrollabile (lista filtri lunga, form esteso), le CTA sono CRITICHE per applicare/annullare la selezione. Senza ButtonGroup sticky in fondo, l'utente che ha scrollato a metà del form non può confermare senza tornare in cima — e su contenuto molto lungo è facile perdere il flow.",
+        "alternative": "Per Bottom Sheet con contenuto scrollabile usare SEMPRE ButtonGroup sticky bottom (token `buttonGroup/size/sticky/*`) — anche se ci sono solo 1-2 Button, sticky garantisce visibilità costante. Per Bottom Sheet con contenuto breve che entra senza scroll, le sticky actions sono opzionali."
+      },
+      {
+        "scenario": "no-header-or-no-handle",
+        "reason": "L'Header (con almeno l'handle drag) è la firma visiva del Bottom Sheet: comunica all'utente che il pannello può essere chiuso via swipe down + indica l'edge top del modal. Rimuovere completamente l'Header (anche solo l'handle) confonde — l'utente non distingue il bottom-sheet da una sezione fissa della pagina.",
+        "alternative": "Sempre con almeno l'handle. Per la variante Android puoi avere solo handle senza Title/X (36h); per iOS preferire Title + X (72h) per affordance esplicita di chiusura."
+      },
+      {
+        "scenario": "deeply-nested-bottom-sheets",
+        "reason": "Aprire un Bottom Sheet da dentro un altro Bottom Sheet (modal-in-modal) crea uno stack confuso: l'utente perde traccia di quanti tap di X servono per tornare alla pagina, e visualmente i bordi rounded si sovrappongono.",
+        "alternative": "Massimo 1 Bottom Sheet attivo alla volta. Se serve un sotto-flusso complesso, sostituire l'attuale contenuto del Bottom Sheet (es. cambia il body al tap su 'Avanzate') invece di aprirne uno nuovo sopra. Per flussi profondi usare una Page push."
+      },
+      {
+        "scenario": "use-as-toast-or-quick-notification",
+        "reason": "Il Bottom Sheet è un modale che richiede gesto di chiusura esplicito (tap X / Annulla / swipe down). Usarlo per notifiche transitorie che dovrebbero auto-dismissarsi (es. 'Saldo aggiornato', 'Copiato negli appunti') costringe l'utente a tappare X per qualcosa che doveva sparire da solo.",
+        "alternative": "Per notifiche transitorie usare Toast (auto-dismiss). Per feedback persistente che richiede acknowledgment esplicito (es. esito pagamento), Bottom Sheet va bene."
+      },
+      {
+        "scenario": "missing-close-affordance-on-ios",
+        "reason": "Su iOS la guideline è esplicita: il modale deve avere un'affordance di dismiss visibile (X o 'Close'). Su iOS senza X esplicita, lo swipe-down è l'unica via — molti utenti non lo conoscono e si bloccano.",
+        "alternative": "Su iOS usare sempre Header variante 72h con Title + X close esplicita. Su Android l'handle-only (36h) è accettabile perché lo swipe-down è gesture nativa più diffusa nella platform."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Header": {
+        "required": true,
+        "description": "Atomo separato 'Drawer / Header' (frame Figma 6013:45091). 3 `OS`: `android` (36h, handle bar 32×4 solo, radius top `bottomSheet/size/header/border/radius/android` = 28), `ios` (72h, handle + Title `heading/h3` + Close button X 32 sm in alto-destra, border-bottom 1px `bottomSheet/color/header/border`, radius top `bottomSheet/size/header/border/radius/ios` = 40), `iosLiquidGlass` (72h, come ios ma Close button in stile Liquid Glass tramite `buttonLiquidGlass/*` tokens, radius = 40). Bg `bottomSheet/color/header/bg` (bianco), title color `bottomSheet/color/header/title` (dark), handle color `bottomSheet/color/header/handle` (grigio chiaro). Padding `bottomSheet/size/header/padding/{horizontal|vertical}` (16/16)."
+      },
+      "Body": {
+        "required": true,
+        "description": "Slot principale del contenuto del Bottom Sheet. Bg `bottomSheet/color/body/bg` (bianco), gap interno `bottomSheet/size/body/gap` (16), padding `bottomSheet/size/body/padding/{horizontal|vertical}` (16/16). Contenuto libero — il consumer mette dentro Form Fields, Filter, Listing, Feedback, ecc. Se il contenuto eccede l'altezza disponibile, il Body diventa scrollable verticalmente (sticky header rimane in alto, sticky button group rimane in basso)."
+      },
+      "StickyButtonGroup": {
+        "required": false,
+        "description": "Button Group variante `sticky` (vedi doc Button Group) ancorato al bottom del Bottom Sheet quando presente. Tipicamente 2 Button md affiancati: Annulla (`brand/secondary` outline) + Conferma (`brand/primary` solid). Padding `buttonGroup/size/sticky/padding/{horizontal|vertical}` (16/16), gap `buttonGroup/size/sticky/gap` (8), border-top 1px `buttonGroup/color/border` per separarsi dal Body, bg `buttonGroup/color/bg` (bianco) — opaque, sticky-on-scroll del Body."
+      }
+    },
+    "nestedComponents": ["Button", "Button Group"],
+    "commonPartners": ["Filter", "Feedback", "Form Field", "Listing", "Backdrop"],
+    "parentConstraints": [
+      "Il Bottom Sheet è un OVERLAY: viene renderizzato sopra la Page corrente in un layer modale, con un Backdrop sotto per dimming dello sfondo. Il consumer è responsabile di rendere Backdrop + BottomSheet insieme.",
+      "Larghezza = larghezza piena del viewport (su mobile 100%). Altezza dinamica in base al contenuto, con un max corrispondente a una percentuale dello screen (tipicamente 90% — l'utente vede sempre un bordo di pagina sopra il bottom sheet). Il consumer gestisce max-height e snap-points se desidera (Figma disegna una singola altezza statica).",
+      "L'apertura tipica avviene via tap su un trigger della pagina (Button Filter, Chip 'Modifica', azione contestuale). La chiusura è gestita da: tap su X dell'Header, tap sul Backdrop sotto, swipe-down sul Body/Header, tap su Button Annulla del sticky button group."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "open": "Il Bottom Sheet appare con animazione di slide-up dal bordo bottom. Backdrop sotto fade-in in sincrono. Il focus screen reader si sposta sul Title dell'Header (o sul primo elemento focusable del Body se Title non presente — variante android handle-only).",
+      "close-tap-x": "Tap sul Close button X (presente in `OS=ios` e `OS=iosLiquidGlass`) chiude il Bottom Sheet — slide-down + Backdrop fade-out. Il focus screen reader torna sull'elemento trigger che aveva aperto il Bottom Sheet.",
+      "close-swipe-down": "Gesture swipe-down sull'Header (o sul Body se il body è già scrollato a top) chiude il Bottom Sheet — stessa animazione del tap-X. Gesture nativa supportata su entrambe le piattaforme.",
+      "close-tap-backdrop": "Tap fuori dal Bottom Sheet (sul Backdrop sottostante) chiude il Bottom Sheet. Il consumer può disabilitare questo comportamento per Bottom Sheet che richiedono scelta esplicita (es. confirmation dialogue).",
+      "close-tap-cancel": "Tap sul Button Annulla del StickyButtonGroup esegue `onCancel` (tipicamente `onClose`) — chiude senza applicare modifiche.",
+      "confirm-tap-action": "Tap sul Button Conferma del StickyButtonGroup esegue `onConfirm` — applica le modifiche/scelte dell'utente e chiude il Bottom Sheet."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "dialog (modal) — su iOS impostare `accessibilityViewIsModal=true` e `accessibilityElements` per ordinare focus dentro al Bottom Sheet; su Android usare `Modifier.semantics { role = Role.Dialog; isModal = true }`. Il Backdrop sotto deve essere `accessibilityElementsHidden=true` quando il Bottom Sheet è aperto (focus trap dentro al modal). L'Header ha `accessibilityTraits = .header` sul Title. Il Close button X ha `accessibilityLabel = 'Chiudi'`.",
+    "screenReader": "All'apertura: lo screen reader annuncia il Title come header del modal (es. 'Filtri, intestazione'). Poi navigazione del Body in ordine naturale. Sticky button group letto al fondo. Alla chiusura, il focus torna sul trigger originario nel parent (Page). Per Bottom Sheet di feedback (post-azione), lo screen reader può annunciare l'esito automaticamente al mount via liveRegion.",
+    "focusManagement": "Focus trap: quando aperto, il focus rimane confinato dentro al Bottom Sheet (TAB cycling fra elementi interni; il TAB oltre l'ultimo torna al primo). Alla chiusura, restituire il focus al trigger originario nella Page. Se il trigger non è più disponibile (es. è stato rimosso), spostare al primo elemento focusable della pagina.",
+    "touchTarget": "Close button X 32h (sm) — sotto-soglia 44pt iOS / 48dp Android: il Button gestisce padding interno per estendere hit-area. L'handle bar è puramente visuale (non target tappabile separato — lo swipe-down agisce sull'intero Header). Sticky Button md 48h — sopra-soglia.",
+    "wcag": "AA — l'Header ha border-bottom 1px `bottomSheet/color/header/border` per separare visualmente dal Body. Il bg bianco con title dark garantisce contrasto AA. La sticky button group ha border-top 1px per separarsi dal Body — utile su contenuto scrollabile dove il Body finisce dietro le Button. Il pattern modal con focus trap supporta utenti con disabilità motorie (no escape accidentale) e cognitive (chiaro inizio/fine dell'interazione)."
+  },
+
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["bottom sheet", "drawer", "modal bottom", "filter sheet", "action sheet", "modale dal basso", "bottom modal"],
+    "context": "Pannello modale che sale dal bordo bottom dello schermo. Pattern mobile-native (precedentemente chiamato 'drawer' nel DS, rinominato in 'bottom-sheet' — il drawer è il pattern desktop side-panel, qui parliamo dell'overlay verticale). Composto da Header (atomo separato con 3 OS: android handle-only 36h, ios 72h con Title+X, iosLiquidGlass 72h liquid glass) + Body (slot contenuto con scroll opzionale) + StickyButtonGroup opzionale (Button Group sticky con 2 Button md). USA PER: filtraggio (filter panel), feedback display (esito azione), opzioni contestuali (action sheet), conferme. NON PER: navigation drawer principale (usa pattern dedicato), notifiche transitorie (usa Toast), modali profondamente nidificati (massimo 1 attivo). Chiusura: tap X / tap backdrop / swipe-down / Annulla button. Focus trap obbligatorio + dimming Backdrop sotto. Su iOS sempre con X esplicita (variante 72h); Android accetta handle-only (36h)."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

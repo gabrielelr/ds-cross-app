@@ -1,44 +1,130 @@
 {
   "slug": "toggle",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "168:4540",
+    "ios": "168:4540",
+    "toggleSwitch": "154:1983"
+  },
+
   "component": {
     "name": "Toggle",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Switch binario on/off per attivare/disattivare IMMEDIATAMENTE una funzionalità di sistema (es. notifiche, dark mode, geolocalizzazione, sound). Composto da Label a sinistra (`typography/body/pLead` 16px regular Roboto, color `toggle/color/text/{default|disabled}`) + Toggle Switch a destra (atomo). 2 `Active` per il component (true/false). L'atomo Toggle Switch (frame 154:1983, namespace `toggle/switch/*`) ha 24 varianti in Figma: 3 `OS` (android, ios, iosLiquidGlass) × 2 `Size` (large, small) × 2 `isChecked` × 2 `is Disabled`. PECULIARITÀ ANDROID vs iOS: su Android il DOT del switch SCALE UP quando checked (Material pattern: large 16→24, small 12→18); su iOS il dot mantiene la stessa dimensione (large 28, small 20); su iosLiquidGlass dimensioni fisse leggermente diverse (large 24×18, small 24×14). Bg unchecked: `*/color/bg/default` (grigio scuro ios/android, grigio chiaro iosLiquidGlass). Bg checked: `*/color/bg/checked/default` (verde brand). Bg disabled: grigio chiaro uniforme. Differenza Toggle vs Checkbox/Radio: Toggle applica SUBITO una modifica al sistema (immediate), Checkbox/Radio sono scelte differite al submit del form (deferred).",
+    "type": "input"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "system-on-off-setting",
+      "notifications-toggle",
+      "dark-mode-toggle",
+      "feature-flag-user-preference",
+      "permission-grant-revoke",
+      "sound-haptic-toggle"
+    ],
+    "requiredProps": ["label", "checked", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "settings-vertical-list",
+        "description": "Toggle in lista verticale dentro a Settings (regola DS: 'Always place toggles in a vertical list to improve readability and scanning'). Ogni Toggle ha la propria riga: Label a sinistra spiega cosa si attiva/disattiva, switch a destra mostra lo stato corrente. Tap sul Toggle (o sulla riga intera del Listing Item che lo contiene) flip immediato + apply al sistema.",
+        "composition": "<Listing items={settings.map(s => ({ children: <Toggle label={s.name} checked={s.enabled} onChange={v => updateSetting(s.id, v)} /> }))} />"
+      },
+      {
+        "name": "immediate-system-effect",
+        "description": "Pattern fondamentale del Toggle: l'effetto è IMMEDIATO (vs Checkbox/Radio che applicano al submit). Es. tap su 'Notifiche push' → notifiche disabilitate seduta stante (no save/submit button), tap su 'Dark mode' → tema cambia subito.",
+        "composition": "<Toggle label=\"Notifiche push\" checked={pushEnabled} onChange={v => { setPushEnabled(v); applyToSystem(v); }} />"
+      },
+      {
+        "name": "disabled-permission-required",
+        "description": "Toggle in `is Disabled=true` quando la funzionalità non è abilitabile a livello user (es. 'Geolocalizzazione' disabled finché OS non ha concesso la permission). Bg passa al token disabled (grigio chiaro), label e dot ai token disabled grigi. Accoppiare con un context perché è disabled (helper text sotto, o link a 'Vai a impostazioni sistema').",
+        "composition": "<Toggle label=\"Geolocalizzazione\" checked={false} disabled />"
+      },
+      {
+        "name": "size-large-vs-small",
+        "description": "Toggle Switch `Size=large` (32h android/ios, 22h iosLiquidGlass) per pattern di Settings principali — tap target generoso. `Size=small` (24h android/ios, 18h iosLiquidGlass) per contesti densi o liste molto popolate. Default per il component Toggle row è Size=small (vedi screenshot del component).",
+        "composition": "<Toggle label={l} checked={c} onChange={fn} size=\"small\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "toggle-for-deferred-choice",
+        "reason": "Il Toggle ha effetto IMMEDIATO sul sistema. Usarlo per scelta che diventa effettiva solo al submit del form (es. consenso 'Accetto i termini', preferenza enum settata al save) confonde l'utente: vede il toggle cambiare di stato e si aspetta che 'sia già attivo' — poi scopre al submit che non era effettivo.",
+        "alternative": "Per consensi/scelte differite al submit usare Checkbox (regola DS Checkbox: 'usato per consensi o scelte differite, non per toggle di sistema'). Per scelta esclusiva fra N opzioni usare Radio. Riservare Toggle a effetti IMMEDIATI sul sistema."
+      },
+      {
+        "scenario": "toggles-in-horizontal-row",
+        "reason": "Regola DS esplicita: 'Always place toggles in a vertical list to improve readability and scanning'. Toggle affiancati orizzontalmente (es. 3 toggle in riga) rendono difficile la scansione (l'occhio salta lateralmente fra label e switch e perde l'associazione), specie con label di lunghezza diversa.",
+        "alternative": "Sempre in lista VERTICALE — un toggle per riga, label a sinistra, switch a destra. La lista verticale permette di scansionare le label una sotto l'altra senza saltare focus."
+      },
+      {
+        "scenario": "missing-label",
+        "reason": "Switch senza label non comunica cosa si sta attivando/disattivando. È un'area cliccabile con stato on/off ambigua semanticamente.",
+        "alternative": "Sempre con Label valorizzata. La Label è parte intoccabile del Toggle component — è sia il contesto che parte dell'hit area dell'intera riga (vedi touchTarget)."
+      },
+      {
+        "scenario": "destructive-toggle-without-confirmation",
+        "reason": "Toggle con effetto IMMEDIATO + destructive (es. disattivare 2FA, cancellare un dato) può causare azioni accidentali — un tap sbagliato sul Toggle compromette sicurezza/dati senza possibilità di undo.",
+        "alternative": "Per azioni destructive immediate (rare nel pattern Toggle) richiedere conferma esplicita via Bottom Sheet/modale di conferma PRIMA di applicare. In alternativa, ripensare se Toggle è il pattern giusto — forse serve un Button 'Disattiva 2FA' che porta a un flusso di conferma."
+      },
+      {
+        "scenario": "wrong-os-variant-in-cross-platform-build",
+        "reason": "Forzare l'aspetto Material (Android, dot che scale up checked) su iOS o viceversa rompe l'aspettativa native della piattaforma. Gli utenti iOS si aspettano dot uniforme; gli utenti Android si aspettano dot che cresce passando a checked.",
+        "alternative": "Rispettare il pattern OS Figma: render il `OS=android` su Android device, `OS=ios` su iOS standard, `OS=iosLiquidGlass` su iOS con Liquid Glass support attivo. Il consumer del componente sceglie automaticamente in base alla piattaforma di runtime."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Label": {
+        "required": true,
+        "description": "Testo a sinistra che descrive la funzionalità on/off. Tipografia `typography/body/pLead` (16px regular Roboto, line-height 18). Color via stato: `toggle/color/text/default` (dark), `toggle/color/text/disabled` (grigio). Single-line (per testi lunghi gestire a livello container parent / Listing Item che ospita il Toggle). Gap fra Label e Toggle Switch = `toggle/size/gap` (8)."
+      },
+      "ToggleSwitch": {
+        "required": true,
+        "description": "Atomo switch on/off a destra (frame Figma 154:1983, namespace `toggle/switch/*`). 3 `OS` × 2 `Size` × 2 `isChecked` × 2 `is Disabled` = 24 varianti. Dimensioni: Large (`*/size/large/width/height/{os}`, 56×32 ios/android, 50×22 iosLiquidGlass); Small (`*/size/small/width/height/{os}`, 44×24 ios/android, 44×18 iosLiquidGlass). Radius `cornerRadius/full` (128 fully-round). Bg unchecked `*/color/bg/{os}/default` (grigio scuro ios/android, grigio chiaro iosLiquidGlass). Bg checked `*/color/bg/{os}/checked/default` (verde brand). Bg disabled `*/color/bg/{os}/disabled` (grigio chiaro)."
+      },
+      "ToggleSwitchDot": {
+        "required": true,
+        "description": "Pallino interno al switch. Color `toggle/switch/dot/color/bg/{default|checked/default|disabled|checked/disabled}` (bianco default e checked, grigio se disabled). PECULIARITÀ MATERIAL: su Android il dot SCALE UP quando checked (`toggle/switch/dot/size/default/large/android/height` 16 → `toggle/switch/dot/size/checked/large/android` 24; small 12→18). Su iOS il dot mantiene la stessa dimensione (large 28h, small 20h). Su iosLiquidGlass dimensioni fisse leggermente diverse (large 24×18, small 24×14)."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Listing", "Listing Item", "Form Field", "Page", "Bottom Sheet"],
+    "parentConstraints": [
+      "Tipicamente dentro a una Listing in Settings — il Listing Item ospita il Toggle nella row, dove l'intera riga è tappabile (label + gap + switch). Regola DS: lista VERTICALE — un toggle per riga.",
+      "Effetto IMMEDIATO sul sistema (non differito al submit). Il consumer è responsabile di applicare la modifica subito al tap (es. salva la preferenza, chiama l'API, aggiorna il theme)."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "checked", "disabled", "checked-disabled"],
+    "interactions": {
+      "tap": "Tap sull'intera riga (Label + gap + ToggleSwitch) flip lo stato: unchecked → checked → unchecked. L'effetto è IMMEDIATO sul sistema (a differenza di Checkbox/Radio).",
+      "animation": "Su tutte le piattaforme il dot si sposta da sinistra a destra (e viceversa) durante la transizione. Su Android il dot SCALE UP quando passa a checked (animazione Material). Su iOS/iosLiquidGlass il dot mantiene la dimensione.",
+      "disabled": "In `is Disabled=true` il componente non è tappabile. Bg switch va al token disabled (grigio chiaro), dot al disabled grigio, label al `toggle/color/text/disabled`. Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` + `accessibilityTraits` include `.notEnabled`."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "switch — su iOS `accessibilityTraits = .button` + `accessibilityValue = '1' / '0'` per checked/unchecked (iOS ha trait `.toggleButton` su iOS 17+, fallback a button+value); su Android usare `Role.Switch` con `Modifier.semantics { role = Role.Switch; toggleableState = ... }`. `accessibilityLabel` = la Label visibile.",
+    "screenReader": "Lo screen reader legge 'Label, switch, [attivato/disattivato]'. Per `is Disabled=true` aggiunge 'non disponibile' (iOS) o 'disabilitato' (Android). Al cambio di stato, lo screen reader annuncia automaticamente il nuovo stato (es. 'attivato' dopo il tap).",
+    "focusManagement": "Focusable in tutti gli stati tranne disabled. Movimento focus standard di piattaforma. Su tastiera esterna: spazio o enter per flip.",
+    "touchTarget": "Toggle Switch atom da solo: Large 56×32 (sopra-soglia in larghezza, sotto-soglia in altezza 32 vs 44pt iOS), Small 44×24 (sopra in larghezza, sotto in altezza). L'intera riga del Toggle component (Label + gap + Switch) è tappabile — è il vero touch target del componente. Garantire che il container espanda l'hit area a coprire >=44pt verticali.",
+    "wcag": "AA — Lo stato checked è comunicato sia da colore (bg verde brand) sia da posizione (dot a destra invece che a sinistra): per chi non distingue il verde, la posizione del dot è il fallback. Lo stato disabled è comunicato sia da colore (grigio) sia da semantica (`accessibilityTrait .notEnabled`). Il contrasto del dot bianco/grigio sul bg colorato è AA su tutti gli stati."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["toggle", "switch", "on off switch", "boolean toggle", "system toggle", "preference switch"],
+    "context": "Switch binario on/off per applicare IMMEDIATAMENTE una modifica al sistema (vs Checkbox per consensi differiti al submit, vs Radio per scelte esclusive differite). Composto da Label `pLead` 16px + Toggle Switch atom a destra. 24 varianti del switch atom: 3 `OS` (android, ios, iosLiquidGlass) × 2 `Size` (large 32h/22h, small 24h/18h) × 2 `isChecked` × 2 `is Disabled`. PECULIARITÀ MATERIAL: su Android il dot SCALE UP quando checked (16→24 large, 12→18 small); su iOS il dot mantiene dimensione fissa. Color bg unchecked grigio scuro (ios/android) o grigio chiaro (iosLiquidGlass); checked verde brand `*/color/bg/{os}/checked/default`; disabled grigio chiaro. REGOLA DS: 'Always place toggles in a vertical list' — mai orizzontale, lista verticale per readability/scanning. Sempre con Label. Effetto IMMEDIATO sul tap (no save button). Hit area = intera riga (Switch da solo è sotto-soglia in altezza). Toggle vs Checkbox vs Radio: Toggle=immediate, Checkbox=deferred multi-select, Radio=deferred single-select esclusivo."
   },
+
   "rationale": {
     "designDecisions": ""
   }

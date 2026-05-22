@@ -1,0 +1,116 @@
+{
+  "slug": "page-control",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5972:2395",
+    "ios": "5972:2395",
+    "atom": "8213:718433"
+  },
+
+  "component": {
+    "name": "Page Control",
+    "category": "atoms",
+    "description": "Indicatore di paginazione: riga orizzontale di N dot 8×8 fully-round (radius 128) che segnalano la posizione corrente in un carosello/galleria/wizard. Composto dall'atomo Page Control Atom (frame Figma '❖ Pagination Atom' 8213:718433) — singolo dot con 2 `Selected` (False = grigio chiaro `pageControl/color/bg/default`; True = verde brand `pageControl/color/bg/active`). Il componente Page Control (frame 5972:2395) impila N dot orizzontalmente con gap `pageControl/size/gap` (4). Un solo dot in `Selected=True` alla volta (single-page indicator); gli altri sono `Selected=False`. NON interattivo per default — è un indicator passivo della posizione corrente; il consumer può renderlo tappabile (jump-to-page) ma non è disegnato in Figma né è il pattern primario.",
+    "type": "display"
+  },
+
+  "usage": {
+    "useCases": [
+      "carousel-pagination-indicator",
+      "hero-slider-position",
+      "media-gallery-position",
+      "onboarding-step-indicator",
+      "tutorial-step-indicator"
+    ],
+    "requiredProps": ["totalPages", "currentIndex"],
+    "commonPatterns": [
+      {
+        "name": "hero-carousel-indicator",
+        "description": "Page Control sotto a un Hero/Hero Detail per indicare la posizione corrente nel carosello swipable di hero. Tipicamente 5-8 dot (1 per hero); il dot attivo si sposta in sincrono con lo swipe. Pattern canonico nel DS — usato sia in Hero homepage (Scroll=true) sia in Hero Detail (paginazione media del prodotto).",
+        "composition": "<PageControl totalPages={heroes.length} currentIndex={currentHeroIndex} />"
+      },
+      {
+        "name": "onboarding-step-indicator",
+        "description": "Page Control in fondo a una sequenza di pagine di onboarding/tutorial per indicare lo step corrente nel flusso (es. 3 dots per 3 step). L'utente sa quanti step mancano e dove si trova. Lo step active si aggiorna al next/prev del flusso.",
+        "composition": "<PageControl totalPages={3} currentIndex={currentStep} />"
+      },
+      {
+        "name": "media-gallery-position",
+        "description": "Page Control sotto a una galleria di immagini/video swipable (es. galleria foto di un prodotto, varianti di un'offerta). Comunica all'utente il numero di media disponibili e quale sta vedendo.",
+        "composition": "<PageControl totalPages={mediaItems.length} currentIndex={currentMediaIndex} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "page-control-with-many-dots",
+        "reason": "Page Control è leggibile fino a 5-8 dot. Con 10+ dot diventa un mare di puntini dove l'utente non riesce a contare la propria posizione né stimare quanto manca; visualmente diventa una linea grigia uniforme col dot attivo che si perde.",
+        "alternative": "Per carosello/galleria con >8 item passare a un indicatore numerico ('3 / 24') o a una progress bar. Page Control resta riservato a piccoli set (3-8 elementi)."
+      },
+      {
+        "scenario": "page-control-with-1-dot",
+        "reason": "Un solo dot non comunica nulla — non c'è una 'posizione' da segnalare quando c'è una sola pagina. È visivamente irrilevante e occupa spazio per niente.",
+        "alternative": "Nascondere il Page Control quando `totalPages` <= 1. Pattern standard: il consumer renderizza Page Control solo se ha senso (>=2)."
+      },
+      {
+        "scenario": "page-control-without-paginated-content",
+        "reason": "Il Page Control PRESUPPONE un contenuto paginato/swipable sopra. Usarlo come elemento decorativo isolato (es. tre puntini per estetica) confonde — l'utente cerca lo swipe e non trova nulla.",
+        "alternative": "Usare Page Control SOLO accoppiato a un Hero/Carosello/Galleria. Per pattern decorativi (separatori, breakers) usare Divider o spaziatura."
+      },
+      {
+        "scenario": "multiple-dots-active-simultaneously",
+        "reason": "Page Control è un indicator single-selection (1 sola posizione corrente). Forzare più dot in `Selected=True` simultaneamente rompe la semantica del pattern — l'utente non sa più 'dove sta'.",
+        "alternative": "Garantire sempre esattamente 1 dot in `Selected=True` alla volta. Per pattern multi-selezione (es. 'pagine già viste') usare un componente diverso (es. progress bar con segmenti completati, checklist)."
+      },
+      {
+        "scenario": "tap-to-jump-without-clear-affordance",
+        "reason": "I dot in Figma sono 8×8 — abbondantemente sotto-soglia (44pt iOS / 48dp Android). Renderli tappabili come jump-to-page senza estendere l'hit area produce target microscopici impossibili da centrare con un dito.",
+        "alternative": "Se si vuole rendere il Page Control tappabile per jump diretto, estendere l'hit area di ogni dot a 44×44 invisibile (padding del wrapper tappabile) mantenendo il visual a 8×8. Su mobile il pattern dominante resta lo swipe — il tap-to-jump è secondario."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Dot": {
+        "required": true,
+        "description": "Atomo singolo del Page Control (`Page Control Atom`, frame Figma 5972:1298). 8×8 fully-round (radius 128). 2 `Selected`: False (bg `pageControl/color/bg/default`, grigio chiaro neutro) per i dot delle pagine non correnti; True (bg `pageControl/color/bg/active`, verde brand) per il dot della pagina corrente. UN solo dot in True alla volta. Il Page Control component renderizza N istanze del Dot allineate orizzontalmente con gap `pageControl/size/gap` (4)."
+      }
+    },
+    "nestedComponents": [],
+    "commonPartners": ["Hero", "Hero Detail", "Carousel", "Drawer"],
+    "parentConstraints": [
+      "Sempre accoppiato a un contenitore paginato/swipable sopra (Hero in modalità Scroll, Hero Detail per galleria media, carosello generico). Il consumer del parent gestisce lo stato della pagina corrente e lo passa al Page Control.",
+      "Tipicamente centrato orizzontalmente sotto al contenuto paginato. Il container Page Control non ha padding orizzontale propri — è il parent a gestire l'allineamento (justify-center)."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "passive-indicator": "Page Control è passivo per design — non gestisce gesture/tap internamente. Lo stato `currentIndex` arriva dal consumer (es. carosello che notifica il cambio di slide). Quando l'utente swipa la slide, il consumer aggiorna `currentIndex` e Page Control si re-renderizza con il nuovo dot active.",
+      "optional-tap-to-jump": "Il consumer PUÒ rendere ogni dot tappabile per consentire jump-to-page diretto (pattern iOS UIPageControl) — ma non è il comportamento di default e non è disegnato in Figma. Se implementato, estendere l'hit area di ogni dot a 44×44 (vedi note touchTarget)."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "Per Page Control passivo: comunicare la posizione corrente come `accessibilityValue` del container del contenuto paginato (es. 'pagina 3 di 8'), NON esporre i dot individualmente allo screen reader (sarebbe verbose '8 puntini'). Su iOS impostare `accessibilityElementsHidden=true` sul Page Control se il container parent comunica già la posizione; su Android usare `Modifier.semantics { invisibleToUser() }`. Se Page Control è tappabile (jump-to-page), allora ogni dot diventa elemento accessibile separato con `Role.Button` + `accessibilityLabel = 'Pagina X'` e `accessibilityTraits = .selected` per il dot corrente.",
+    "screenReader": "Pattern passivo: lo screen reader non legge i dot — la posizione viene annunciata dal container del carosello al cambio di slide (es. 'slide 3 di 8'). Pattern tappabile: ogni dot viene letto come 'Pagina X, pulsante' con il corrente che aggiunge 'selezionato'.",
+    "focusManagement": "Pattern passivo: non focusable. Pattern tappabile: ogni dot focusable separato, navigazione standard di piattaforma.",
+    "touchTarget": "Dot 8×8 — abbondantemente sotto-soglia (44pt iOS / 48dp Android). Per pattern passivo (default) non è un problema: i dot non sono target tappabili. Per pattern tappabile (jump-to-page) ESTENDERE OBBLIGATORIAMENTE l'hit area di ogni dot a 44×44 tramite padding del wrapper (visual rimane 8×8). Senza estensione i dot diventano impossibili da centrare.",
+    "wcag": "AA — il dot active (`pageControl/color/bg/active`, verde brand) si distingue dal dot default (`pageControl/color/bg/default`, grigio chiaro) per CONTRASTO di colore. Per chi non distingue il verde, l'unica differenziazione è il contrasto chiaro/scuro: i due token sono sufficientemente diversi in luminosità. Per ulteriore sicurezza, comunicare la posizione anche testualmente nel container parent (es. 'pagina X di N') come fallback non-colore."
+  },
+
+  "aiHints": {
+    "priority": "low",
+    "keywords": ["page control", "pagination", "dot indicator", "carousel dots", "step indicator", "pagine carosello"],
+    "context": "Usa Page Control come indicator passivo della posizione corrente in un carosello/galleria/wizard. Riga orizzontale di N dot 8×8 fully-round (gap 4). UN solo dot in `Selected=True` (active, verde brand) alla volta; gli altri in False (grigio chiaro). Sempre accoppiato a un contenitore swipable sopra (Hero, Hero Detail, galleria, onboarding) — il consumer aggiorna `currentIndex`. Mantenere a 3-8 dot per leggibilità; nascondere se totalPages <= 1. Per default è PASSIVO (non tappabile): lo screen reader non legge i singoli dot, la posizione è annunciata dal container parent ('slide X di N'). Se reso tappabile per jump-to-page, estendere obbligatoriamente l'hit area di ogni dot a 44×44 (visual rimane 8×8) altrimenti diventa impossibile da usare. Atomo singolo dot documentato come slot interno (Page Control Atom)."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

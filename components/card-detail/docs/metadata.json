@@ -1,44 +1,127 @@
 {
   "slug": "card-detail",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6385:825",
+    "ios": "6385:825"
+  },
+
   "component": {
     "name": "Card Detail",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Card SPECIFICA della pagina dettaglio prodotto/gioco: 360 wide × altezza variabile, container bordato (bg `cardDetails/color/bg` bianco, border 1px `cardDetails/color/border`, radius `cardDetails/size/border/radius` 16, padding `cardDetails/size/padding/horizontal|vertical` 16/16). 3 `Variant` strutturalmente diversi: (a) `custom` — TextBox slot 'Swapping instance window' in alto sostituibile col proprio contenuto + footer espandibile 'Più info ⌄'; (b) `caratteristiche di gioco` — riga di 3 colonne con specs (es. 'MEDIO ALTA / Volatilità', '50 / Numero di linee', icon + 'Free Spin') separate da divider verticali, valori in `typography/display/d2` (24px Mulish ExtraBold) + label sotto in caption, + footer espandibile; (c) `bonus` — row Listing-style (label sinistra 'Real bonus' + 'Item >' trailing) + footer 'Mostra ⌄'. Tutte e 3 hanno SEPARATOR orizzontale 1px (`cardDetails/color/separator`, `cardDetails/size/separator-width` 1) fra contenuto e FOOTER ESPANDIBILE (caption bold 12px + chevron-down icon) — il footer è l'affordance per espandere/collassare la card mostrando più info. Token namespace `cardDetails/*` (camelCase plurale in Figma — diverso da `card/*` della Card base). USATO ESCLUSIVAMENTE in pagina dettaglio prodotto/gioco, non altrove.",
+    "type": "container"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "game-detail-specs-section",
+      "game-detail-bonus-section",
+      "product-detail-info-block",
+      "expandable-detail-info"
+    ],
+    "requiredProps": ["variant"],
+    "commonPatterns": [
+      {
+        "name": "game-specs-row",
+        "description": "Variant=`caratteristiche di gioco` per esporre le specs di una slot/gioco in 3 colonne compatte: valore in `display/d2` (24px ExtraBold Mulish) + label caption sotto. Es. '[MEDIO ALTA] Volatilità | [50] Numero di linee | [icon] Free Spin'. Divider verticali separano le colonne. Footer 'Più info ⌄' permette di espandere per spiegazioni dettagliate. Pattern canonico per pagine dettaglio gioco casinò.",
+        "composition": "<CardDetail variant=\"caratteristiche di gioco\" specs={[{value:'MEDIO ALTA',label:'Volatilità'},{value:'50',label:'Numero di linee'},{icon:<IconFreeSpin />,label:'Free Spin'}]} expandable />"
+      },
+      {
+        "name": "bonus-summary-row",
+        "description": "Variant=`bonus` per esporre un riepilogo del bonus disponibile sul prodotto: row stile Listing Item con label 'Real bonus' a sinistra + 'Item >' trailing. Footer 'Mostra ⌄' permette di espandere il dettaglio dei bonus disponibili. Pattern dedicato a riepiloghi monetari/promo in pagina dettaglio.",
+        "composition": "<CardDetail variant=\"bonus\" title=\"Real bonus\" trailing=\"Vedi\" onTrailPress={openBonuses} expandable />"
+      },
+      {
+        "name": "custom-info-block",
+        "description": "Variant=`custom` per blocchi informativi non standard nella pagina dettaglio: il TextBox slot 'Swapping instance window' è sostituito dal consumer con qualsiasi contenuto (text, illustration, mini-form, ecc.). Footer 'Più info ⌄' espandibile come negli altri Variant.",
+        "composition": "<CardDetail variant=\"custom\" expandable>{customContent}</CardDetail>"
+      },
+      {
+        "name": "expandable-footer-pattern",
+        "description": "Tutti e 3 i Variant condividono il pattern FOOTER ESPANDIBILE: caption bold 12px + chevron-down icon, separato dal contenuto da un separator orizzontale 1px. Tap sul footer espande la card per mostrare più info (consumer gestisce il toggle). Labels canoniche: 'Più info ⌄' (custom, caratteristiche), 'Mostra ⌄' (bonus). Quando espanso il chevron ruota a ⌃.",
+        "composition": "<CardDetail.Footer label=\"Più info\" expanded={isOpen} onPress={toggle} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "card-detail-outside-detail-page",
+        "reason": "Card Detail è dimensionata e disegnata per la pagina di dettaglio prodotto/gioco (sotto Hero Detail, accanto a Table, ecc.). Usarla in homepage, listing, o pagine generiche introduce un pattern visivo (token `cardDetails/*` con footer espandibile) che l'utente associa al dettaglio — fuori contesto confonde.",
+        "alternative": "Per blocchi informativi in altre pagine usare Card base (template generica), Card Informative, Card Highlight, o componenti dedicati (Banner, Feedback). Card Detail SOLO in pagina dettaglio."
+      },
+      {
+        "scenario": "use-non-standard-variant",
+        "reason": "I 3 Variant disegnati (custom / caratteristiche di gioco / bonus) coprono i pattern canonici della pagina dettaglio. Inventare layout custom dentro la Card Detail (es. 2 colonne invece di 3 in caratteristiche, o aggiungere immagine in bonus) rompe la consistenza fra card della stessa pagina.",
+        "alternative": "Usare uno dei 3 Variant disegnati. Per pattern davvero diversi cadere su `custom` (lo slot 'Swapping instance window' è proprio quello per casi non standard) o richiedere un nuovo Variant a Figma."
+      },
+      {
+        "scenario": "expandable-footer-without-content-to-expand",
+        "reason": "Il footer 'Più info ⌄' / 'Mostra ⌄' promette che tappando ci sarà più contenuto disponibile. Tapparlo e non vedere nuovo contenuto (o vedere lo stesso contenuto) tradisce l'aspettativa.",
+        "alternative": "Mostrare il footer espandibile SOLO se c'è effettivamente contenuto aggiuntivo da rivelare al tap. Per card non-espandibili omettere il footer e il separator sopra (gestire come variante senza-footer)."
+      },
+      {
+        "scenario": "card-detail-as-button",
+        "reason": "Card Detail è un CONTAINER di informazioni con footer espandibile. La sola azione disegnata è il tap sul FOOTER (per espandere) o, in Variant=bonus, sul trailing 'Item >'. Trasformare l'intera card in una unità tappabile (es. tap su qualsiasi punto → naviga al dettaglio del bonus) confonde — l'utente non sa più cosa è tappabile.",
+        "alternative": "Mantenere le affordance localizzate: il footer per espandere, eventuale trailing per navigare (es. Variant=bonus). Niente onPress sul container intero."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Container": {
+        "required": true,
+        "description": "Wrapper della Card Detail. Bg `cardDetails/color/bg` (bianco), border 1px `cardDetails/size/border/width` color `cardDetails/color/border`, radius `cardDetails/size/border/radius` (16), padding `cardDetails/size/padding/horizontal|vertical` (16/16), gap interno `cardDetails/size/gap` (8). Color text `cardDetails/color/text` (dark) e color icon `cardDetails/color/icon` (dark) ereditati dai sub-slot."
+      },
+      "ContentSlot": {
+        "required": true,
+        "description": "Slot principale del contenuto. Forma dipende da `Variant`: (a) `custom` → TextBox 'Swapping instance window' placeholder swap-able come nella Card base; (b) `caratteristiche di gioco` → row di 3 colonne separate da divider verticali, ogni colonna ha valore in `typography/display/d2` (24px Mulish ExtraBold) + label `typography/body/caption` (12px); (c) `bonus` → row Listing-style con label/heading a sinistra + 'Item >' trailing (riusa pattern `listingItem/*`)."
+      },
+      "Separator": {
+        "required": true,
+        "description": "Linea orizzontale 1px (`cardDetails/size/separator-width` 1) color `cardDetails/color/separator` (grigio chiaro), posizionata FRA il ContentSlot e il Footer. Marker visivo che separa il contenuto principale dalla zona di azione/espansione."
+      },
+      "ExpandableFooter": {
+        "required": true,
+        "description": "Footer della card: label in `typography/body/captionBold` (12px Bold Roboto) + chevron-down icon 24×24 (color `cardDetails/color/icon`). Labels canoniche: 'Più info' (Variant custom + caratteristiche), 'Mostra' (Variant bonus). Tap espande/collassa la card mostrando contenuto aggiuntivo (consumer gestisce il toggle). Quando espanso, il chevron ruota a ⌃."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Page", "Hero Detail", "Table"],
+    "parentConstraints": [
+      "USO ESCLUSIVO in pagina dettaglio prodotto/gioco (sotto al Hero Detail o accanto a Table di specs/bonus). NON in homepage, listing, o pagine generiche.",
+      "Larghezza tipica 360 (corrisponde a viewport 375 con padding orizzontale 8 — ma il padding orizzontale verso i bordi pagina è gestito dal parent).",
+      "Pattern di espansione: il consumer gestisce lo stato espanso/collassato e renderizza il contenuto aggiuntivo SOTTO al footer (o re-renderizza la Card con altezza estesa) al tap sul footer."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-footer-expand": "Tap sul ExpandableFooter (label + chevron-down) esegue il toggle dello stato espanso. Chevron ruota da ⌄ a ⌃. Contenuto aggiuntivo appare sotto al footer (consumer responsibility) o la card cresce in altezza per mostrare nuove righe. Tap di nuovo collassa.",
+      "tap-trailing-bonus": "Solo Variant=`bonus`: tap sul trailing 'Item >' (con chevron-right) esegue navigazione separata (es. apri pagina dettaglio del bonus). NON è il toggle di espansione — è un'azione di navigazione distinta.",
+      "no-tap-on-content": "Il ContentSlot non è tappabile per default — è display. Le affordance interattive sono il footer (espansione) e eventualmente il trailing (Variant=bonus)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "region (sezione informativa della pagina) — su iOS impostare `accessibilityElement=false` sul container; il ExpandableFooter è elemento accessibile separato con `Role.Button` + `accessibilityValue = expanded ? 'espanso' : 'collassato'`. Su Android usare `Modifier.semantics { role = Role.Button; expanded = isExpanded }` sul footer. Il trailing del Variant=bonus è un separato `Role.Button`/`Role.Link` con propria label.",
+    "screenReader": "Lo screen reader legge: contenuto della content slot (variabile per Variant) + 'Più info / Mostra, pulsante, [collassato/espanso]'. Al tap del footer, annunciare il cambio di stato. Per Variant=bonus, il trailing 'Item >' è letto separatamente come pulsante di navigazione.",
+    "focusManagement": "ContentSlot non focusable (display). ExpandableFooter è focusable. Il trailing del Variant=bonus è focusable separato.",
+    "touchTarget": "ExpandableFooter è una row a larghezza piena del padding-content (~328 wide × ~24-32h) — l'hit area copre tutta la riga del footer. Sopra-soglia in larghezza, marginale in altezza — estendere padding-v del footer per garantire 44pt iOS / 48dp Android.",
+    "wcag": "AA — bg bianco con text dark garantisce contrasto AA ampio. Il footer captionBold dark su bianco è ampiamente AA. Il chevron-down icon dark è visibile. Lo stato espanso è comunicato sia da semantica (`accessibilityValue`) sia da forma (chevron ruotato) — non solo-colore."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["card detail", "card details", "detail page card", "expandable card", "info card detail page", "specs card"],
+    "context": "Card SPECIFICA della pagina dettaglio prodotto/gioco. 3 `Variant`: `custom` (slot swappable + footer 'Più info ⌄'), `caratteristiche di gioco` (3 colonne specs in display/d2 24px + label caption + footer 'Più info ⌄'), `bonus` (row label + 'Item >' trailing + footer 'Mostra ⌄'). Tutti hanno footer ESPANDIBILE con caret (caption bold + chevron-down), separator orizzontale fra content e footer. Container bordato bianco radius 16 padding 16/16 (token `cardDetails/*` — namespace camelCase plurale in Figma, distinto da `card/*` della Card base). USATO ESCLUSIVAMENTE in pagina dettaglio prodotto/gioco — non altrove. Tipicamente posizionata sotto Hero Detail accanto a Table di specs/bonus. Le sole affordance interattive sono il footer (toggle espansione) e — in Variant=bonus — il trailing 'Item >' (navigazione separata). NON usare in homepage/listing/pagine generiche, NON inventare Variant custom (cadere su `custom` per casi non standard), NON usare footer espandibile senza contenuto da rivelare."
   },
+
   "rationale": {
     "designDecisions": ""
   }

@@ -1,44 +1,129 @@
 {
   "slug": "card",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5814:96928",
+    "ios": "5814:96928"
+  },
+
   "component": {
     "name": "Card",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "SHELL/TEMPLATE generica per costruire qualunque card del DS. Container bordato (border 1px `card/color/border`, radius `card/size/border/radius` 16) con bg bianco `card/color/bg`, padding `card/size/padding/horizontal|vertical` (16/16), gap interno `card/size/gap` (16). Composizione canonica a 3 ZONE VERTICALI: (1) TextBox in alto — Title `heading/h3` (16px ExtraBold Mulish) + Paragraph `body/p` (14px regular Roboto); (2) Content slot CENTRALE 'Swapping instance window' — il consumer sostituisce questo slot con il proprio contenuto (immagine, listing item, form, illustrazione, mappa, ecc.); (3) Button Group in basso — tipicamente 2 Button md (primary solid + secondary outline) con gap default 8. Pensata come BASE per derivare card specializzate del DS: Card Detail, Card Entrypoint, Card Highlight, Card Informative, Card Loyalty, Card Product, Card Promo, Card Tutorial — ognuna sostituisce il Content slot con la propria struttura e adatta le altre zone (alcune card non hanno Button Group, altre hanno TextBox alternativo). Token namespace `card/*` per il container; gli slot interni usano i propri namespace (textbox/*, button/*, buttonGroup/*).",
+    "type": "container"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "card-shell-template",
+      "build-custom-card-variant",
+      "basic-container-with-title-content-actions"
+    ],
+    "requiredProps": ["title"],
+    "commonPatterns": [
+      {
+        "name": "swap-content-slot",
+        "description": "Pattern principale: il Content slot 'Swapping instance window' è disegnato in Figma come placeholder grigio con label esplicativa — è SEMPRE pensato per essere swappato. Il consumer cancella il placeholder e incolla il proprio contenuto custom (immagine, listing, illustration, map, form, ecc.). Le altre due zone (TextBox top, Button Group bottom) sono modificabili o omettibili in base alla variante.",
+        "composition": "<Card title=\"Mio titolo\" paragraph=\"Descrizione\">{customContent}<Card.Actions primary={...} secondary={...} /></Card>"
+      },
+      {
+        "name": "derive-specialized-card-variant",
+        "description": "Le 8 card specializzate del DS (Card Detail, Card Product, Card Promo, ecc.) sono DERIVATE da questa Card base: prendono il container (border + radius + padding + bg), sostituiscono il Content slot con la propria struttura, e adattano TextBox/ButtonGroup. Quando si vuole costruire una NUOVA variante card (es. 'Card Sport con risultato live'), partire da questa Card base come scaffold.",
+        "composition": "// Mental model: Card Product = Card + image-grid content + price/cta"
+      },
+      {
+        "name": "minimal-card-text-only",
+        "description": "Variante minima: Card con solo TextBox (Title + Paragraph), niente Content slot, niente Button Group. Container bordato con padding 16/16 che ospita due righe di testo. Utile come blocco informativo standalone semplice — ma se questo è il pattern canonico, valutare Card Informative come variante più appropriata.",
+        "composition": "<Card title=\"Titolo\" paragraph=\"Descrizione breve\" />"
+      },
+      {
+        "name": "card-with-dual-cta",
+        "description": "Card completa con tutte e 3 le zone: TextBox + Content + Button Group con 2 Button (primary 'Conferma' + secondary 'Annulla'). Pattern utile per scelte modali inline o sezioni con doppia azione. Le 2 Button usano `button/color/brand/primary/*` (solid verde) e `button/color/brand/secondary/*` (outline bianco border grigio).",
+        "composition": "<Card title=\"Conferma\" paragraph=\"Vuoi procedere?\">{summaryContent}<Card.Actions primaryLabel=\"Conferma\" secondaryLabel=\"Annulla\" /></Card>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-base-card-when-specialized-exists",
+        "reason": "Se il pattern che stai costruendo esiste già come Card specializzata (Card Product per prodotto, Card Promo per promo, Card Detail per dettaglio, ecc.), usare la Card base e ricostruire manualmente la stessa struttura duplica lavoro e introduce divergenza visiva — la specializzata ha layout/spaziature/token già calibrati per il suo use case.",
+        "alternative": "Prima di partire da Card base, controllare se esiste già una specializzata che copre il pattern: Card Detail, Card Entrypoint, Card Highlight, Card Informative, Card Loyalty, Card Product, Card Promo, Card Tutorial. Card base SOLO quando nessuna delle 8 si adatta e si sta costruendo una nuova variante."
+      },
+      {
+        "scenario": "deep-nesting-card-in-card",
+        "reason": "Annidare Card dentro a Card crea un effetto 'inception' visivamente confuso (2 border, 2 padding, doppia profondità) che spacca la gerarchia visiva. L'utente non sa quale è il pattern primario e quale il secondario.",
+        "alternative": "Massimo 1 livello di Card. Per contenuto strutturato dentro a una Card usare componenti più leggeri come Listing Item, Table, TextBox, Divider — non altre Card."
+      },
+      {
+        "scenario": "no-content-slot-no-textbox-no-actions",
+        "reason": "Una Card vuota (senza TextBox, senza Content, senza Button Group) è solo un rettangolo bordato senza scopo — il pattern Card presuppone almeno UNA delle 3 zone valorizzata, idealmente 2.",
+        "alternative": "Sempre con almeno TextBox valorizzata (la Card è un blocco di informazioni); aggiungere Content e/o Button Group in base al pattern. Per pattern di puro rettangolo decorativo usare Divider o un container custom."
+      },
+      {
+        "scenario": "non-standard-padding-or-radius",
+        "reason": "Modificare a mano padding (es. 8 invece di 16) o radius (es. 8 invece di 16) della Card per esigenze ad-hoc crea card visivamente inconsistenti col resto del DS. La Card è una unità — il padding 16 e radius 16 sono parte della sua identità.",
+        "alternative": "Rispettare i token `card/size/padding/horizontal|vertical` (16/16) e `card/size/border/radius` (16). Per pattern con spaziature/radius diversi (es. Hero, Banner, Quicklink), usare i componenti dedicati che hanno i propri token disegnati."
+      },
+      {
+        "scenario": "use-card-as-button",
+        "reason": "La Card è un CONTAINER per organizzare contenuto. Trasformarla in un Button tappabile a tutta unità (con stato Pressed visivo, animation di scale, ecc.) la trasforma in un'altra cosa — un Listing Item bordato o un Quicklink. La Card può essere tappabile come unit, ma con feedback minimale (no scale-down, no Pressed visuale forte).",
+        "alternative": "Per card tappabili come unit di navigazione usare Quicklink (card-style shortcut con border + chevron) o Listing Item Variant=Image. Per Card che includono actions, le actions vivono nei Button del Button Group bottom, non sul container intero."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "TextBox": {
+        "required": false,
+        "description": "Zona testuale in alto: Title + Paragraph. Tipografia Title `typography/heading/h3` (16px ExtraBold Mulish, line-height 18), Paragraph `typography/body/p` (14px regular Roboto, line-height 18). Color `textbox/color/text` (dark) per entrambi. Gap interno `textbox/size/gap` (8). Tipica prima zona della Card — può essere omessa o sostituita con un heading più ampio (es. `heading/h1` 20px per Card di rilievo)."
+      },
+      "Content": {
+        "required": false,
+        "description": "Zona centrale 'Swapping instance window' — placeholder Figma esplicitamente etichettato 'Delete this section and paste the components you need'. Il consumer sostituisce questo slot con il proprio contenuto: immagini, illustrazioni, Listing, Table, form, mappa, video preview, ecc. È il VERO punto di customizzazione della Card base — ciò che differenzia ogni variante."
+      },
+      "ButtonGroup": {
+        "required": false,
+        "description": "Zona azioni in basso: Button Group `default` (gap `buttonGroup/size/default/gap` 8, padding 0) con tipicamente 2 Button md (48h, radius 12). Variante canonica Figma: 1 `brand/primary` solid verde (`button/color/brand/primary/bg/default`) + 1 `brand/secondary` outline bianco con border grigio. Può essere omessa per card non-actionable, oppure ridotta a 1 solo Button."
+      },
+      "Container": {
+        "required": true,
+        "description": "Wrapper della Card. 343 wide tipica × altezza variable in base al contenuto. Bg `card/color/bg` (bianco), border 1px `card/size/border/width` color `card/color/border` (grigio chiaro), radius `card/size/border/radius` (16), padding `card/size/padding/horizontal|vertical` (16 entrambe), gap verticale interno fra TextBox/Content/ButtonGroup = `card/size/gap` (16)."
+      }
+    },
+    "nestedComponents": ["TextBox", "Button Group", "Button"],
+    "commonPartners": ["Page", "Bottom Sheet", "Listing"],
+    "parentConstraints": [
+      "Card vive inline dentro a una Page, sezione di pagina, Bottom Sheet, o Drawer. Larghezza tipica = larghezza disponibile del container parent.",
+      "Card base è un TEMPLATE da derivare — il design Figma include esplicitamente il placeholder 'Swapping instance window' che indica il punto di customizzazione. Per use case ricorrenti del DS usare le 8 specializzate (Card Detail, Card Entrypoint, Card Highlight, Card Informative, Card Loyalty, Card Product, Card Promo, Card Tutorial)."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "no-default-tap": "Card base è un CONTAINER — non ha onPress di default. Le azioni vivono nei Button del Button Group bottom. Il consumer PUÒ rendere l'intera card tappabile (es. tap → naviga al dettaglio) ma è scelta del consumer, non pattern di default.",
+      "button-actions": "Tap sui Button del Button Group esegue i callback associati. Pattern canonico: primary = azione di conferma/avanzamento, secondary = annulla/torna indietro o azione alternativa."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "container — non un elemento accessibile separato se non è tappabile. Su iOS impostare `accessibilityElement=false` sul Container (i figli sono gli elementi accessibili — TextBox come header semantico, Content secondo la sua natura, Button del Button Group come elementi separati). Su Android stesso schema con `Modifier.semantics`. Se la Card è tappabile come unit (consumer scelta), allora il container diventa `Role.Button` con label combinata.",
+    "screenReader": "Lo screen reader legge in sequenza: Title (come header se appropriato), Paragraph, contenuto del Content slot (secondo la propria natura), Button del Button Group come elementi tappabili separati. Per Card tappabile come unit, label combinata: '<Title>, <Paragraph>, pulsante'.",
+    "focusManagement": "Container non focusable per default. I Button del Button Group sono focusable separati. Eventuali elementi interattivi dentro al Content slot (input, link, ecc.) sono focusable secondo la propria natura.",
+    "touchTarget": "Container non tappabile per default. I Button md sono 48h — sopra-soglia 44pt iOS / 48dp Android.",
+    "wcag": "AA — bg bianco con title/paragraph dark garantisce contrasto AA ampio. Border 1px grigio chiaro è decorativo (l'affordance container è già data dal padding + radius). I Button hanno il proprio contrasto AA per design."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["card", "card shell", "card template", "base card", "card container", "card basica"],
+    "context": "SHELL TEMPLATE generica per costruire qualunque card del DS. Container bordato bianco radius 16 padding 16/16 gap 16. 3 zone verticali: TextBox (Title h3 + Paragraph p) + Content slot 'Swapping instance window' (placeholder da sostituire col proprio contenuto) + Button Group (2 Button md primary+secondary). USO PRINCIPALE: BASE per derivare card specializzate. Il DS espone 8 card derivate: Card Detail, Card Entrypoint, Card Highlight, Card Informative, Card Loyalty, Card Product, Card Promo, Card Tutorial — PRIMA controllare se una di queste copre il pattern, POI cadere su Card base se nessuna si adatta. Card base NON ha onPress di default (è un container — le azioni vivono nei Button); il consumer può renderla tappabile come unit ma è scelta sua. NIENTE State Pressed disegnato. Non annidare Card dentro a Card. Rispettare token padding/radius (16/16/16) — sono parte dell'identità del componente."
   },
+
   "rationale": {
     "designDecisions": ""
   }

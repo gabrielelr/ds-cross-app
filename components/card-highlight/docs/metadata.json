@@ -1,44 +1,145 @@
 {
   "slug": "card-highlight",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5822:202473",
+    "ios": "5822:202473"
+  },
+
   "component": {
     "name": "Card Highlight",
-    "category": "atoms",
-    "description": "",
+    "category": "molecules",
+    "description": "Card SINGLE-USE per promuovere UN prodotto in landing/page e spingere l'utente a un'azione specifica (es. 'Gioca'). 340×380, container con immagine full-bleed (radius `cardHighlight/size/border/radius` 12, padding `cardHighlight/size/padding/horizontal|vertical` 16/16). Gradient bottom verso `cardHighlight/color/gradient` (nero) per leggibilità del testo bianco in basso. Composizione canonica dall'alto: Counter pill 'Tomorrow by 10:00 AM' (`counter/md/*`) sovrapposto in alto-sinistra dell'image + (nel content bottom) Title in `typography/display/d2` (24px ExtraBold Mulish, color `cardHighlight/color/text` bianco) + JackpotInfo pill 'JACKPOT 99.000.000€' (token `jackpotInfo/*`) + Button Group con 1-2 Button md. Button canonici: 1° Button `inverse/ghost` (testo bianco sottolineato, low-emphasis — secondaria opzionale) + 2° Button `inverse/primary` (solid bianco con text scuro, high-emphasis — primaria 'Gioca'). 2 `Promo Border`: False (niente border) / True (border 2px `cardHighlight/color/border` arancione + Badge Ribbon 'Promo' top-left). REGOLA D'USO STRICT (dal DS): UNA SOLA Card Highlight per pagina — è il driver principale dell'azione utente in quella schermata. Pattern simile a Card Entrypoint (single-use, immagine prominent, jackpot info) ma con CTA ESPLICITE (Button Group) come focus dell'interazione invece del tap-on-card. Three-way naming: slug `card-highlight`, frame Figma 'Card Highlight', namespace `cardHighlight/*`.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "landing-page-product-promo",
+      "main-cta-driver-single-page",
+      "jackpot-highlight-with-play-cta",
+      "promo-landing-callout"
+    ],
+    "requiredProps": ["title", "imageUrl", "primaryAction"],
+    "commonPatterns": [
+      {
+        "name": "single-cta-play-action",
+        "description": "Pattern canonico (catturato dal DS): UN SOLO Button primario 'Gioca' / 'Inizia' / 'Conferma' come main action della pagina. Variante `inverse/primary` (solid bianco, text scuro per contrasto sul gradient nero della card). Niente Button secondario — il pattern privilegia una direzione chiara per l'utente.",
+        "composition": "<CardHighlight title=\"Mega Fire Blaze\" imageUrl={slotImg} jackpot=\"99.000.000€\" primaryAction={{label:'Gioca', onPress:openGame}} />"
+      },
+      {
+        "name": "dual-cta-primary-plus-secondary",
+        "description": "Pattern alternativo (DS): primary Button + Button secondario `inverse/ghost` (testo bianco sottolineato, low-emphasis) quando serve un'azione aggiuntiva (es. 'Gioca' + 'Scopri di più'). La gerarchia visiva è chiara: primary solid > secondary ghost.",
+        "composition": "<CardHighlight {...product} primaryAction={{label:'Gioca',onPress:play}} secondaryAction={{label:'Scopri di più',onPress:openInfo}} />"
+      },
+      {
+        "name": "promo-border-with-ribbon",
+        "description": "Variant `Promo Border=True`: border 2px arancione + Badge Ribbon 'Promo' in alto-sinistra dell'image. Pattern per prodotti highlight in promo speciale. Tutto il resto del layout rimane identico al Variant False.",
+        "composition": "<CardHighlight promoBorder {...product} primaryAction={...} />"
+      },
+      {
+        "name": "with-counter-availability",
+        "description": "Counter pill 'Tomorrow by 10:00 AM' in alto-sinistra dell'image: indica finestra di disponibilità del prodotto (orario estrazione, partenza evento, ecc.). Riusa atom Counter Variant=md (bg light-green, dark text 12px). Opzionale — se il prodotto non ha orario, il Counter viene nascosto.",
+        "composition": "<CardHighlight title={t} imageUrl={i} showCounter counterLabel=\"Tomorrow by 10:00 AM\" {...} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "multiple-card-highlight-per-page",
+        "reason": "Regola DS esplicita: 'Use one per page to direct user's action' + 'Don't overuse special cards on a page. Use one per page'. Mostrare 2+ Card Highlight nella stessa schermata dilui completamente il significato di 'highlight' — l'utente vede multipli driver di azione e non sa quale prioritizzare, riducendo la conversion sull'azione principale.",
+        "alternative": "Una sola Card Highlight per pagina. Se servono multiple call-to-action, usare Banner per i secondari oppure Card Product (in griglia) per cluster di prodotti. La Card Highlight è il DRIVER PRINCIPALE — non un elemento di lista."
+      },
+      {
+        "scenario": "more-than-2-buttons",
+        "reason": "Regola DS esplicita: 'Use a single primary button for the main action, or pair it with a secondary button when an additional option is needed.' Aggiungere un terzo Button (es. 'Gioca' + 'Demo' + 'Scopri') frammenta l'azione utente e contraddice il pattern di driver principale singolo.",
+        "alternative": "Massimo 2 Button: 1 primary (inverse/primary solid bianco) ± 1 secondary opzionale (inverse/ghost). Per più opzioni usare un Bottom Sheet/modale di scelte raggiungibile dal Button primario ('Apri opzioni')."
+      },
+      {
+        "scenario": "use-without-image",
+        "reason": "Il pattern Card Highlight si basa sull'IMMAGINE FULL-BLEED + gradient overlay come framing visivo del prodotto. Senza immagine la card è un rettangolo dark vuoto con testo bianco — perde il valore di highlight (l'immagine È il pull visivo).",
+        "alternative": "Sempre con immagine del prodotto di alta qualità. Se l'immagine non è disponibile, usare un componente diverso (es. Card Detail Variant=custom per blocchi informativi senza immagine prominent)."
+      },
+      {
+        "scenario": "use-in-grids-or-listings",
+        "reason": "Card Highlight è un componente SINGLE-USE di pagina (driver di azione). Forzarla in griglia 2-col (come Card Product) o in lista (come Card Entrypoint può apparire) confonde il pattern e neutralizza l'effetto highlight.",
+        "alternative": "Per griglie/liste di prodotti usare Card Product (sm/md/lg). Per single-use SENZA CTA esplicite usare Card Entrypoint. Card Highlight rimane esclusivamente single-use CON CTA come driver di azione."
+      },
+      {
+        "scenario": "wrong-button-variant",
+        "reason": "I 2 Button della Card Highlight sono disegnati in variante INVERSE: primary `inverse/primary` (bg bianco solid + text scuro) per contrasto sul gradient nero della card; secondary `inverse/ghost` (testo bianco sottolineato). Usare variante brand-standard (verde solid) rompe il contrasto visivo sul background scuro della card.",
+        "alternative": "Mantenere le varianti inverse: `inverse/primary` per la CTA principale, `inverse/ghost` per la secondaria. Le varianti brand-standard sono pensate per superfici chiare, non per il context dark dell'highlight card."
+      },
+      {
+        "scenario": "use-jackpot-info-without-numeric-value",
+        "reason": "JackpotInfo è disegnato per esporre un VALORE NUMERICO ATTRATTIVO (jackpot/montepremi). Mostrare la pill JackpotInfo senza un valore reale (es. 'JACKPOT --' o 'JACKPOT in arrivo') tradisce l'aspettativa e svuota la prominenza visiva del numero.",
+        "alternative": "Mostrare JackpotInfo SOLO quando c'è un valore reale da esporre. Per prodotti highlight senza jackpot numerico, nascondere la pill e affidarsi a Title + Button per il driver."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "ImageContainer": {
+        "required": true,
+        "description": "Container 340 wide × 380h con immagine full-bleed del prodotto (asset consumer). Radius `cardHighlight/size/border/radius` (12), padding `cardHighlight/size/padding/horizontal|vertical` (16/16). In Variant `Promo Border=True` border 2px (`cardHighlight/size/border/width`) color `cardHighlight/color/border` (arancione). Gradient bottom: dal `cardHighlight/color/gradient` (nero) verso transparent — applicato sopra l'immagine nella metà bassa per garantire leggibilità del testo bianco."
+      },
+      "Counter": {
+        "required": false,
+        "description": "Pill in alto-sinistra dell'image, riusa l'atomo Counter Variant=md (`counter/md/*`: bg light-green, dark text in caption 12px medium, height 24, padding 4/4). Mostra l'orario di disponibilità del prodotto (es. 'Tomorrow by 10:00 AM' per estrazione/partita). Opzionale — nascosto per prodotti senza orario."
+      },
+      "PromoRibbon": {
+        "required": false,
+        "description": "SOLO in Variant `Promo Border=True`: Badge Ribbon 'Promo' in alto-sinistra (sovra-imposto all'angolo del container), riusa atom Badge Ribbon con `badgeRibbon/color/promo/bg` (arancione) + `*/color/promo/text` (quasi nero). Comunica 'prodotto in promo'."
+      },
+      "Title": {
+        "required": true,
+        "description": "Testo principale in basso (sopra il Button Group, dentro la zona gradient nero). Tipografia `typography/display/d2` (24px ExtraBold Mulish, line-height 28). Color `cardHighlight/color/text` (bianco) per contrasto sul gradient nero. 1-2 righe ottimali per non rubare spazio al Button Group e ai pills informativi."
+      },
+      "JackpotInfo": {
+        "required": false,
+        "description": "Pill 'JACKPOT [valore]€' sotto il Title (es. 'JACKPOT 99.000.000€'). Token namespace `jackpotInfo/*`: padding 4/4, radius 4, border 1px (`*/size/border/width`). Label 'JACKPOT' in microCaptionBold (10px Bold), valore in captionBold (12px Bold). Riusa pattern jackpotInfo presente anche in Card Entrypoint e Card Product. Visibile solo per prodotti con jackpot numerico effettivo."
+      },
+      "ButtonGroup": {
+        "required": true,
+        "description": "Button Group `default` (gap `buttonGroup/size/default/gap` 8) in basso, con 1 o 2 Button md (48h, radius 12). 1° Button (azione secondaria opzionale): variante `button/color/inverse/ghost` (testo bianco sottolineato, no bg/border — low emphasis). 2° Button (azione primaria — main CTA della pagina): variante `button/color/inverse/primary` (bg bianco solid + text scuro — high emphasis). Tipografia label `typography/interaction/button` (14px Bold Roboto)."
+      }
+    },
+    "nestedComponents": ["Counter", "Badge Ribbon", "Button", "Button Group"],
+    "commonPartners": ["Page"],
+    "parentConstraints": [
+      "SINGLE-USE: una sola Card Highlight per pagina/landing (regola DS strict: 'use one per page to direct user's action'). NON in cluster/grid/lista.",
+      "Posizionata tipicamente come elemento DOMINANTE della landing/page: sotto Header o Hero, prima di altre sezioni. È il driver principale dell'azione utente in quella schermata.",
+      "Padding orizzontale verso bordi pagina gestito dal parent."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-primary-button": "Tap sul Button primario (`inverse/primary` bianco solid) esegue l'azione PRINCIPALE — tipicamente 'Gioca', 'Inizia', 'Conferma'. È il driver di conversione della card.",
+      "tap-secondary-button": "SOLO con 2 Button: tap sul Button secondario (`inverse/ghost` testo bianco sottolineato) esegue un'azione di approfondimento (es. 'Scopri di più' → pagina dettaglio prodotto). Non sostituisce la primaria.",
+      "tap-on-card-no-action": "Diversamente da Card Product / Card Entrypoint, la Card Highlight NON ha tap-on-card default — le azioni sono ESCLUSIVAMENTE nei Button. Il consumer può rendere l'intera card tappabile come scorciatoia alla primary action, ma è override non disegnato in Figma."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "container — l'intera card NON è un singolo button; ha Button espliciti come elementi accessibili separati. Su iOS impostare `accessibilityElement=false` sul container; ogni Button ha proprio `Role.Button` + label. Su Android stesso schema. Title è elemento accessibile testuale (`Role.None` o esposto come testo statico). Per Variant=Promo, la PromoRibbon è label letta come parte dell'accessibility annotation del container (es. 'Promo, Mega Fire Blaze, jackpot 99 milioni').",
+    "screenReader": "Annuncio struttura: '[Counter,] [Promo,] [Title], jackpot [valore], [secondary Button label], pulsante, [primary Button label], pulsante'. Per esempio: 'Domani alle 10, Mega Fire Blaze, jackpot 99 milioni, Scopri di più, pulsante, Gioca, pulsante'.",
+    "focusManagement": "Container non focusable. I 2 Button (o solo il primary) sono focusable separati nell'ordine: secondary → primary. Tab/swipe navigation standard.",
+    "touchTarget": "Button md 48h × larghezza variable — abbondantemente sopra-soglia 44pt iOS / 48dp Android. Il container 340×380 NON è target tappabile (le azioni sono nei Button).",
+    "wcag": "AA — Title bianco su gradient nero garantisce contrasto AA ampio nella zona testuale. JackpotInfo ha contrasto del suo background pill. Button `inverse/primary` (solid bianco + text scuro) è abbondantemente AA. Button `inverse/ghost` (testo bianco + sottolineato) è AA per contrasto + ridondanza forma (underline). Promo border arancione 2px è visibile per design (non solo-colore: c'è anche Badge Ribbon)."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["card highlight", "highlight card", "landing card", "promo card with cta", "play card", "single-use card cta"],
+    "context": "Card SINGLE-USE per promuovere UN prodotto in landing/page con CTA ESPLICITE. 340×380, immagine full-bleed + gradient bottom nero, Title display/d2 bianco, JackpotInfo opzionale, Button Group con 1 primary (inverse/primary solid bianco) ± 1 secondary opzionale (inverse/ghost sottolineato). 2 `Promo Border`: false / true (border 2px arancione + Badge Ribbon 'Promo' top-left). REGOLE DS STRICT (dall'utente): (1) 'Use one per page to direct user's action' — UNA SOLA Card Highlight per pagina; (2) 'Use a single primary button for the main action, or pair it with a secondary button' — MAX 2 Button (1 primary + 1 secondary opzionale). Pattern dedicato a 'driver di azione principale' (es. 'Gioca', 'Inizia') in landing di prodotto/promo. Distinto da: Card Entrypoint (single-use, niente CTA esplicite, tap-on-card), Card Product (grid/cluster, niente CTA esplicite), Card Promo (vedere doc). Le azioni vivono nei Button — niente tap-on-card per design. Counter pill opzionale per prodotti con orario di disponibilità. Riusa atomi: Counter (md), Badge Ribbon (Promo), Button, Button Group."
   },
+
   "rationale": {
     "designDecisions": ""
   }

@@ -1,0 +1,136 @@
+{
+  "slug": "banner-template",
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5805:40527",
+    "ios": "5805:40527"
+  },
+
+  "component": {
+    "name": "Banner",
+    "category": "molecules",
+    "description": "Card promozionale/informativa a tutta larghezza con background image, radius 12, testo bianco in overlay e CTA opzionali. Pensato per evidenziare contenuto promozionale o informativo (es. welcome bonus, aggiornamento app, novità, cookie consent). 3 `Text Type` strutturali: `Title + Paragraph` (Title heading/h3 max 2 righe + Paragraph pLead max 3 righe, left-aligned, con 2 Button sotto — 179h); `Centered Text` (stessi Title + Paragraph ma centrati orizzontalmente, NIENTE Button — 179h); `Title Only` (solo Title max 2 righe + 2 Button — 118h compatto). Container: padding 16/16 (`banner/size/padding/horizontal|vertical`), gap 8 (`banner/size/gap`), radius 12 (`banner/size/border/radius`). I template specifici (welcome bonus, app update, cookie consent, ecc.) sono istanze di Banner — il componente DS è UNO solo, le varianti di contenuto/copy/immagine vivono come pattern/template separati dal DS.",
+    "type": "display"
+  },
+
+  "usage": {
+    "useCases": [
+      "promo-callout",
+      "informational-callout",
+      "cookie-consent",
+      "app-update-prompt",
+      "welcome-bonus-callout",
+      "feature-announcement"
+    ],
+    "requiredProps": ["textType", "title", "imageUrl"],
+    "commonPatterns": [
+      {
+        "name": "title-paragraph-with-dual-cta",
+        "description": "Variant `Text Type=Title + Paragraph` con 2 Button affiancati sotto: pattern canonico per banner con messaggio articolato + scelta utente (es. accetta/rifiuta, scopri di più/non ora, conferma/annulla). Button 1 in `inverse/secondary` (outline bianco), Button 2 in `inverse/primary` (solid bianco con text scuro) — gerarchia visiva azione secondaria + primaria.",
+        "composition": "<Banner textType=\"title-paragraph\" title=\"Aggiorna l'app\" paragraph=\"La nuova versione include nuove funzionalità e miglioramenti di sicurezza.\" imageUrl={updateImg} primaryAction={{label:'Aggiorna', onPress:...}} secondaryAction={{label:'Non ora', onPress:...}} />"
+      },
+      {
+        "name": "title-only-quick-callout",
+        "description": "Variant `Text Type=Title Only` (118h) per banner compatti dove il messaggio è auto-esplicativo nel solo Title (es. 'Nuovo bonus per te', 'Promo del giorno attiva'). Mantiene 2 Button sotto per scelta. Usato quando lo spazio verticale è limitato e il Paragraph diluirebbe il punto.",
+        "composition": "<Banner textType=\"title-only\" title=\"Nuovo bonus per te\" imageUrl={bonusImg} primaryAction={{label:'Scopri',onPress:...}} secondaryAction={{label:'Chiudi',onPress:...}} />"
+      },
+      {
+        "name": "centered-text-no-actions",
+        "description": "Variant `Text Type=Centered Text` (179h, testo centrato, NIENTE Button): banner puramente informativo dove la CTA è il tap sull'intero banner (o nessuna azione esplicita — solo comunicazione). Layout simmetrico per messaggi celebrativi/emozionali (es. 'Benvenuto Gold!', 'Hai raggiunto il livello 5').",
+        "composition": "<Banner textType=\"centered\" title=\"Benvenuto Gold\" paragraph=\"Hai sbloccato vantaggi esclusivi sui tuoi prossimi giochi.\" imageUrl={goldImg} onPress={openBenefits} />"
+      },
+      {
+        "name": "cookie-consent-template",
+        "description": "Template tipico: Banner con `Text Type=Title + Paragraph` per consenso cookie/privacy. Title 'Noi e i nostri partner usiamo i cookie', Paragraph breve con link a policy, 2 Button 'Accetta tutti' / 'Personalizza'. È UN'ISTANZA del Banner — non un nuovo componente, ma un pattern d'uso.",
+        "composition": "<Banner textType=\"title-paragraph\" title=\"Cookie\" paragraph=\"Usiamo cookie per migliorare la tua esperienza. Vedi la nostra Privacy Policy.\" primaryAction={{label:'Accetta',onPress:acceptAll}} secondaryAction={{label:'Personalizza',onPress:openSettings}} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "banner-as-inline-error-or-alert",
+        "reason": "Il Banner ha background image full-bleed + radius 12 + testo bianco: è dimensionato e disegnato per essere un'unità promozionale/informativa di rilievo, non per messaggi inline di errore o avviso urgente. Usarlo per un errore form fa sembrare l'errore una promo (e viceversa).",
+        "alternative": "Per stati semantici (success/error/warning/info) usare Alert (sticky/inline) o Feedback. Per messaggi rapidi/transitori usare Toast. Riservare Banner a callout promozionali/informativi con visual."
+      },
+      {
+        "scenario": "banner-without-image",
+        "reason": "Il Banner è progettato attorno all'immagine di background: il testo bianco e i Button inverse presuppongono uno sfondo visivo. Senza immagine il container diventa un rettangolo vuoto dove il testo bianco è illeggibile.",
+        "alternative": "L'immagine di background è obbligatoria. Se non c'è un visual significativo da usare, riconsiderare il pattern: forse serve Card Highlight, Card Informative o Alert, non Banner."
+      },
+      {
+        "scenario": "long-title-or-paragraph",
+        "reason": "I limiti tipografici disegnati sono: Title max 2 righe (heading/h3 16px ExtraBold Mulish), Paragraph max 3 righe (pLead 16px regular). Superare questi limiti spacca il layout: la card cresce verticalmente oltre i 179h/118h disegnati, il testo finisce sotto o sopra l'area pensata per la leggibilità (overlay sull'immagine).",
+        "alternative": "Mantenere Title <= 2 righe e Paragraph <= 3 righe. Per messaggi più articolati spostare il dettaglio in una pagina raggiungibile dalla CTA del Banner ('Scopri di più' → pagina dettaglio)."
+      },
+      {
+        "scenario": "centered-text-with-buttons-forced",
+        "reason": "Il Variant `Centered Text` in Figma NON disegna Button sotto al testo — è un layout puramente comunicativo centrato. Forzare Button dentro a Centered Text rompe la composizione (i Button hanno alignment-left nella loro versione default; mixando con testo centrato il banner sembra mal-allineato).",
+        "alternative": "Per pattern con CTA esplicita usare Title + Paragraph o Title Only (entrambi prevedono Button group). Per Centered Text usare il tap sull'intero banner come CTA implicita (`onPress` a livello container)."
+      },
+      {
+        "scenario": "more-than-two-buttons",
+        "reason": "Il Banner Figma prevede massimo 2 Button (Button Group con 2 azioni: primaria + secondaria). Aggiungere un terzo Button sovraccarica la scelta dell'utente e visivamente non sta nel layout 376 di larghezza Banner.",
+        "alternative": "Massimo 2 azioni: primaria (inverse/primary, solid bianco) + secondaria (inverse/secondary, outline). Per più opzioni usare una Drawer/modale raggiungibile dalla CTA primaria ('Scopri opzioni')."
+      },
+      {
+        "scenario": "documenting-each-template-as-component",
+        "reason": "Welcome Bonus Banner, App Update Banner, Cookie Banner, ecc. sono ISTANZE dello stesso Banner — differiscono solo per contenuto (testo, immagine, target azione). Documentare ogni template come componente separato in `components/` duplica struttura, slot e token; quando il Banner base cambia, tutti i template vanno aggiornati a mano.",
+        "alternative": "Mantenere UN solo componente Banner nel DS. I template specifici vivono come pattern d'uso (commonPatterns qui o file separato `BANNER_TEMPLATES.md`/`templates.md`) — sono content/marketing decisions, non DS decisions."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "BackgroundImage": {
+        "required": true,
+        "description": "Immagine di fondo a tutta superficie del container, gestita dal consumer (asset, non token). Tipicamente con overlay scuro/gradient sopra per garantire leggibilità del testo bianco — l'overlay è scelta dell'asset (immagine già preparata col darkening) o del consumer in fase di applicazione. Il design Figma mostra placeholder mountain pattern, ma in produzione è un'immagine custom per ogni istanza/template."
+      },
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale di Title + Paragraph (solo Title in Variant=Title Only). Gap interno = `textbox/size/gap` (8). Allineamento dipende dal Variant: `Title + Paragraph` e `Title Only` sono LEFT-aligned; `Centered Text` è centrato orizzontalmente. Title in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18); Paragraph in `typography/body/pLead` (16px regular Roboto, line-height 18). Entrambi nel token `banner/color/text` (bianco) per contrasto sul background scuro."
+      },
+      "ButtonGroup": {
+        "required": false,
+        "description": "Group di max 2 Button sotto al TextBox (Variant=Title + Paragraph e Title Only — NON in Centered Text). Gap fra Button = `buttonGroup/size/default/gap` (8). Button 1 (azione secondaria): variante `inverse/secondary` size sm — outline bianco trasparente. Button 2 (azione primaria): variante `inverse/primary` size sm — solid bianco con text scuro. Entrambi 32h (sm), border-radius 12. L'ordine visivo è secondaria a sinistra → primaria a destra."
+      }
+    },
+    "nestedComponents": ["Button", "Button Group"],
+    "commonPartners": ["Page", "Drawer", "Modal"],
+    "parentConstraints": [
+      "Pensato per essere inline dentro a una Page o Drawer, con padding orizzontale verso i bordi gestito dal parent. Il Banner stesso ha solo padding interno (verso il bordo del proprio container), non margin esterno.",
+      "Larghezza tipica del Banner = larghezza disponibile del container parent (376 nei design Figma con 343 viewport content e ~16 margin). Niente versione a larghezza fissa più piccola — il Banner riempie sempre la larghezza disponibile.",
+      "L'intero Banner può essere tappabile come unit di navigazione (es. tap → pagina dettaglio promo) ANCHE se ha già i 2 Button: il consumer decide se il tap-on-card è la CTA primaria o se sono i Button ad essere le uniche CTA."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-banner": "Tap sull'intero Banner (al di fuori dei Button) esegue `onPress` del consumer — tipicamente apre la destinazione promozionale (es. pagina dettaglio dell'offerta). Pattern usato specialmente in Variant=Centered Text che non ha Button espliciti.",
+      "tap-button": "Tap su uno dei Button del ButtonGroup esegue il callback associato (`onPrimaryAction` / `onSecondaryAction`) — azioni distinte dal tap-banner. In banner che hanno sia tap-banner che Button, il consumer è responsabile di evitare overlap (es. tap su Button è event-stopPropagation per non triggerare anche tap-banner).",
+      "no-state-visuals": "Niente State Pressed/Disabled disegnati in Figma per il Banner stesso. Lo State Pressed dei Button interni è ereditato dal componente Button (vedi sua doc)."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "Se Banner è tappabile (onPress sul container): `Role.Button` con `accessibilityLabel` combinato (Title + Paragraph). Se Banner contiene Button espliciti come uniche CTA: container con `Role.None`/`accessibilityElement=false`, ogni Button è elemento accessibile separato con propria label. Su iOS valutare `accessibilityTraits = [.button]` quando intero Banner è tappabile. Per consent banner (cookie), considerare `Role.Dialog`/`aria-modal` se il banner blocca l'interazione con il resto della pagina.",
+    "screenReader": "Annuncio combinato: '[Title], [Paragraph]' al mount del Banner. Se Banner è tappabile, aggiungere 'pulsante' alla fine. I Button interni vengono letti come elementi successivi nell'ordine di lettura (es. 'Aggiorna app, pulsante' / 'Non ora, pulsante'). L'immagine di background è decorativa — NON va annunciata (`accessibilityElementsHidden=true` sul background image).",
+    "focusManagement": "Se tutto il Banner è tappabile: 1 elemento focusable. Se i Button sono le sole CTA: il Banner è non-focusable e i Button sono 2 elementi focusable separati nell'ordine secondario → primaria. In carosello di Banner (Hero homepage Scroll=true), gestire il focus screen reader per seguire la slide corrente.",
+    "touchTarget": "Banner intero (~376×118-179): abbondantemente sopra-soglia se tappabile. Button interni 32h (sm size) — sotto-soglia 44pt iOS / 48dp Android: il Button rimedia con padding orizzontale generoso (12) + hit-area estensibile dal consumer.",
+    "wcag": "AA — il testo bianco (`banner/color/text`) su background image necessita di overlay scuro per garantire contrasto AA: l'overlay è solitamente preparato nell'asset immagine (immagine già scurita) o aggiunto dal consumer come gradient sopra (analogamente a Hero homepage). Verificare per ogni template che il contrasto risultante sia AA — è responsabilità del consumer/designer dell'asset, non del componente Banner. I Button inverse/primary (bianco solid con text scuro) e inverse/secondary (outline bianco) sono sopra-AA per loro design."
+  },
+
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["banner", "promo banner", "marketing banner", "callout", "info banner", "promo card", "cookie banner"],
+    "context": "Usa Banner per highlight promozionale/informativo a tutta larghezza con background image. 3 `Text Type` strutturali: `Title + Paragraph` (left, max 2+3 righe, 2 Button) — pattern canonico; `Title Only` (left, max 2 righe, 2 Button) — compatto 118h; `Centered Text` (centrato, max 2+3 righe, NIENTE Button) — comunicativo. Testo sempre BIANCO (`banner/color/text`) — necessita di background image preparata con overlay scuro per garantire contrasto AA. Button: max 2 (primaria inverse/primary solid bianco + secondaria inverse/secondary outline), size sm. NON usare Banner come Alert (per stati semantici usa Alert/Feedback), NON senza immagine, NON con Title/Paragraph che eccedono i limiti di righe disegnati, NON forzare Button in Centered Text. Template specifici (welcome bonus, app update, cookie) sono ISTANZE — non documentare come componenti separati: il DS ha UN solo Banner, i template sono pattern d'uso. Nesta Button e Button Group."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

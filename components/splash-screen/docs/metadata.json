@@ -1,44 +1,96 @@
 {
   "slug": "splash-screen",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "1024:12852",
+    "ios": "1024:12852"
+  },
+
   "component": {
     "name": "Splash Screen",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Schermata di avvio mostrata ALL'OPEN dell'app, mentre il bootstrap viene completato (load shell, initial fetches, theme init, auth state). 375×812 full-viewport, bg bianco `splashScreen/color/background/bg` con pattern decorativo brand-aware (forme curve verdi chiare `splashScreen/color/bg` semi-trasparenti che occupano gli angoli — pattern asset del brand). Al centro: logo del brand (asset multibrand — Sisal, Snai, Pokerstars cambia per build) + Loader 40×40 (atomo Loader, `loader/color/bg` verde brand) sotto al logo. NON è interattivo — display puro durante il caricamento. Tipicamente 1-3 secondi (auto-dismiss al completamento del bootstrap). Su iOS è MOSTRATA DOPO il LaunchScreen.storyboard nativo dell'OS (iOS gestisce il primo flash di apertura come launch screen statica, poi quando l'app è renderizzabile mostra questa splash 'in-app' col Loader). Su Android è il Branded Launch Screen post Material splash (Android 12+) o splash unica nei vecchi sistemi.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
+    "useCases": [
+      "app-bootstrap-loading",
+      "post-launch-branded-pause",
+      "initial-data-fetch-cover"
+    ],
     "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "commonPatterns": [
+      {
+        "name": "app-open-bootstrap",
+        "description": "Pattern unico: Splash Screen mostrata IMMEDIATAMENTE all'apertura dell'app, dopo l'eventuale launch screen OS-native (iOS LaunchScreen, Android Material splash). Rimane visibile finché il bootstrap dell'app non è completo (theme caricato, auth state risolto, eventuali fetch critici fatti). Al completamento, transizione (fade-out o slide-in) verso la prima schermata utile (home se loggato, login se no).",
+        "composition": "<App>{!ready ? <SplashScreen /> : <Router />}</App>"
+      },
+      {
+        "name": "multibrand-logo-rendering",
+        "description": "Il logo centrale è brand-aware via build config: Sisal build → logo Sisal, Snai build → logo Snai, Pokerstars build → logo Pokerstars. Il pattern decorativo brand-aware via token `splashScreen/color/bg|border` (per Sisal è verde chiaro; gli altri brand hanno il proprio pattern). Niente personalizzazione utente — è 100% determinato dalla build branded.",
+        "composition": "<SplashScreen brand={buildBrand} />  // tipicamente impostato a livello root, non passato esplicitamente"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "wrong-brand-logo-in-build",
+        "reason": "Mostrare il logo Sisal in una build Snai (o viceversa) è un errore critico di branding. Inoltre la splash è la PRIMA cosa che l'utente vede — un brand mismatch qui mina la fiducia da subito.",
+        "alternative": "Il logo deve corrispondere alla build branded corrente. Configurato a livello build/CI, non passato dinamicamente. Verificare in QA che ogni build mostri il proprio logo."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
+    "slots": {
+      "Background": {
+        "required": true,
+        "description": "Sfondo bianco `splashScreen/color/background/bg` con pattern decorativo brand-aware sovrapposto: forme curve/cerchi/blob in `splashScreen/color/bg` (verde chiaro per Sisal, equivalente brand-color per altri) con `splashScreen/color/border` come outline delle forme. Il pattern è asset visuale brand, NON un componente nesta — è renderizzato come illustration di background."
+      },
+      "BrandLogo": {
+        "required": true,
+        "description": "Logo del brand al centro orizzontale dello screen (Sisal nel design Figma, ma è multibrand-aware via build: Snai, Pokerstars). Asset PNG/SVG. Non sostituibile a runtime — è determinato dalla build branded. Posizionato leggermente sopra il centro verticale per lasciare spazio al Loader sotto."
+      },
+      "Loader": {
+        "required": true,
+        "description": "Atomo Loader 40×40 (`loader/size/height`) posizionato sotto al BrandLogo. Color brand verde `loader/color/bg`. Variante OS-aware (Android arc circolare, iOS segmented activity indicator — vedi doc Loader). Comunica all'utente 'app sta caricando, attendi'. Anima in loop fino al completamento del bootstrap."
+      }
+    },
+    "nestedComponents": ["Loader"],
     "commonPartners": [],
-    "parentConstraints": []
+    "parentConstraints": [
+      "Splash Screen è elemento di APP-SHELL ROOT: vive a livello App.tsx / RootView, prima del router/navigator dell'app. Non vive dentro a pagine specifiche.",
+      "Su iOS: mostrata DOPO il LaunchScreen.storyboard nativo (la storyboard è la prima cosa che appare durante il launch; quando l'app entra in foreground attiva, mostra questa splash 'in-app' con animazione del Loader). Su Android: dopo il Branded Launch Screen Material (Android 12+).",
+      "Auto-dismiss al completamento del bootstrap — niente azione utente richiesta."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "auto-dismiss-on-ready": "La Splash si dismette automaticamente quando il bootstrap dell'app è completato (theme + auth + initial data pronti). Transizione tipica: fade-out della splash + fade-in del primo screen utile (Home o Login).",
+      "no-tap-interaction": "Splash è display puro. Niente onPress, niente skip-button, niente input. Eventuale tap durante la splash non fa nulla."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "screen — su iOS impostare il container come `accessibilityElement=false` + figli marcati: BrandLogo come `accessibilityLabel = '[Brand] app, caricamento'`, Loader con label 'Caricamento in corso'. Su Android stesso schema con `Modifier.semantics`. La Splash è ELEMENTO MODALE DEL SISTEMA: il focus screen reader resta su di essa finché non si dismette.",
+    "screenReader": "Annuncio al mount: '[Brand] app, caricamento in corso'. Lo screen reader NON deve ripetere l'annuncio in loop durante la splash (sarebbe verbose). Alla dismissione, il focus si sposta sul primo elemento del screen successivo (Home o Login) — responsabilità del consumer (router).",
+    "focusManagement": "Non focusable (display, niente interazione). Focus trap implicito durante la splash (nessun elemento è focusable nello screen).",
+    "touchTarget": "N/A — non tappabile.",
+    "wcag": "AA — il logo brand su bg bianco è ampiamente AA per design (logo brand-color contrasta con bianco). Il Loader ha le proprie note di accessibility (vedi doc Loader). Il pattern decorativo brand-aware è semantico-neutro (decorativo) e non interferisce con leggibilità."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "low",
+    "keywords": ["splash screen", "splash page", "app launch screen", "boot screen", "schermata avvio", "loading splash"],
+    "context": "Schermata di avvio dell'app, mostrata durante il bootstrap (1-3 secondi). 375×812 full-viewport. Composta da: Background bianco + pattern decorativo brand-aware, BrandLogo centrale (multibrand: Sisal/Snai/Pokerstars determinato dalla build), Loader 40×40 sotto al logo (atomo Loader, OS-aware). DISPLAY PURO — niente interazione, niente Button, niente input. Auto-dismiss al completamento del bootstrap. Su iOS arriva DOPO il LaunchScreen.storyboard nativo (è l'in-app splash con Loader animato); su Android dopo il Branded Launch Screen Material. NON usare per marketing/promo (è una pausa di bootstrap, non un billboard), NON aggiungere CTA/Button, NON tenere visibile >3-5 secondi (se il bootstrap richiede di più, fix performance o passare a Loading Screen testuale). Logo brand-aware via BUILD, non runtime-configurable."
   },
+
   "rationale": {
     "designDecisions": ""
   }

@@ -1,0 +1,128 @@
+{
+  "slug": "heading",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5822:204388",
+    "ios": "5822:204388"
+  },
+
+  "component": {
+    "name": "Heading",
+    "category": "atoms",
+    "description": "Riga di intestazione per dare titolo a un paragrafo, a una sezione o a un carosello di card. Composto da un Title (`typography/heading/h1` 20px ExtraBold Mulish, color `heading/color/text`) eventualmente preceduto da un'icona 24×24 a sinistra (`showIcon`). A destra, un Outlet opzionale che può essere `Link` (testo tappabile sottolineato, 14px Bold Roboto, es. 'Vedi tutti' che porta alla pagina della sezione), `Icon` (icona azione 24×24, es. info, settings, chevron) o `None` (solo titolo, niente outlet). 3 varianti `Outlet` × 2 stati `showIcon` (true/false). Gap fra title-group e outlet = `heading/size/gap` (8); gap fra titolo e icona sinistra = stesso token (8). Il Title è strutturalmente single-line in Figma (`whitespace-nowrap`).",
+    "type": "display"
+  },
+
+  "usage": {
+    "useCases": [
+      "paragraph-title",
+      "section-heading-with-cta",
+      "carousel-section-header",
+      "list-section-header"
+    ],
+    "requiredProps": ["title"],
+    "commonPatterns": [
+      {
+        "name": "section-heading-with-vedi-tutti",
+        "description": "Heading con `Outlet=Link` sopra a un carosello di card (es. 'Le tue partite preferite' + 'Vedi tutti' a destra). Il link porta alla pagina dedicata della sezione con la lista completa. Pattern canonico per la homepage e le pagine di sezione: titolo a sinistra per ancorare il contesto, CTA a destra per l'azione di esplorazione.",
+        "composition": "<Heading title=\"Le tue partite\" outlet=\"Link\" linkLabel=\"Vedi tutti\" onLinkPress={() => navigate('/sezione')} />"
+      },
+      {
+        "name": "paragraph-title",
+        "description": "Heading con `Outlet=None` sopra a un paragrafo di testo (es. titolo di una sezione descrittiva, di una FAQ aperta, di un blocco informativo). Solo title, niente outlet — la riga di intestazione è puramente strutturale.",
+        "composition": "<Heading title=\"Come funziona\" outlet=\"None\" />"
+      },
+      {
+        "name": "heading-with-leading-icon",
+        "description": "Heading con `showIcon=true`: icona 24×24 a sinistra del titolo (es. icona sport accanto a 'Calcio', icona promo accanto a 'Promozioni del giorno'). L'icona aggiunge supporto visivo al significato della sezione. Combinabile con qualunque Outlet.",
+        "composition": "<Heading title=\"Calcio\" showIcon icon={<IconSoccer />} outlet=\"Link\" linkLabel=\"Vedi tutti\" />"
+      },
+      {
+        "name": "section-heading-with-action-icon",
+        "description": "Heading con `Outlet=Icon` per esporre un'azione contestuale a destra (es. info icon che apre un tooltip/modale, settings icon, refresh icon). A differenza del Link, l'Icon outlet non è una navigazione ma un'azione contestuale alla sezione.",
+        "composition": "<Heading title=\"I tuoi bonus\" outlet=\"Icon\" actionIcon={<IconInfo />} onActionPress={openInfo} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "heading-without-content-below",
+        "reason": "Heading è una riga di intestazione: presuppone che ci sia qualcosa sotto a cui dà titolo (paragrafo, lista, carosello). Heading standalone in una pagina senza contenuto sottostante è un'etichetta orfana che non aiuta lo scanning.",
+        "alternative": "Sempre con contenuto sotto. Se l'unico scopo è mostrare una stringa importante senza sezione, usare un componente Display Text dedicato o lavorare a livello tipografico (es. h1 dentro a un Page Title)."
+      },
+      {
+        "scenario": "long-multiline-title",
+        "reason": "Il Title in Figma è `whitespace-nowrap` (single-line). Title lunghi che andrebbero a capo non sono disegnati nel componente — verrebbero troncati o spaccherebbero il layout della riga (specie con Outlet=Link a destra).",
+        "alternative": "Mantenere il title corto (1-4 parole). Se servono titoli più articolati, usare un componente Hero Detail o spostare la complessità in un blocco descrittivo sotto al Heading."
+      },
+      {
+        "scenario": "link-as-decorative",
+        "reason": "L'Outlet=Link (sottolineato, color brand-link) è un segnale forte di affordance: l'utente si aspetta che tappando si vada da qualche parte. Usare il Link senza un'azione associata o con un'azione triviale (es. apre/chiude il blocco sotto) tradisce l'aspettativa.",
+        "alternative": "Outlet=Link solo per navigazione/discovery (es. 'Vedi tutti', 'Scopri di più' verso un'altra pagina). Per toggle/disclosure usare Outlet=Icon con chevron, o un componente Accordion."
+      },
+      {
+        "scenario": "heading-as-cta-row",
+        "reason": "Il Heading ha title in heading/h1 (20px ExtraBold) — è un'etichetta di sezione, non un button row. Aggiungere multiple azioni (es. due link a destra, o Link + Icon insieme) sovraccarica la riga e dilui la funzione di 'titolo'.",
+        "alternative": "Una sola affordance di azione: Link oppure Icon, mai entrambi insieme. Per pattern con multiple azioni usare un Button Group sotto al Heading o spostarle in un menu contestuale."
+      },
+      {
+        "scenario": "heading-instead-of-h1-h2-h3",
+        "reason": "Il componente Heading è una RIGA DI SEZIONE (heading/h1 + outlet). Non è il sistema tipografico di gerarchia (h1/h2/h3): un'app ha tipicamente un solo h1 a livello pagina (Page Title) e Heading è da considerare una struttura di livello sezione/sottosezione.",
+        "alternative": "Per Page Title (titolo della pagina intera) usare un componente Page o Hero dedicato. Heading è per sezioni intermedie. Per gerarchie più profonde (h3/h4 sotto sezioni) usare tipografia direttamente con i token `typography/heading/{h2|h3|...}`."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Icon": {
+        "required": false,
+        "description": "Icona 24×24 opzionale a sinistra del Title, controllata da `showIcon` (default false). Quando presente, gap fra Icon e Title = `heading/size/gap` (8). Pensata per icona di significato semantico (es. icona sport per 'Calcio', icona promo per 'Promozioni'). Colore icona segue il token coerente col brand (di default `heading/color/text` dark)."
+      },
+      "Title": {
+        "required": true,
+        "description": "Testo del heading. Tipografia `typography/heading/h1` (20px ExtraBold Mulish, line-height 24), colore `heading/color/text` (dark). Single-line `whitespace-nowrap`. Cresce in larghezza fino al massimo concesso dal parent meno l'Outlet; con title troppo lunghi viene troncato (le righe non wrappano)."
+      },
+      "Outlet": {
+        "required": false,
+        "description": "Slot a destra del Title con 3 varianti via prop `outlet`: `Link` (testo sottolineato 14px Bold Roboto, color `link/color/text/default`, gap interno 4 — tipicamente 'Vedi tutti' per navigare alla pagina della sezione), `Icon` (icona azione 24×24 per azioni contestuali tipo info/settings), o `None` (niente outlet, solo Title). Gap fra Title-group e Outlet = `heading/size/gap` (8). Solo `Outlet=Link` e `Outlet=Icon` sono tappabili — `Outlet=None` non aggiunge interattività al Heading."
+      }
+    },
+    "nestedComponents": [],
+    "commonPartners": ["Card", "Listing", "Carousel", "Page", "Paragraph"],
+    "parentConstraints": [
+      "Pensato come riga di apertura di una sezione/sottosezione: tipicamente sopra a un paragrafo di testo, una lista, un carosello orizzontale di card, o un gruppo di card. Il padding orizzontale verso i bordi della pagina è gestito dal parent — il Heading non lo include.",
+      "Quando `Outlet=Link` con label 'Vedi tutti' (o equivalente), l'azione del link è coerente con il contesto della sezione sottostante: tappare il link porta alla pagina dedicata che mostra il contenuto completo."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-link-outlet": "Solo con `Outlet=Link`: tap sul testo del link esegue `onLinkPress` (tipicamente navigazione alla pagina della sezione). Nessuno State visivo Pressed esplicitamente disegnato in Figma per il link interno del Heading.",
+      "tap-icon-outlet": "Solo con `Outlet=Icon`: tap sull'icona azione esegue `onActionPress` (tipicamente azione contestuale tipo apri info, refresh, settings). L'icona è 24×24 — touch target effettivo va esteso dal wrapper.",
+      "tap-title": "Il Title NON è tappabile per design. Anche quando c'è un outlet azione, l'area tappabile è solo l'outlet (link/icon), non il title — l'utente che vuole navigare deve mirare al link, non al titolo. Eccezione: pattern di consumer che wrappano l'intero Heading in un container tappabile (es. per migliorare l'hit area), ma questa è una scelta del consumer non disegnata nel componente."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "heading + button/link (per l'outlet) — il Title è semantica di intestazione: su iOS impostare `accessibilityTraits = .header` sul contenitore Title; su Android usare `Modifier.semantics { heading() }`. L'Outlet (se Link o Icon) è un elemento accessibile separato con `accessibilityTraits = .button` (iOS) o `Role.Button`/`Role.Link` (Android) e `accessibilityLabel` esplicito (es. 'Vedi tutti i bonus', 'Mostra informazioni sezione').",
+    "screenReader": "Lo screen reader legge 'Title, intestazione' seguito dall'Outlet come elemento separato ('Vedi tutti, link' o 'Mostra info, pulsante'). L'icona sinistra (se presente) deve avere `accessibilityLabel` significativo se aggiunge informazione semantica (es. icona sport che identifica una categoria), altrimenti marcarla decorativa.",
+    "focusManagement": "Title non focusable (è testo statico). Outlet=Link e Outlet=Icon sono focusable e nell'ordine di lettura naturale: dopo il Title (e l'eventuale icona sinistra), il focus passa all'Outlet di destra.",
+    "touchTarget": "Outlet=Link: l'area di testo del link è probabilmente sotto-soglia (testo 14px Bold con line-height 18 = ~18h, sotto i 44pt iOS / 48dp Android). Outlet=Icon: 24×24 anch'esso sotto-soglia. Per entrambi, estendere l'hit area del wrapper tappabile tramite padding (es. min 44pt verticali) senza alterare il layout visivo della riga.",
+    "wcag": "AA — il Title heading/h1 è semanticamente esposto come header per la navigazione screen reader (utenti possono saltare per heading). Il contrasto del Title (`heading/color/text` dark su superficie chiara) è ampio. Per Outlet=Link verificare che il sottolineato + colore garantiscano AA su sfondi brand (non solo-colore: c'è già la sottolineatura come ridondanza visiva)."
+  },
+
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["heading", "section heading", "title row", "vedi tutti", "section header", "titolo sezione"],
+    "context": "Usa Heading come riga di intestazione di una sezione/sottosezione: titolo (`heading/h1` 20px ExtraBold Mulish) a sinistra, outlet opzionale a destra. 3 varianti `Outlet`: `Link` (es. 'Vedi tutti' per navigare alla pagina della sezione completa — pattern canonico sopra a un carosello), `Icon` (icona azione contestuale come info/settings), `None` (solo titolo, sopra a un paragrafo). Opzionalmente con `showIcon=true` un'icona 24×24 a sinistra del titolo per supporto semantico (es. icona sport accanto a 'Calcio'). Title è single-line `whitespace-nowrap` — mantenere brevi (1-4 parole). NON usare Heading come Page Title (per quello c'è Page/Hero), NON aggiungere multiple azioni a destra (un solo Outlet), NON sostituire il sistema gerarchico h1/h2/h3 — Heading è livello sezione, non livello pagina. Solo l'Outlet è tappabile, NON il Title."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

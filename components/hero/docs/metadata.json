@@ -1,0 +1,141 @@
+{
+  "slug": "hero",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6091:14434",
+    "ios": "6091:14434"
+  },
+
+  "component": {
+    "name": "Hero",
+    "category": "molecules",
+    "description": "Hero della homepage: card 328×210 (rounded-square radius 8) con immagine prodotto a tutta superficie, overlay scuro 25% + gradient bottom verso nero pieno per leggibilità del testo, badge cluster in alto-sinistra (Promo / Jackpot / Default toggleabili), Text Box centrato in basso (Title + Paragraph in bianco) e Button inverse-primary opzionale come CTA. 2 varianti `Scroll`: `false` (singolo hero highlight 210h) o `true` (slider swipable con peek-left + center + peek-right + PageControl di 8 dots sotto, totale altezza 226). Three-way naming: slug `hero`, frame Figma 'Hero', token namespace `heroHomepage/*` per il container — diverso da Hero Detail (componente separato per pagina prodotto). Il Hero homepage è specifico della parte ALTA della homepage — non è un hero generico riusabile in pagine interne.",
+    "type": "display"
+  },
+
+  "usage": {
+    "useCases": [
+      "homepage-product-showcase",
+      "homepage-key-feature-highlight",
+      "homepage-promo-carousel"
+    ],
+    "requiredProps": ["title", "paragraph", "imageUrl"],
+    "commonPatterns": [
+      {
+        "name": "single-hero-highlight",
+        "description": "Variante `Scroll=false`: un singolo Hero in alto in homepage per evidenziare un prodotto/feature di alta priorità (es. promozione corrente, novità). Niente paginazione sotto, niente swipe. Adatto quando c'è un solo contenuto da mettere in evidenza ed è importante che l'utente lo veda subito senza dover scorrere.",
+        "composition": "<Hero scroll={false} title=\"Welcome Bonus\" paragraph=\"Fino a 500€ alla prima ricarica\" imageUrl={promoImg} showBadgePromo />"
+      },
+      {
+        "name": "swipable-hero-carousel",
+        "description": "Variante `Scroll=true`: carosello orizzontale swipable di N hero in homepage. Mostra il center hero + peek dei laterali (sinistro e destro) per segnalare la presenza di altri contenuti. Sotto, PageControl di dots indica posizione/totale. Adatto quando ci sono più contenuti di alta priorità da ruotare (promo multiple, sport del giorno, novità).",
+        "composition": "<Hero scroll items={heroItems} initialIndex={0} onChange={setCurrentIndex} />"
+      },
+      {
+        "name": "hero-with-multiple-badges",
+        "description": "Hero con cluster di badge in alto-sinistra: tre slot toggleabili (`showBadgePromo`, `showBadgeJackpot`, `showBadgeDefault`). I badge comunicano caratteristiche/tag del prodotto (es. 'Promo' su offerta attiva, 'Jackpot' su slot con jackpot progressivo, label custom in Default). Toggle indipendenti — possono essere mostrati uno, due o tutti tre.",
+        "composition": "<Hero title={t} paragraph={p} imageUrl={img} showBadgePromo showBadgeJackpot showBadgeDefault defaultLabel=\"Nuovo\" />"
+      },
+      {
+        "name": "hero-with-cta-button",
+        "description": "Hero con `showButton=true`: aggiunge un Button inverse-primary (bg bianco su sfondo scuro dell'immagine) sotto il Text Box come CTA esplicita (es. 'Gioca ora', 'Scopri di più'). Va usato quando l'azione meriterebbe risalto immediato e non si vuole che l'utente debba tappare il Hero intero per andare alla destinazione.",
+        "composition": "<Hero title=\"Slot del giorno\" paragraph=\"Prova la slot più giocata\" imageUrl={slotImg} showButton buttonLabel=\"Gioca ora\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "hero-in-mid-page-or-secondary-pages",
+        "reason": "L'Hero homepage è disegnato e dimensionato per l'attacco TOP della homepage. Usarlo a metà pagina (sotto a contenuti già scrollati) o in pagine secondarie (lista, dettaglio, pagine di sezione) confonde il pattern visivo della homepage e crea ridondanza — l'utente ha già una Page Title, una nav, un contesto: non gli serve un altro 'banner principale' a metà pagina.",
+        "alternative": "Per evidenziare contenuto a metà homepage usare Card Highlight o Card Promo. Per hero di pagine prodotto/dettaglio usare Hero Detail (componente separato). Per banner di pagine generiche usare Banner."
+      },
+      {
+        "scenario": "too-many-badges-clutter",
+        "reason": "I 3 slot badge sono pensati per essere usati con parsimonia: 1-2 badge tipicamente bastano per qualificare il contenuto (es. Promo + Jackpot). Attivare sempre tutti e 3 (Promo + Jackpot + Default custom) sovraccarica il top-left del hero e dilui il significato dei singoli badge.",
+        "alternative": "Mostrare solo i badge effettivamente rilevanti per quel hero. Se il contenuto non ha nessuna caratteristica meritevole di badge, nasconderli tutti (`showBadgePromo=false`, `showBadgeJackpot=false`, `showBadgeDefault=false`) — l'hero rimane perfettamente leggibile senza."
+      },
+      {
+        "scenario": "long-paragraph-overlapping-image",
+        "reason": "Il Text Box è in basso sopra al gradient transparent-to-black: il gradient è alto 109px e copre la metà-bassa dell'immagine. Paragraph lungo (4+ righe) sfora il gradient e finisce sopra all'area immagine completamente illuminata, dove il bianco diventa illeggibile.",
+        "alternative": "Mantenere Title corto (1-3 parole) e Paragraph breve (1-2 righe). Se il messaggio è più articolato, spostarlo in una Card Highlight separata o in una pagina di dettaglio raggiungibile dal Button del Hero."
+      },
+      {
+        "scenario": "hero-without-image",
+        "reason": "L'Hero è progettato attorno all'immagine prodotto: gradient, overlay, posizionamento del testo e dei badge funzionano in relazione al visual di sfondo. Senza immagine il container diventa un rettangolo scuro con testo bianco — perde la sua funzione di showcase visivo.",
+        "alternative": "L'immagine è obbligatoria nel pattern. Se non c'è un'immagine prodotto adatta, riconsiderare se serve un Hero (forse basta un Banner testuale o una Card Promo)."
+      },
+      {
+        "scenario": "scroll-with-1-hero",
+        "reason": "La variante `Scroll=true` ha senso solo con N>1 hero (più contenuti da ruotare). Con un singolo hero la PageControl mostra 1 dot, lo swipe non porta da nessuna parte e il pattern visivo del carosello è vuoto.",
+        "alternative": "Per 1 contenuto usare `Scroll=false`. Per N≥2 usare `Scroll=true` con il numero corretto di dots in PageControl."
+      },
+      {
+        "scenario": "too-many-hero-in-carousel",
+        "reason": "La PageControl Figma è disegnata con 8 dots (max ragionevole per il pattern). Più di 8 hero rendono i dots affollati o richiedono dot-compression, peggiorando la chiarezza della posizione corrente. Inoltre l'utente raramente swipa oltre 4-5 slide su mobile.",
+        "alternative": "Mantenere il carosello a 3-6 hero. Per più contenuti usare una Listing dedicata in una pagina di sezione, raggiungibile dal Hero o da un Heading 'Vedi tutti'."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "BackgroundImage": {
+        "required": true,
+        "description": "Immagine prodotto a tutta superficie del container (328×210 o 328×194). Overlay scuro 25% (linear-gradient rgba(0,0,0,0.25)) applicato sopra l'immagine per uniformare il contrasto. Bottom gradient transparent-to-black per il bottom 109px per leggibilità del Text Box. L'immagine è asset del consumer (non è un token), va in `bg-image` del container."
+      },
+      "BadgeCluster": {
+        "required": false,
+        "description": "Cluster di Badge Default in alto-sinistra (left 8, top 8), gap = `heroHomepage/size/gap` (8). 3 slot indipendenti via prop `showBadgePromo`, `showBadgeJackpot`, `showBadgeDefault`. Ogni badge è un atomo Badge Default `marketing` md (24h, radius 128 fully-round): Promo (bg arancione, text scuro), Jackpot (bg verde, text scuro), Default (bg grigio chiaro + border + text scuro per label custom). Ordine fisso visivo: Promo → Jackpot → Default da sinistra a destra."
+      },
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale Title + Paragraph centrato orizzontalmente, posizionato in basso sopra al gradient. Gap fra Title e Paragraph = `textbox/size/gap` (8). Title in `typography/heading/h1` (20px ExtraBold Mulish), Paragraph in `typography/body/p` (14px regular Roboto). Entrambi nel token `heroHomepage/color/text` (bianco) per contrasto sul gradient scuro. text-center."
+      },
+      "Button": {
+        "required": false,
+        "description": "Button opzionale (`showButton=true`) sotto al Text Box, full-width (w-full) come CTA esplicita. Variante `inverse/primary` (bg bianco con text scuro) size sm (32h), radius 12. Tipografia `typography/interaction/button` (14px Bold). Usato quando l'azione merita risalto separato rispetto al tap sull'intero hero."
+      },
+      "PageControl": {
+        "required": false,
+        "description": "Solo per `Scroll=true`: row di dots sotto al hero (gap `pageControl/size/gap` 4), ogni dot è 8×8 fully-round (radius 128). Dot active (slide corrente) usa `pageControl/color/bg/active` (verde brand), dot default usa `pageControl/color/bg/default` (grigio chiaro). 8 dots nel design Figma — il consumer renderizza N dots in base al numero di hero nel carosello."
+      }
+    },
+    "nestedComponents": ["Badge Default", "Button"],
+    "commonPartners": ["Header", "Quicklink Navigation", "Page"],
+    "parentConstraints": [
+      "Esclusivamente in cima alla Homepage, sotto al Header (e tipicamente sopra a Quicklink Navigation o sezioni di card). NON usabile a metà homepage, NON in pagine secondarie/interne, NON in modali.",
+      "Larghezza del container parent = viewport (375 nel design Figma). L'hero card interno è 328 (con 16+16 = 32 di margin orizzontale dal viewport per il peek dei vicini in `Scroll=true`).",
+      "In modalità `Scroll=true` il consumer gestisce gesture swipe, lo stato dell'indice corrente e l'aggiornamento del PageControl. Il peek di sinistra/destra è puramente visivo — segnala la presenza di hero adiacenti."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-hero": "Tap sull'intero Hero (escluso il Button) esegue la navigazione verso la destinazione associata (`onPress`). Nessuno State Pressed disegnato in Figma — il feedback di touch è gestito a livello consumer (es. lieve scale-down, opacity change).",
+      "tap-button": "Solo con `showButton=true`: tap sul Button esegue un callback separato (`onButtonPress`) che può portare alla stessa destinazione del tap-hero o a un'azione differente (es. tap-hero → pagina prodotto, tap-button → start gioco diretto). Il consumer decide la semantica.",
+      "swipe-carousel": "Solo in `Scroll=true`: gesture swipe orizzontale cambia l'hero corrente; PageControl si aggiorna in sincrono. Lo snap è centrato sul nuovo hero attivo. Non c'è scroll soft a metà fra slide — è snap-to-slide."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "button (l'intero Hero è tappabile come unità di navigazione) — su iOS `accessibilityTraits = .button` + `accessibilityLabel` che combina Title + Paragraph + badge attivi (es. 'Promo, Jackpot, Welcome Bonus, Fino a 500€ alla prima ricarica, pulsante'). Su Android `Role.Button` con `contentDescription` analoga. Il Button interno (se presente) è un focus separato con propria label. Per `Scroll=true` il container è un `Role.Pager` (Android) o `accessibilityElements` con `.adjustable` (iOS) per supportare il gesture swipe.",
+    "screenReader": "Annuncio combinato per ogni Hero: '[badge attivi], [Title], [Paragraph], pulsante'. In modalità carosello, esplicitare la posizione: 'slide X di N' al cambio di hero. Il PageControl da solo non va letto come elemento separato (sarebbe verbose '8 puntini') — la posizione è comunicata nell'announcement del hero corrente.",
+    "focusManagement": "L'intero Hero è un elemento focusable. Il Button interno è focusable separato (dopo l'Hero nell'ordine, prima del PageControl). In carosello swipable, il focus screen reader segue il hero centrale corrente quando l'utente swipa.",
+    "touchTarget": "L'intero Hero (328×210) è ampiamente sopra-soglia. Il Button interno è 32h (sm) — sotto-soglia 44pt iOS/48dp Android: estendere hit area tramite padding verticale del wrapper. PageControl dot 8×8 — sotto-soglia: ma in pattern carosello swipable i dot non sono target tappabili principali (lo è il swipe gesture), quindi accettabile.",
+    "wcag": "AA — Il contrasto del testo bianco (`heroHomepage/color/text`) sul gradient bottom-to-black è alto. Sui badge (Promo arancione, Jackpot verde, Default chiaro) il text è dark (`badge/color/{marketing}/text`), garantito AA. L'overlay scuro 25% aiuta a normalizzare il contrasto su immagini variabili — il design system non lascia al consumer la scelta dell'opacity, è un valore fissato nel layout. Per `Scroll=true` lo swipe è gesture-only: assicurarsi che il PageControl e l'announcement screen reader siano fallback non-gesture per chi non può swipare."
+  },
+
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["hero", "homepage hero", "hero showcase", "swipable hero", "product hero", "homepage banner top"],
+    "context": "Usa Hero ESCLUSIVAMENTE in cima alla homepage per mostrare prodotto/feature di alta priorità. NON usarlo a metà pagina, NON in pagine secondarie, NON in modali. 2 varianti `Scroll`: `false` (singolo hero) o `true` (carosello swipable con peek-left/right e PageControl 8-dot sotto). Slot: BackgroundImage (obbligatoria), BadgeCluster opzionale (3 badge togglabili: Promo/Jackpot/Default), TextBox centrato (Title heading/h1 + Paragraph body/p, entrambi bianchi su gradient scuro), Button inverse-primary opzionale come CTA. Three-way naming: slug `hero`, frame 'Hero', token namespace `heroHomepage/*` — distinto da Hero Detail che è il componente per pagine prodotto. Per N hero usa Scroll=true; per 1 hero usa Scroll=false. Mantenere badge attivi ≤2 e paragraph ≤2 righe. Nesta Badge Default e Button atoms; in modalità Scroll nesta anche PageControl."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

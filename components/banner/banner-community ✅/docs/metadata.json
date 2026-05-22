@@ -1,0 +1,114 @@
+{
+  "slug": "banner-community",
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6583:31741",
+    "ios": "6583:31741"
+  },
+
+  "component": {
+    "name": "Banner Community",
+    "category": "molecules",
+    "description": "Template di Banner per la sezione Community (es. Sisal Community con tutor / esperti che interagiscono con gli utenti). Layout ORIZZONTALE COMPATTO list-like (328×114): Avatar md (56×56) con Badge Notification opzionale sopra (count rosso 16h) + TextBox (Title 'Sisal Community' + nome handle 'KiraKim99') + Badge Default ('Tutor') a destra. Background `brand/secondary/500` (verde brand secondario, pattern). Testo bianco (`textbox/color/text`). NIENTE Button — il Banner è tappabile come unità verso la pagina Community / chat con il tutor. Variante strutturale altamente divergente dal Banner base: pattern visivo è più simile a un Listing Item ricco che a un Banner classico (avatar + due righe testo + badge contestuale).",
+    "type": "interactive"
+  },
+
+  "usage": {
+    "useCases": [
+      "community-tutor-promo",
+      "expert-engagement-callout",
+      "messaging-entry-point"
+    ],
+    "requiredProps": ["tutorName", "avatarUrl", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "tutor-active-callout",
+        "description": "Banner Community con tutor attivo che ha messaggi non letti per l'utente: Avatar del tutor + Badge Notification con count messaggi non letti, Title 'Sisal Community' + handle del tutor 'KiraKim99' + Badge 'Tutor' a destra. Tap apre la chat / pagina community con il tutor. Pattern dedicato all'ingaggio con la community di esperti del brand.",
+        "composition": "<BannerCommunity title=\"Sisal Community\" tutorName=\"KiraKim99\" avatarUrl={tutorAvatar} unreadCount={3} badgeLabel=\"Tutor\" onPress={() => openChat(tutorId)} />"
+      },
+      {
+        "name": "community-entry-point",
+        "description": "Banner Community come entry-point alla sezione community generica (senza tutor specifico o messaggi non letti) — Badge Notification nascosto. Posizionato in homepage o area utente per scoprire l'esistenza della community.",
+        "composition": "<BannerCommunity title=\"Sisal Community\" tutorName=\"Scopri la nostra community\" badgeLabel=\"Tutor\" onPress={openCommunity} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-as-generic-user-row",
+        "reason": "Il template è dedicato al pattern Community/Tutor (asset background verde brand, copy 'Sisal Community', Badge 'Tutor'). Usarlo come row generica per profili utente (es. 'Amico' / 'Contatto') confonde il pattern e fa sembrare ogni utente un 'tutor istituzionale'.",
+        "alternative": "Per row generiche utente usare Listing Item Variant=Image (con avatar dell'utente) o Card dedicata."
+      },
+      {
+        "scenario": "use-with-button-explicit-cta",
+        "reason": "Il Banner Community è disegnato SENZA Button — l'intero banner è tappabile (`onPress`). Aggiungere Button (es. 'Chatta', 'Scrivi') sotto rompe il layout 114h compatto e duplica l'affordance (l'avatar/contenuto è già il CTA).",
+        "alternative": "Mantenere il pattern senza Button. Il tap-on-card è la CTA naturale per il pattern list-like."
+      },
+      {
+        "scenario": "no-tutor-name-or-empty",
+        "reason": "Il pattern presuppone un'identità del tutor specifico (handle, avatar): il template si appoggia all'identità di una persona come hook di trust. Senza un tutor specifico (anonymizing/blank) il banner perde il calore relazionale.",
+        "alternative": "Sempre con tutor identificato (nome + avatar). Se davvero non c'è un tutor specifico, usare un Banner generico (Banner base) con copy informativo della community."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Avatar": {
+        "required": true,
+        "description": "Avatar tondo size `md` (56×56, radius `avatar/size/md/border/radius` = 128 fully-round) a sinistra del Banner. Mostra la foto del tutor. NON sostituibile con icona generica — il pattern si appoggia all'identità della persona."
+      },
+      "BadgeNotification": {
+        "required": false,
+        "description": "Badge Notification (count rosso 16h) sovrapposto in alto-destra dell'Avatar, mostrato quando ci sono messaggi non letti del tutor per l'utente. Bg `badgeNotification/color/number/bg` (rosso), text `badgeNotification/color/number/text` (bianco) in `typography/body/microCaptionBold` (10px Bold). Nascondere quando count = 0 (vedi doc Badge Notification)."
+      },
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale al centro del Banner: Title 'Sisal Community' (riga fissa identitaria del template) + handle/nome del tutor (es. 'KiraKim99'). Entrambi in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18), color `textbox/color/text` (bianco). Gap `textbox/size/gap` (8)."
+      },
+      "BadgeTutor": {
+        "required": true,
+        "description": "Badge Default `marketing=Default` size md (24h, radius 128 fully-round, bg chiaro `badge/color/default/bg` + border + text scuro `badge/color/default/text`) a destra del TextBox. Label fissa 'Tutor' (o equivalente: 'Esperto', 'Moderatore') per qualificare il ruolo della persona nella community. Riusa l'atomo Badge Default."
+      },
+      "Background": {
+        "required": true,
+        "description": "Background a tinta `brand/secondary/500` (verde brand secondario) con pattern grafico — coerente con l'identità visiva della Community di Sisal."
+      }
+    },
+    "nestedComponents": ["Avatar", "Badge Notification", "Badge Default"],
+    "commonPartners": ["Page", "Drawer"],
+    "parentConstraints": [
+      "Tipicamente in homepage o area utente come entry-point alla community. Padding orizzontale verso i bordi pagina gestito dal parent.",
+      "L'intero Banner è tappabile (`onPress`) — il consumer assicura container con hit-area completa e un singolo gesture handler."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-banner": "Tap sull'intero Banner esegue `onPress` — tipicamente apre la chat/messaggi col tutor o la pagina Community.",
+      "no-button": "NON ha Button espliciti — l'intero card è il CTA."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "button (l'intera card è tappabile come unità) — su iOS `accessibilityTraits = .button` + `accessibilityLabel` combinato (Title + tutorName + Badge 'Tutor' + count non letti se presente). Es. 'Sisal Community, KiraKim99, Tutor, 3 messaggi non letti, pulsante'. L'Avatar è semantica visiva — esporlo con label 'Foto profilo di KiraKim99' o marcarlo decorativo se la label combinata copre già l'identità.",
+    "screenReader": "Annuncio combinato: come sopra. La Badge Notification (count messaggi) va inclusa nell'announcement combinato — NON come elemento separato (sarebbe verbose).",
+    "focusManagement": "L'intero Banner è 1 elemento focusable.",
+    "touchTarget": "Banner 328×114 — sopra-soglia abbondante. Hit area = tutta la card.",
+    "wcag": "AA — testo bianco su `brand/secondary/500` (verde) garantisce contrasto AA (verificare token risolto). Badge 'Tutor' (text scuro su bg chiaro) è AA per design Badge Default."
+  },
+
+  "aiHints": {
+    "priority": "low",
+    "keywords": ["banner community", "sisal community", "tutor banner", "expert callout", "messaging banner"],
+    "context": "Template per la Community con tutor (es. Sisal Community). Layout orizzontale list-like 328×114 (più simile a Listing Item ricco che a Banner classico): Avatar tutor 56×56 (con Badge Notification per messaggi non letti) + Title 'Sisal Community' + handle tutor + Badge 'Tutor' a destra. Background brand/secondary verde. NIENTE Button — la card intera è tappabile. Riservato a pattern Community con tutor identificato. Per row generiche utente usare Listing Item Variant=Image. Nesta Avatar, Badge Notification, Badge Default."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

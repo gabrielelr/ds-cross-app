@@ -1,44 +1,147 @@
 {
   "slug": "quicklink",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6449:2172",
+    "ios": "6449:2172"
+  },
+
   "component": {
     "name": "Quicklink",
     "category": "atoms",
-    "description": "",
+    "description": "Scorciatoia tappabile a forma di CARD bordata (pill con border 1px `quicklink/color/border`, bg bianco `quicklink/color/bg`, radius `cardDetails/size/border/radius` 16) per dare accesso rapido a una pagina/feature/risorsa con uno o due tap. 4 `Variant` strutturalmente diversi: `default` (360×76, lead icon 24×24 + Title h3 + Paragraph body/p grigio + trailing 'Item' pBold + chevron-right; per link a livello inferiore o esterno); `image` (360×96, lead ImageContainer 80×80 radius 8 + Title h3 + Paragraph body/p + trailing chevron-right; per highlight prodotti/app o per search list — qui SENZA bordo); `small` (225×56 compatto, lead icon 24×24 + Title h3 single-line + trailing 'Item' + chevron-right; per link rapidi in empty states); `recent game` (90×90 cerchio fully-round con sola immagine prodotto, niente testo né icona; per caroselli di 'ultimi giocati'). Strutturalmente simile a un Listing Item ma in versione CARD STANDALONE (con border, look isolato, non in pila con divider) — riusa molti token `listingItem/*`. NB: distinto da `button-quicklink` (tile verticale icon+label per griglie homepage) e da `quicklink-navigation` (container orizzontale di button-quicklink).",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "page-level-shortcut-card",
+      "external-link-card",
+      "product-highlight-card",
+      "search-list-result",
+      "empty-state-quick-action",
+      "recent-game-tile-carousel"
+    ],
+    "requiredProps": ["variant", "title"],
+    "commonPatterns": [
+      {
+        "name": "default-link-to-lower-or-external",
+        "description": "Variant=`default` (76h con padding-v 16) per linkare a una pagina di livello inferiore (es. sotto-sezione di account, dettaglio configurazione) o a una risorsa esterna (es. termini, FAQ esterna, app store). Lead icon contestuale + Title h3 + Paragraph body/p per spiegare la destinazione + trailing 'Item' pBold + chevron-right per affordance di navigazione. Card bordata standalone (non in lista — per liste usare Listing Item).",
+        "composition": "<Quicklink variant=\"default\" icon={<IconGear />} title=\"Impostazioni avanzate\" paragraph=\"Notifiche, privacy, sicurezza\" trailingLabel=\"Apri\" onPress={openSettings} />"
+      },
+      {
+        "name": "image-product-highlight",
+        "description": "Variant=`image` (96h con ImageContainer 80×80 radius 8 a sinistra) per mettere in evidenza un prodotto/app/contenuto con visual significativo (es. card di promozione app companion, evidenza di un gioco specifico fuori dal carosello). Title h3 + Paragraph body/p descrittivo + trailing chevron-right (senza label 'Item' — la chevron basta).",
+        "composition": "<Quicklink variant=\"image\" imageUrl={appIcon} title=\"App Companion\" paragraph=\"Gestisci il conto dal tuo smartphone\" onPress={openAppStore} />"
+      },
+      {
+        "name": "image-in-search-list-no-border",
+        "description": "Variant=`image` USATA NELLA SEARCH LIST: si rinuncia al border della card per integrarsi visivamente con la lista risultati (Search Results Listing). L'utente vede l'item con immagine + testo + chevron come row di lista, non come card isolata. Pattern eccezione documentato per la search list.",
+        "composition": "<Quicklink variant=\"image\" noBorder imageUrl={result.thumb} title={result.title} paragraph={result.subtitle} onPress={() => openResult(result)} />"
+      },
+      {
+        "name": "small-in-empty-state",
+        "description": "Variant=`small` (56h, 225 wide compatto) per link rapidi DENTRO empty states (es. 'Nessun movimento' / quicklink 'Effettua un deposito' o 'Esplora i giochi'). La forma compatta non domina il messaggio di empty ma offre comunque un'azione costruttiva per uscire dallo stato vuoto.",
+        "composition": "<Quicklink variant=\"small\" icon={<IconPlus />} title=\"Esplora giochi\" trailingLabel=\"Vai\" onPress={browseGames} />"
+      },
+      {
+        "name": "recent-game-carousel-tile",
+        "description": "Variant=`recent game` (90×90 cerchio fully-round con sola immagine del gioco) usato in CAROSELLO orizzontale degli 'ultimi giocati' (homepage o pagina personale). N tile fianco a fianco, senza testo (l'identificazione è visiva dall'icon-art del gioco). Tap apre direttamente il gioco.",
+        "composition": "{recentGames.map(g => <Quicklink key={g.id} variant=\"recent game\" imageUrl={g.icon} onPress={() => openGame(g.id)} ariaLabel={g.name} />)}"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "quicklink-instead-of-listing-item-in-list",
+        "reason": "Il Quicklink Variant=default è una CARD STANDALONE bordata, pensata per essere visivamente isolata (un'unità). Usarne N consecutivi come row di una lista crea un effetto 'wall of cards' con tanti border ripetuti — visivamente rumoroso e meno scansionabile di una Listing standard.",
+        "alternative": "Per liste navigabili usare Listing + Listing Item (Variant=Block ha la stessa struttura icon + Title + Paragraph + trail). Riservare Quicklink default a singoli call-to-action di navigazione standalone (1 quicklink isolato in una sezione, non N in pila)."
+      },
+      {
+        "scenario": "image-variant-with-border-in-search-list",
+        "reason": "L'uso documentato dell'image Variant in Search Results Listing PREVEDE esplicitamente di NON mostrare il border della card per integrarsi con la lista. Forzare il border nella search list crea row visivamente 'rinchiuse' che spaccano il flow continuo della lista.",
+        "alternative": "In search list usare image Variant senza border (modificatore `noBorder` o equivalente). In contesti standalone (non lista) mantenere il border per chiarire che è una card cliccabile."
+      },
+      {
+        "scenario": "recent-game-with-text-label",
+        "reason": "Il Variant=recent game è disegnato come cerchio 90×90 con SOLA immagine — niente label, niente testo. Aggiungere una label sotto rompe la geometria del cerchio nel carosello e introduce un trattamento non disegnato in Figma.",
+        "alternative": "Mantenere recent game text-less (l'identificazione del gioco è visiva dall'icon-art). Se l'utente potrebbe non riconoscere il gioco dalla sola immagine, riconsiderare il pattern: usare Card Product (con title + price + visual) o Listing Item Image."
+      },
+      {
+        "scenario": "small-not-in-empty-state",
+        "reason": "Il Variant=small è dimensionato (225×56) e pensato per vivere DENTRO empty states / aree con poco spazio orizzontale. Usarlo a tutta larghezza in pagine normali fa sembrare la card sproporzionatamente piccola rispetto al viewport.",
+        "alternative": "Per pagine normali usare Variant=default (360 wide). Riservare small a empty states, drawer compatti, sezioni con vincoli di larghezza."
+      },
+      {
+        "scenario": "use-as-primary-page-cta",
+        "reason": "Il Quicklink è una scorciatoia (link a destinazione), non una CTA primaria con peso visivo. Border sottile + bg bianco + Title h3 non bold-heavy: visualmente è low-medium emphasis. Usarlo come 'Conferma pagamento' o 'Salva' sotto-comunica l'importanza dell'azione.",
+        "alternative": "Per CTA primarie usare Button (variante solid/primary). Riservare Quicklink a navigazione/scorciatoie verso destinazioni."
+      },
+      {
+        "scenario": "long-multiline-title",
+        "reason": "Il Title è in heading/h3 (16px ExtraBold Mulish) — single-line ottimale. Title lunghi (>4-5 parole) wrappano e rompono l'allineamento ottico con la lead icon/image, specialmente nel Variant=small dove lo spazio è già stretto.",
+        "alternative": "Mantenere Title corto (1-4 parole). Per descrizioni dettagliate usare il Paragraph sotto al Title (in body/p 14px grigio, max 2 righe brevi)."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Lead": {
+        "required": false,
+        "description": "Slot sinistro variabile per Variant: (a) Variant=default / small → icon 24×24 (color `listingItem/icon/color` dark), gap fra icon e TextBox = `listingItem/lead/size/gap/sm` (8); (b) Variant=image → ImageContainer 80×80 (radius `imageContainer/size/border/radius` 8) con immagine prodotto/app, gap = `listingItem/lead/size/gap/lg` (16); (c) Variant=recent game → NIENTE Lead separato — l'intero quicklink è 90×90 cerchio con immagine fill (bg image, fully-round)."
+      },
+      "TextBox": {
+        "required": false,
+        "description": "Stack verticale Title + Paragraph (solo per Variant=default/image/small — NON per recent game che è text-less). Title in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18), colore `listingItem/title/color/text` (dark). Paragraph in `typography/body/p` (14px regular Roboto), colore `listingItem/paragraph/color/text/subtle` (grigio scuro). Gap interno `textbox/size/gap` (8). Per Variant=small: TextBox con solo Title (no Paragraph)."
+      },
+      "Trail": {
+        "required": false,
+        "description": "Slot destro variabile per Variant: (a) Variant=default / small → trailing 'Item' label (pBold 14px) + chevron-right 24×24, gap `listingItem/trail/size/gap/sm` (8); (b) Variant=image → solo chevron-right 24×24 (niente label 'Item'); (c) Variant=recent game → NIENTE trail (è cerchio puro)."
+      },
+      "BackgroundImage": {
+        "required": false,
+        "description": "SOLO per Variant=recent game: l'intero cerchio 90×90 è una BackgroundImage fill (icon-art del gioco). Radius fully-round, niente padding interno, niente testo sovrapposto. L'immagine è semantica (identifica il gioco) — `accessibilityLabel` deve esporre il nome del gioco."
+      },
+      "Border": {
+        "required": false,
+        "description": "Border 1px (`cardDetails/size/border/width`) color `quicklink/color/border` attorno alla card. Presente in tutti i Variant tranne nell'uso `image` IN SEARCH LIST (dove si rinuncia al border per integrazione visiva con la lista risultati). Recent game NON ha border (cerchio image-only)."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Page", "Search Results Listing", "Drawer", "Feedback"],
+    "parentConstraints": [
+      "Quicklink default/image/small sono CARD STANDALONE: pensati per vivere da soli o in piccoli gruppi non-ripetitivi (a differenza di Listing Item che è una row di una lista lunga). Per N>3 quicklink consecutivi della stessa natura, valutare se usare Listing con Listing Item Variant=Block.",
+      "Variant=recent game vive ESCLUSIVAMENTE in carosello orizzontale (es. 'Ultimi giocati' in homepage). N tile fianco a fianco con gap, scroll orizzontale tipico per >5 tile.",
+      "Variant=image SENZA border è il pattern di Search Results Listing — il consumer della search list applica il modifier no-border."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap": "Tap esegue `onPress` — tipicamente navigazione alla destinazione (pagina, modale, link esterno, gioco). Variant=recent game: tap apre direttamente il gioco. Variant=default/image/small: tap navigazione standard. Nessuna animazione/State Pressed disegnata in Figma — feedback nativo della piattaforma.",
+      "no-state-visuals": "NIENTE State Pressed/Disabled/Selected espliciti in Figma. Per quicklink temporaneamente non attivabili, nascondere invece di disabilitare (il pattern di scorciatoia non ha senso 'spento')."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "button (l'intero quicklink è tappabile come unità di navigazione) — su iOS `accessibilityTraits = .button` + `accessibilityLabel` combinato (Title + Paragraph se presente + trailing label se presente). Su Android `Role.Button` con `contentDescription` analoga. Per Variant=recent game (image-only), l'`accessibilityLabel` DEVE esporre esplicitamente il nome del gioco (non c'è testo visibile da cui dedurlo).",
+    "screenReader": "Annuncio: '[Title], [Paragraph,] [trailingLabel,] pulsante' (es. 'Impostazioni avanzate, Notifiche privacy sicurezza, Apri, pulsante'). Variant=image-in-search-list: in una lista risultati, lo screen reader li legge come item di lista — è il consumer (Search Results Listing) a fornire context. Variant=recent game: 'Nome gioco, pulsante' (label combinata col nome del gioco fornito dal consumer).",
+    "focusManagement": "L'intero quicklink è 1 elemento focusable. In carosello recent-game, il focus segue lo scroll orizzontale per portare il tile attivo in vista.",
+    "touchTarget": "Variant=default 76h, image 96h, small 56h, recent game 90×90 — tutti SOPRA-SOGLIA 44pt iOS / 48dp Android. Hit area = tutta la card/cerchio.",
+    "wcag": "AA — Title dark e Paragraph grigio scuro su bg bianco garantiscono contrasto AA. Border 1px grigio chiaro (`quicklink/color/border`) è marginale per WCAG (è un decorativo di card, non un signal-element). Per Variant=image SENZA border in search list, l'affordance card si perde — utenti con basso contrasto si affidano alla struttura della lista (divider, padding) per riconoscere la riga tappabile."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["quicklink", "shortcut card", "link card", "scorciatoia", "card link", "recent game tile"],
+    "context": "Scorciatoia tappabile a forma di CARD BORDATA per fast access a destinazioni chiave. 4 `Variant` con use case CHIARAMENTE DISTINTI: `default` (link a livello inferiore/esterno, 76h, icon+text+trail con label 'Item'+chevron); `image` (highlight prodotti/app o search list — IN SEARCH LIST senza border per integrazione, 96h, ImageContainer 80×80+text+chevron); `small` (per empty states, 56h compatto, icon+text-singolo+trail); `recent game` (carosello ultimi giocati, cerchio 90×90 image-only). DISTINTO da: `button-quicklink` (tile verticale icon+label per griglie homepage) e `quicklink-navigation` (container che impila button-quicklink in riga). Strutturalmente simile a Listing Item ma in versione CARD STANDALONE (border, look isolato) — riusa molti token `listingItem/*`. Per N quicklink consecutivi della stessa natura preferire Listing Item Variant=Block. Recent game è TEXT-LESS (identificazione visiva dall'icon-art) — `accessibilityLabel` deve esporre il nome del gioco. NIENTE State Disabled disegnato — nascondere invece di disabilitare."
   },
+
   "rationale": {
     "designDecisions": ""
   }

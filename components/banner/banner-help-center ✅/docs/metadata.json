@@ -1,0 +1,104 @@
+{
+  "slug": "banner-help-center",
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6564:25055",
+    "ios": "6564:25055"
+  },
+
+  "component": {
+    "name": "Banner Help Center",
+    "category": "molecules",
+    "description": "Template di Banner per entry-point al Help Center / supporto utente. Layout VERTICAL TEXT + SINGLE BUTTON (328×136 — più compatto del Banner base): Title `heading/h2` (18px ExtraBold Mulish, NB: usa h2 invece di h3 — è il primo banner ad usare un heading più grande) + Paragraph `pLead` + Button singolo 'Ricevi supporto' (inverse/secondary outline). Background image scuro brand-aware (token asset `Backgrounds/Global/Portale/Banner/SI Mobile Help Center`). Testo bianco (`banner/color/text`). Variante strutturale del Banner base perché: (a) Title è in h2 invece di h3, (b) ha 1 Button invece di 2, (c) altezza 136h (vs 118/179h del base).",
+    "type": "interactive"
+  },
+
+  "usage": {
+    "useCases": [
+      "help-center-entry-point",
+      "support-callout",
+      "contact-us-banner"
+    ],
+    "requiredProps": ["title", "paragraph", "buttonLabel", "onButtonPress"],
+    "commonPatterns": [
+      {
+        "name": "settings-help-section",
+        "description": "Banner Help Center nella sezione Settings / Profilo / Area Personale dell'app, come callout proattivo per portare l'utente al supporto quando potrebbe averne bisogno (es. dopo una sezione di payment failure, dopo errori KYC). Title 'Hai bisogno di aiuto?' + Paragraph descrittivo + Button 'Ricevi supporto' che apre il Help Center.",
+        "composition": "<BannerHelpCenter title=\"Hai bisogno di aiuto?\" paragraph=\"Visita l'Help center per ricevere l'assistenza di cui hai bisogno.\" buttonLabel=\"Ricevi supporto\" onButtonPress={openHelpCenter} />"
+      },
+      {
+        "name": "post-error-recovery",
+        "description": "Banner mostrato dopo un errore (es. transazione fallita, problema accesso) per offrire all'utente un canale di supporto. Posizionato sotto al messaggio di errore, prima delle CTA di retry.",
+        "composition": "<BannerHelpCenter title=\"Problemi col pagamento?\" paragraph=\"Il nostro team supporto può aiutarti a risolvere.\" buttonLabel=\"Contattaci\" onButtonPress={openSupport} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-with-2-buttons",
+        "reason": "Il template ha 1 Button singolo per design ('Ricevi supporto' = una sola azione chiara: vai al supporto). Aggiungere un secondo Button (es. 'Chiudi' / 'Non ora') frammenta la scelta dell'utente e tradisce il pattern del 'single CTA'.",
+        "alternative": "Per banner con scelta dual (azione + dismiss) usare Banner base (3 `Text Type` con Button Group 2). Per chiudere il Help Center banner basta lo scroll/navigazione naturale dell'utente."
+      },
+      {
+        "scenario": "use-for-non-support-content",
+        "reason": "Il template è dedicato all'entry-point del supporto/Help Center: asset background, copy 'Ricevi supporto', semantic di trust verso il customer care. Usarlo per contenuto generico (promo, info marketing) dilui il valore di 'safe place dove chiedere aiuto'.",
+        "alternative": "Per promo/marketing usare Banner base o template dedicato. Riservare Help Center a contenuti di supporto/contatto/assistenza."
+      },
+      {
+        "scenario": "wrong-button-variant",
+        "reason": "Il Button è in variante `inverse/secondary` (outline bianco trasparente) — basso-medio enfasi. Usare `inverse/primary` (solid bianco) trasforma il banner in CTA-pesante e lo allontana dal tono 'siamo qui se ci servi, senza pressione' del Help Center.",
+        "alternative": "Mantenere `inverse/secondary` come da Figma. Per CTA primarie aggressive (es. 'Compra ora') usare Banner base con `inverse/primary`."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale Title + Paragraph a sinistra/left-aligned. Title in `typography/heading/h2` (18px ExtraBold Mulish, line-height 20) — NOTA: questo template usa h2 (più grande) invece di h3 come negli altri Banner template. Paragraph in `typography/body/pLead` (16px regular Roboto, line-height 18). Entrambi nel token `banner/color/text` (bianco). Gap `banner/size/gap` (8)."
+      },
+      "Button": {
+        "required": true,
+        "description": "Button singolo sotto al TextBox. Variante `inverse/secondary` (outline bianco trasparente), size `sm` (32h), radius 12. Tipografia `typography/interaction/button` (14px Bold Roboto). Tono low-medium emphasis: il pattern Help Center non vuole essere pressante, è un canale safe sempre disponibile."
+      },
+      "BackgroundImage": {
+        "required": true,
+        "description": "Background image dedicata (token asset `Backgrounds/Global/Portale/Banner/SI Mobile Help Center`) — pattern scuro con texture brand. NON un'immagine consumer — è asset fisso del template."
+      }
+    },
+    "nestedComponents": ["Button"],
+    "commonPartners": ["Page", "Drawer"],
+    "parentConstraints": [
+      "Tipicamente in Settings / Area Personale / Profilo come callout proattivo. Può anche apparire dopo flussi di errore (payment failure, KYC issue) per offrire supporto in modo contestuale."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-button": "Tap sul Button 'Ricevi supporto' esegue `onButtonPress` — tipicamente apre il Help Center (sezione FAQ + canali di contatto) o avvia direttamente una chat di supporto."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "container con Button interno. Su iOS `accessibilityElement=false` sul container; il Button è elemento focusable separato con `Role.Button` + `accessibilityLabel = 'Ricevi supporto'` o equivalente. Background image decorativa.",
+    "screenReader": "Annuncio: '[Title], [Paragraph], [buttonLabel], pulsante' (es. 'Hai bisogno di aiuto, Visita l'Help center per ricevere assistenza, Ricevi supporto, pulsante').",
+    "focusManagement": "Solo il Button è focusable.",
+    "touchTarget": "Button 32h (sm) — sotto-soglia: estendere hit-area tramite wrapper con padding verticale.",
+    "wcag": "AA — testo bianco su background image scura garantisce contrasto AA. Il Button outline bianco è chiaramente visibile su sfondo scuro."
+  },
+
+  "aiHints": {
+    "priority": "low",
+    "keywords": ["banner help center", "support banner", "help banner", "contattaci", "supporto callout"],
+    "context": "Template per entry-point al Help Center / supporto utente. 328×136 (compatto). Title h2 (più grande del solito h3 negli altri banner template), Paragraph pLead, Button singolo 'Ricevi supporto' in variante inverse/secondary (outline bianco, low-medium emphasis — il pattern non vuole essere pressante). Background image scuro brand-aware. Usato in Settings / Area Personale / dopo errori per offrire supporto contestuale. UN solo Button (non aggiungere dismiss). NON usare per promo/contenuto non-supporto."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

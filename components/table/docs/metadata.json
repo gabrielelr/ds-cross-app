@@ -1,44 +1,131 @@
 {
   "slug": "table",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6668:4913",
+    "ios": "6668:4913",
+    "tableHeader": "6668:4222",
+    "tableRow": "6669:11288"
+  },
+
   "component": {
     "name": "Table",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Container per dati tabulari label/valore in 2 colonne (label a sinistra + valore a destra). Composto da un tableHeader (riga superiore bg grigio, label di colonna sinistra + label di colonna destra in `captionBold` 12px) + N tableRow impilate (Variant=Inline label-singola o Variant=Block label-con-subtitle), con divider 1px fra ogni row. La tableRow è strutturalmente derivata dal pattern listingItemTrail (label-left + trailing-text-right) ma adattata a display tabulare anziché navigazione — riusa molti token `listingItem/*` (`/lead/size/gap/sm`, `/trail/size/gap/sm`, `/size/padding/vertical/md`, `/title/color/text`) e introduce token propri `tableRow/*` per i trailing text. Pattern adatto a coppie 'attributo: valore' (specs prodotto, riepilogo conto, metadati transazione) — NON è una griglia editoriale né una data-grid scrollable orizzontale (per cui mobile non è il pattern giusto). QUIRK TOKEN: `tableRow/color/trailingText/color/deafult` — typo nel nome del token Figma ('deafult' invece di 'default'), da preservare per matchare il source.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "product-specs-table",
+      "transaction-detail-summary",
+      "account-metadata",
+      "match-stats-table",
+      "key-value-list"
+    ],
+    "requiredProps": ["header", "rows"],
+    "commonPatterns": [
+      {
+        "name": "transaction-detail-summary",
+        "description": "Table per riassumere i dati di una transazione (es. dettaglio pagamento): header 'Voce'/'Valore', righe Inline con 'Data', 'Importo', 'Metodo', 'ID transazione'. Pattern denso, scansionabile rapidamente. Tipicamente in pagina di dettaglio transazione o ricevuta.",
+        "composition": "<Table header={[{label:'Voce'},{label:'Valore'}]} rows={[{title:'Data',trailing:'12/05/2026'},{title:'Importo',trailing:'12,50€'},{title:'Metodo',trailing:'Carta Visa'}]} />"
+      },
+      {
+        "name": "product-specs-with-subtitles",
+        "description": "Table per specifiche prodotto/gioco con tableRow Variant=Block dove ogni riga ha Title + subtitle/descrizione + valore trailing. Es. specs di una slot: 'Volatilità' / 'Media' (caption grigio sotto), trailing '7/10'.",
+        "composition": "<Table header={[{label:'Caratteristica'},{label:'Valore'}]} rows={[{variant:'Block',title:'Volatilità',subtitle:'Indice rischio/premio',trailing:'7/10'},...]} />"
+      },
+      {
+        "name": "match-stats-table",
+        "description": "Table per statistiche di una partita/match (es. 'Possesso palla' 60%, 'Tiri in porta' 12, 'Falli' 8). Header 'Statistica'/'Valore'. Righe Inline per concisione (numero secco trailing).",
+        "composition": "<Table header={[{label:'Statistica'},{label:'Valore'}]} rows={matchStats.map(s => ({title:s.name, trailing:s.value}))} />"
+      },
+      {
+        "name": "trailing-text-color-emphasis",
+        "description": "Il trailing text può essere `tableRow/color/trailingText/color/deafult` (dark, valore di rilievo) o `/color/subtle` (grigio, valore meno enfatizzato). Pattern utile per liste lunghe dove alcuni valori sono dati primari (importo) e altri sono meta (data formattata).",
+        "composition": "<TableRow title=\"Importo\" trailing=\"12,50€\" trailingEmphasis=\"default\" /><TableRow title=\"Data\" trailing=\"12/05/2026\" trailingEmphasis=\"subtle\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "table-for-navigable-items",
+        "reason": "La Table è DISPLAY (visualizzazione di coppie label/valore statiche). Le row NON hanno chevron-right, NON sono pensate come elementi tappabili di navigazione. Usarla per liste di sezioni navigabili (es. movimenti che si aprono in dettaglio) tradisce l'aspettativa — l'utente non capisce se il tap fa qualcosa.",
+        "alternative": "Per liste navigabili usare Listing + Listing Item (con trail chevron-right e tap action). Riservare Table a visualizzazione tabulare statica."
+      },
+      {
+        "scenario": "table-with-many-columns",
+        "reason": "La Table Figma ha 2 colonne (label + valore). Mobile non ha spazio per data-grid multi-colonna (4+ colonne) — il pattern non scala e richiede scroll orizzontale che è anti-pattern su mobile.",
+        "alternative": "Per dati multi-colonna scomporre in N tabelle 2-colonne separate oppure usare un Listing Item con Block variant (Title + Paragraph + trail). Per data-grid complesse riconsiderare se mobile è il device giusto."
+      },
+      {
+        "scenario": "block-variant-without-subtitle",
+        "reason": "Variant=Block aggiunge spazio verticale (62h vs 48h) per ospitare il subtitle/text sotto al Title. Usare Block senza valorizzare il subtitle (lasciato vuoto o uguale al Title) spreca spazio verticale senza giustificazione visiva.",
+        "alternative": "Per row con solo Title usare Variant=Inline (più compatto, 48h). Block solo quando c'è effettivamente un subtitle/descrizione che arricchisce il Title."
+      },
+      {
+        "scenario": "mixed-inline-and-block-rows",
+        "reason": "Mescolare row Inline (48h) e Block (62h) nella stessa Table crea righe di altezza variabile — l'occhio fatica a scansionare verticalmente quando ogni row ha un'altezza diversa.",
+        "alternative": "Mantenere tutte le row della stessa Table in un unico Variant. Se serve mostrare alcune row con descrizione e altre senza, valutare di portare TUTTE a Block (anche se per le 'senza subtitle' è meno compatto) per uniformità."
+      },
+      {
+        "scenario": "long-title-or-trailing-text",
+        "reason": "La Title (pBold 14px) e il trailing text si dividono lo spazio orizzontale 311 - 16 = ~295. Titoli o valori lunghi forzano il wrap e rompono l'allineamento delle colonne fra row diverse.",
+        "alternative": "Mantenere Title 1-3 parole, trailing 1-2 valori brevi (es. '12,50€', '7/10', '12/05/2026'). Per valori articolati abbreviare (es. 'Visa 4242' invece di 'Carta di credito Visa che termina con 4242')."
+      },
+      {
+        "scenario": "no-header",
+        "reason": "Il tableHeader (bg grigio chiaro + label captionBold) ancora la struttura della Table: senza header, l'utente vede solo righe di label/valore e non sa se sta guardando una Table o una Listing — diluisce il significato del pattern.",
+        "alternative": "Sempre con tableHeader per Table standalone. Eccezione: Table dentro a Card già contestualizzata col proprio Title, dove il tableHeader sarebbe ridondante — ma in questo caso il pattern visivo cambia (non è più una Table 'pulita')."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "TableHeader": {
+        "required": true,
+        "description": "Riga superiore della Table (`tableHeader` frame Figma 6668:4222, 311×38). Bg `tableHeader/color/bg` (grigio chiaro). 2 label: una sinistra (label colonna title), una destra (label colonna trailing). Entrambe in `typography/body/captionBold` (12px Bold Roboto), colore `listingItem/title/color/text` (dark). Padding verticale `listingItem/size/padding/vertical/md` (12). Non-tappabile — è puramente intestazione semantica della tabella."
+      },
+      "TableRow": {
+        "required": true,
+        "description": "Riga dati della Table (`tableRow` frame Figma 6669:11288). 2 `Variant`: `Inline` (48h, padding-v 12) — solo Title pBold a sinistra + trailing text a destra; `Block` (62h, padding-v 12) — Title pBold + subtitle caption 12px grigio (verticali) a sinistra + trailing text a destra. Title color `listingItem/title/color/text` (dark), subtitle in `typography/body/caption` (12px regular grigio). Trailing text in `pBold` 14px, color `tableRow/color/trailingText/color/deafult` (dark, default — NOTA TYPO 'deafult' nel nome del token) o `/subtle` (grigio per de-emphasis). Padding orizzontale `tableRow/size/padding/horizontal` (8). Divider 1px (`divider/size/width` color `divider/color/bg`) sotto ogni row."
+      }
+    },
+    "nestedComponents": ["Divider"],
+    "commonPartners": ["Page", "Card", "Bottom Sheet", "Hero Detail"],
+    "parentConstraints": [
+      "Tipicamente dentro a una pagina di dettaglio (transazione, prodotto, match) o dentro a una Card per visualizzazione raggruppata di metadati.",
+      "Larghezza tipica = larghezza del container parent (311 nei design Figma con padding orizzontale verso bordi pagina gestito dal parent).",
+      "Il consumer è responsabile di non mostrare il Divider sull'ultima row (analogo al pattern Listing — `showDivider={i !== rows.length - 1}`)."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "static-display": "La Table è display statico — niente onPress, niente State Pressed/Selected/Disabled disegnati in Figma. Tap su una row non fa nulla per default.",
+      "optional-row-tap": "Il consumer PUÒ rendere ogni row tappabile (es. per copia-valore tap su trailing text), ma non è il pattern di default e non è disegnato. Se attivato, considerare di non aggiungere chevron-right (per non trasformare visivamente la row in un Listing Item)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "table — su iOS impostare `accessibilityElements` ordinati per row, ognuno con `accessibilityLabel = '<headerLeft>: <title>, <headerRight>: <trailing>'` (es. 'Voce: Importo, Valore: 12,50€'). Su Android usare `Modifier.semantics { collectionInfo(rowCount=N, columnCount=2) }` sul container e `collectionItemInfo(row=i, column=j)` su ogni cella. Il tableHeader ha `Role.None` o `accessibilityTraits = .header` se viene esposto come elemento accessibile.",
+    "screenReader": "Lo screen reader idealmente legge ogni row come unità combinata (header label + cell value), non come due celle separate. Pattern: 'Importo, 12 euro e 50 centesimi' meglio di 'Importo' [pausa] '12,50€'. Per Table dentro a card con context, l'header può essere implicito (es. dentro una Card 'Riepilogo transazione', le row sono auto-spiegate).",
+    "focusManagement": "Non focusable per default (display statico). Se row tappabili, ogni row diventa focusable separata nell'ordine verticale.",
+    "touchTarget": "TableRow Inline 48h: borderline 44pt iOS / 48dp Android (sopra-soglia di stretto). Block 62h: sopra-soglia. Non rilevante se le row non sono tappabili.",
+    "wcag": "AA — il Title dark e il trailing text dark (default) su superficie chiara garantiscono contrasto AA. Il trailing text subtle (grigio) è in tonalità più morbida ma rimane AA su body 14px. Il subtitle Block (caption 12px grigio) è la cella più a rischio di contrasto borderline — verificare con i token risolti del brand. Il tableHeader bg grigio chiaro + label dark è ampiamente AA."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["table", "data table", "tabella", "tableRow", "tableHeader", "key-value table", "specs table"],
+    "context": "Container per dati tabulari label/valore in 2 colonne. Composto da tableHeader (bg grigio, label colonna in captionBold) + N tableRow impilate. tableRow ha 2 `Variant`: `Inline` (48h, solo Title + trailing) e `Block` (62h, Title + subtitle + trailing). User context: 'la row è un listingitemtrail che permette varie configurazioni' — strutturalmente derivata dal pattern listingItemTrail (label-left + trailing-right) ma adattata a display tabulare (no chevron, no tap di navigazione). Usata per: transaction summary, product specs, match stats, account metadata. NON usare come navigation list (per quello Listing), NON usare con molte colonne (mobile = 2 colonne max), NON mescolare Inline e Block nella stessa Table. QUIRK: token typo `tableRow/color/trailingText/color/deafult` (non 'default') — preservare per matchare il source Figma. Nesta Divider fra ogni row. Display statico (niente State), il consumer può opzionalmente rendere row tappabili."
   },
+
   "rationale": {
     "designDecisions": ""
   }

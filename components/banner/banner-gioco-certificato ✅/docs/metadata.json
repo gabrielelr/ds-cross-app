@@ -1,0 +1,110 @@
+{
+  "slug": "banner-gioco-certificato",
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6497:5048",
+    "ios": "6497:5048"
+  },
+
+  "component": {
+    "name": "Banner Gioco Certificato",
+    "category": "molecules",
+    "description": "Template di Banner di compliance / gioco responsabile: comunica che il gioco mostrato è regolato e certificato (token istituzionale ADM, gioco responsabile). Layout SPLIT TEXT+ICON (328×179): TextBox a sinistra (Title `heading/h3` 'Questo gioco è certificato' + Paragraph `pLead` descrittivo + Link 'Scopri di più' sottolineato) + illustration shield/strumenti gioco responsabile a destra. Background `brand/primary/500` (verde brand). Testo bianco (`banner/color/text`). USA LINK invece di Button (a differenza del Banner base) — il pattern privilegia la comunicazione informativa con approfondimento via navigazione leggera. Variante strutturale del pattern Banner perché ha Link al posto del Button Group e illustration laterale.",
+    "type": "interactive"
+  },
+
+  "usage": {
+    "useCases": [
+      "responsible-gaming-callout",
+      "certification-reassurance",
+      "compliance-trust-banner"
+    ],
+    "requiredProps": ["title", "paragraph", "linkLabel", "onLinkPress"],
+    "commonPatterns": [
+      {
+        "name": "game-detail-certification-reassurance",
+        "description": "Banner Gioco Certificato in pagina dettaglio gioco (slot/casinò) per rassicurare l'utente sulla regolamentazione e sui presidi di gioco responsabile. Posizionato sotto al gameplay/info principali, prima della sezione FAQ o termini. Il Link 'Scopri di più' porta alla pagina dedicata a 'Gioco Responsabile' / 'Certificazione ADM'.",
+        "composition": "<BannerGiocoCertificato title=\"Questo gioco è certificato\" paragraph=\"Questo gioco è stato verificato e certificato. La cura e il rispetto dei consumatori guidano la nostra attività.\" linkLabel=\"Scopri di più\" onLinkPress={() => navigate('/gioco-responsabile')} />"
+      },
+      {
+        "name": "responsible-gaming-section-anchor",
+        "description": "Banner usato nella sezione 'Gioco Responsabile' dell'app (settings, area utente) come ingaggio alla scoperta degli strumenti di autoesclusione, limiti di gioco, supporto. Il Link diventa entry-point della sezione completa.",
+        "composition": "<BannerGiocoCertificato title=\"I nostri strumenti di tutela\" paragraph=\"Limiti di spesa, autoesclusione, supporto al gioco responsabile.\" linkLabel=\"Vedi gli strumenti\" onLinkPress={openTools} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-with-button-instead-of-link",
+        "reason": "Il template è disegnato con Link (sottolineato, low-emphasis) intenzionalmente: il pattern comunicativo è 'informazione + approfondimento opzionale', non 'azione da compiere'. Sostituire il Link con un Button (solid/outline) cambia il significato — l'utente si aspetta un'azione attiva (es. 'Conferma', 'Attiva') invece che un'esplorazione informativa.",
+        "alternative": "Mantenere il Link (regola DS: 'Use links for navigation, not actions'). Per banner di compliance + azione utente (es. 'Accetta termini') usare il Banner base con Button."
+      },
+      {
+        "scenario": "use-for-non-compliance-content",
+        "reason": "L'asset illustration (shield gioco responsabile), il colore brand verde dedicato e il copy/tono sono pensati per compliance regolamentare / certificazione / gioco responsabile. Usare il template per promo, novità o feature spegne il significato di trust e dilui il pattern di compliance.",
+        "alternative": "Per promo/novità/feature usare Banner base o altri template dedicati. Riservare Gioco Certificato a comunicazioni di compliance, certificazione, gioco responsabile."
+      },
+      {
+        "scenario": "long-paragraph",
+        "reason": "Lo spazio orizzontale del TextBox è limitato dall'illustration shield a destra. Paragraph lunghi (>4 righe) sforano lo spazio o spingono la zona Link fuori dal layout disegnato (179h).",
+        "alternative": "Paragraph conciso (2-3 righe). Per contenuti normativi completi, usare il Link come entry-point alla pagina dedicata di gioco responsabile / certificazione."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale Title + Paragraph + Link a sinistra. Title in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18). Paragraph in `typography/body/pLead` (16px regular Roboto, line-height 18). Entrambi nel token `banner/color/text` (bianco). Gap interno `banner/size/gap` (8)."
+      },
+      "Link": {
+        "required": true,
+        "description": "Link sottolineato sotto al Paragraph, tipografia `typography/interaction/link` (14px Bold Roboto, line-height 18). Color text `color/text/inverse` (bianco) — coerente col testo. Pattern semantico: 'navigazione di approfondimento', non 'azione' (vedi doc Link: 'Use links for navigation, not actions'). Tipico 'Scopri di più' o 'Vedi gli strumenti'."
+      },
+      "Illustration": {
+        "required": true,
+        "description": "Asset illustrativo 'Strumenti / Gioco responsabile' a destra (token asset `Illustrations/Gioco responsabile/Strumenti`) — shield/scudo con simbologia di tutela. NON sostituibile col consumer — è parte dell'identità del template compliance."
+      },
+      "Background": {
+        "required": true,
+        "description": "Background a tinta unita `brand/primary/500` (verde brand) — coerente con la palette istituzionale del brand per messaggi di trust/compliance."
+      }
+    },
+    "nestedComponents": ["Link"],
+    "commonPartners": ["Page", "Hero Detail", "Drawer"],
+    "parentConstraints": [
+      "Tipicamente in pagine dettaglio gioco (sotto a Hero Detail) o nella sezione Gioco Responsabile dell'area utente.",
+      "Il template è multibrand-aware via token brand: il `brand/primary/500` cambia per build (sisal/pokerstars/snai); l'illustration shield è multibrand-agnostico (asset istituzionale)."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-link": "Tap sul Link 'Scopri di più' esegue `onLinkPress` — tipicamente naviga alla pagina dedicata gioco responsabile / certificazione / strumenti di tutela.",
+      "no-tap-on-banner": "Il container Banner NON è tappabile come unità (a differenza di altri Banner template) — il Link è l'unico target. Questo è coerente con la semantica 'informazione + esplorazione opzionale': l'utente che vuole sapere di più tappa il Link, altrimenti legge e prosegue."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "container con Link interno — su iOS impostare il container come `accessibilityElement=false`; il Link è elemento focusable separato con `accessibilityTraits = .link` (NON .button) + `accessibilityLabel` esplicito (es. 'Scopri di più sulla certificazione del gioco'). L'illustration shield è decorativa.",
+    "screenReader": "Annuncio: '[Title], [Paragraph], [linkLabel], link' (es. 'Questo gioco è certificato, Questo gioco è stato verificato e certificato..., Scopri di più, link'). La distinzione 'link' vs 'pulsante' è importante semanticamente (vedi doc Link).",
+    "focusManagement": "Solo il Link è focusable.",
+    "touchTarget": "Link 14px Bold con line-height 18 = ~18h, sotto-soglia 44pt iOS / 48dp Android. Estendere hit-area del wrapper tappabile (almeno 44pt verticali) senza alterare il layout visivo.",
+    "wcag": "AA — testo bianco su `brand/primary/500` (verde brand scuro) garantisce contrasto AA (verificare con token risolti del brand). Il Link è comunicato sia da colore sia dal sottolineato (non solo-colore)."
+  },
+
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["banner gioco certificato", "compliance banner", "gioco responsabile banner", "certification trust banner", "responsible gaming"],
+    "context": "Template dedicato a comunicazioni di compliance / certificazione / gioco responsabile. Layout split: text + Link a sinistra, illustration shield a destra. Background `brand/primary/500` (verde brand). USA LINK (non Button) — pattern 'informazione + approfondimento opzionale'. Riservato a contenuti di trust/compliance/tutela. Tipico in pagine dettaglio gioco o sezione Gioco Responsabile. NON usare per promo/azioni (per quello Banner base con Button). Il Link è semantica `link` non `button` (regola DS: 'Use links for navigation, not actions')."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

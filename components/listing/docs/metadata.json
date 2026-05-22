@@ -1,0 +1,115 @@
+{
+  "slug": "listing",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6564:19499",
+    "ios": "6564:19499"
+  },
+
+  "component": {
+    "name": "Listing",
+    "category": "molecules",
+    "description": "Container che impila verticalmente N atomi Listing Item per costruire una lista navigabile (movimenti, documenti, sezioni dell'account, partite, ecc.). 2 `Items Orientation`: `Block` (item con TextBox verticale Title + Paragraph sotto, padding-v 16 — pattern denso informativamente) o `In-line` (item con Title + Paragraph sulla stessa riga, padding-v 12 — pattern compatto). L'orientation della Listing impone l'orientation di TUTTI i Listing Item interni — non si mescolano Block e Inline nella stessa Listing. Il container non aggiunge padding/gap propri: ogni item gestisce il suo padding-v e il suo divider sotto (eccetto l'ultimo, che il consumer Listing deve nascondere). NON è un componente di scroll-orizzontale (per quello vedere Chip Navigation / Quicklink Navigation), è una lista verticale standard.",
+    "type": "navigation"
+  },
+
+  "usage": {
+    "useCases": [
+      "account-settings-list",
+      "transaction-history-list",
+      "documents-list",
+      "categories-list",
+      "menu-of-items"
+    ],
+    "requiredProps": ["itemsOrientation", "items"],
+    "commonPatterns": [
+      {
+        "name": "account-sections-block",
+        "description": "Listing `Items Orientation=Block` per liste di sezioni dell'account dove ogni voce ha Title + descrizione di contesto (es. 'Sicurezza / Verifica 2FA attiva', 'Notifiche / 5 nuove'). Ogni Listing Item è tappabile e porta alla pagina di gestione della sezione. Trail tipico per ogni item = `text+icon` o `icon` (chevron-right).",
+        "composition": "<Listing itemsOrientation=\"Block\" items={accountSections.map(s => ({ icon: s.icon, title: s.name, paragraph: s.summary, onPress: () => navigate(s.path) }))} />"
+      },
+      {
+        "name": "transaction-history-inline",
+        "description": "Listing `Items Orientation=In-line` per liste denso-informative dove ogni row è una coppia Label:Valore (es. 'Movimento': 'Vinto 12,50€'). Pattern adatto a tabelle/elenchi di meta-dati con molti item da scansionare velocemente.",
+        "composition": "<Listing itemsOrientation=\"In-line\" items={transactions.map(t => ({ icon: t.icon, title: t.label, paragraph: t.value }))} />"
+      },
+      {
+        "name": "hide-last-divider",
+        "description": "Il container Listing è responsabile di nascondere il divider sull'ultimo Listing Item (i singoli item espongono `showDivider` ma non sanno la propria posizione nell'array). Pattern standard: passare `showDivider={index !== items.length - 1}` a ogni item.",
+        "composition": "items.map((item, i) => <ListingItem {...item} showDivider={i !== items.length - 1} />)"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "mixed-block-and-inline-items",
+        "reason": "La prop `Items Orientation` della Listing è un'unica scelta che vale per tutti gli item della lista: il pattern visivo di scanning si rompe quando alcuni item sono Block (alti) e altri Inline (compatti). Inoltre i due Variant hanno padding-v diversi (16 vs 12) — la riga risulta visivamente irregolare.",
+        "alternative": "Mantenere un'unica orientation per Listing. Se servono blocchi semanticamente diversi (es. una sezione Block con descrizione + una sezione Inline con meta-dati), spezzare in DUE Listing separate, magari con un Heading di sezione fra le due."
+      },
+      {
+        "scenario": "listing-with-image-variant",
+        "reason": "Il Figma della Listing prevede solo `Items Orientation=Block` e `In-line` — NON una variante per Image. Le row Image (Listing Item con immagine 80×80) hanno spaziature, padding e assenza di divider diversi: forzare item Image dentro a una Listing Block/Inline genera mix visivo non disegnato.",
+        "alternative": "Per liste con visual (foto, copertine, logo) usare un componente dedicato (es. Search Results Listing per i risultati di ricerca) o disegnare uno stack manuale di Listing Item Variant=Image senza il container Listing canonico."
+      },
+      {
+        "scenario": "listing-as-horizontal-scroll",
+        "reason": "Listing è verticale per design (column stack di item). Forzarla orizzontalmente (overflow-x con item shrink-0) rompe il pattern e introduce un trattamento non disegnato (i Listing Item non hanno larghezza fissata pensata per scroll orizzontale).",
+        "alternative": "Per liste orizzontali scrollable usare Chip Navigation (item compatti come chip), Quicklink Navigation (scorciatoie), o un carosello di Card. Listing rimane esclusivamente verticale."
+      },
+      {
+        "scenario": "very-long-listing-without-grouping",
+        "reason": "Liste molto lunghe (50+ item) senza raggruppamento creano un muro visivo dove l'utente perde il contesto. La Listing Figma non ha gestione di sezioni interne con heading — è una sequenza piatta di item.",
+        "alternative": "Spezzare in più Listing precedute da Heading di sezione (es. 'Movimenti di oggi', 'Movimenti della settimana scorsa'). Per liste con ricerca/filtro usare Search Results Listing dedicato."
+      },
+      {
+        "scenario": "listing-for-action-buttons",
+        "reason": "Listing è per row navigabili o informative — ogni item è tappabile per andare da qualche parte o solo display. Usarla come barra di azioni multiple (Salva / Annulla / Elimina) confonde l'utente: row che sembrano voci di lista invece di Button.",
+        "alternative": "Per azioni multiple usare Button Group o Action Bar. Riservare Listing a navigazione/info."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Items": {
+        "required": true,
+        "description": "Array di atomi Listing Item impilati verticalmente. La prop `Items Orientation` della Listing impone il `Variant` di ciascun Listing Item interno: `Block` → tutti gli item in Variant=Block; `In-line` → tutti in Variant=Inline. Il container non aggiunge gap fra item — la spaziatura verticale viene dal padding-v interno di ogni item (`listingItem/size/padding/vertical/{md|lg}`) e dal divider sotto (escluso l'ultimo)."
+      }
+    },
+    "nestedComponents": ["Listing Item"],
+    "commonPartners": ["Heading", "Page", "Drawer", "Filter"],
+    "parentConstraints": [
+      "Vive inline dentro a una Page o a un Drawer. Il container Listing non ha padding orizzontale verso i bordi — è responsabilità del parent. Ogni Listing Item interno usa la larghezza piena disponibile.",
+      "Tipicamente preceduta da un Heading di sezione (es. 'Le tue impostazioni') che dà titolo alla lista. Per liste filtrate considerare un Filter o Chip Navigation sopra la Listing."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-item": "Tap su un Listing Item interno esegue il callback dell'item (`onPress`) — tipicamente apertura di una pagina/modale. Il container Listing non gestisce il tap a sé — è ogni item che è tappabile.",
+      "vertical-scroll": "La Listing fluisce verticalmente nel container parent: lo scroll è gestito dal contenitore ospite (es. ScrollView della Page). La Listing in sé non è scrollable, è un'unità verticale che cresce in altezza con N item."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "list — su iOS impostare il container con `accessibilityElement=false` (i suoi figli Listing Item sono gli elementi accessibili) + ognuno con `accessibilityTraits = .button`; su Android usare un container con `Modifier.semantics { collectionInfo(...) }` per dichiarare al TalkBack che si tratta di una collezione di N item — utile per gli annunci 'elemento X di N'.",
+    "screenReader": "Lo screen reader annuncia la lista come 'lista di X elementi' all'ingresso del focus (Android) o richiede esplorazione manuale (iOS). Ogni Listing Item viene letto secondo la propria logica (vedi doc listing-item). Per liste filtrate annunciare il cambio di count quando l'utente applica un filtro (es. 'lista aggiornata, 12 elementi').",
+    "focusManagement": "Focus segue l'ordine verticale degli item. Su tastiera (iPad/Android con tastiera) le frecce su/giù navigano fra item; Enter/tap attiva l'onPress dell'item corrente. Lo scroll del parent segue il focus per portare l'item attivo in vista.",
+    "touchTarget": "Dipende dal Variant dei Listing Item (vedi doc listing-item). Listing in sé non aggiunge touch target propri — è puro container.",
+    "wcag": "AA — il container non aggiunge problematiche WCAG proprie (è un layout). La conformità AA dei Listing Item interni (contrasto Title/Paragraph) si applica come da loro doc. Per liste molto lunghe considerare il dichiarare il `collectionInfo` su Android per dare contesto count al TalkBack."
+  },
+
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["listing", "list", "vertical list", "rows", "lista verticale", "lista item"],
+    "context": "Usa Listing per impilare verticalmente N Listing Item (lista navigabile di sezioni, movimenti, documenti, categorie). 2 `Items Orientation`: `Block` (item alti con TextBox verticale, padding-v 16) o `In-line` (item compatti con Title + Paragraph sulla stessa riga, padding-v 12). L'orientation vale per TUTTI gli item della Listing — non mescolare Block e Inline. Il container non ha padding/gap propri — è ogni item che gestisce padding-v e divider. NON usare per liste con immagine 80×80 (Listing Item Variant=Image va in container manuale dedicato), NON per scroll orizzontale (usa Chip/Quicklink Navigation), NON per barre di azioni (usa Button Group). Il consumer è responsabile di nascondere il divider sull'ultimo item (`showDivider={i !== items.length - 1}`). Tipicamente preceduta da un Heading."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

@@ -1,44 +1,143 @@
 {
   "slug": "search-bar",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6405:3027",
+    "ios": "6405:3027"
+  },
+
   "component": {
     "name": "Search Bar",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Input pill (bg grigio chiaro `search/color/bg/default`) per ricerca testuale di contenuto (lista prodotti, partite, documenti, FAQ). 2 `OS` × 3 `status` = 6 varianti in Figma. Status: `default` (placeholder 'Search' grigio + icona search), `focused` (cursor visibile, ancora vuoto), `typing` (testo digitato in dark + X clear button). Differenze OS strutturali: **iOS** (375×52, height interna 36, padding 8) ha icona search a SINISTRA in default; in focused/typing aggiunge X clear button (`button/neutral/ghost` sm) + Link 'Annulla' a destra fuori dal pill (`interaction/link` style). **Android** (375×72, padding default 24 / focused-typing 4) ha icona search a DESTRA in default; in focused/typing sostituisce l'icona con back-arrow ← a sinistra e X clear a destra (niente Link 'Annulla' — la back-arrow è l'affordance per uscire). Cursor color: ios blue, android brand-green. Three-way naming: slug `search-bar`, Figma frame `search`, namespace `search/*`.",
+    "type": "input"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "search-listing",
+      "filter-by-keyword",
+      "global-search",
+      "search-faq-help",
+      "search-categories"
+    ],
+    "requiredProps": ["value", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "page-header-search",
+        "description": "Search bar in cima a una pagina lista (es. Cerca giochi, Cerca eventi sportivi, Cerca FAQ). In status `default` mostra placeholder 'Cerca...'. Al tap entra in `focused`: su iOS appare il Link 'Annulla', su Android la back-arrow sostituisce l'icona search. L'utente digita → `typing` → la lista sotto si filtra in tempo reale o al submit (Enter).",
+        "composition": "<SearchBar value={query} placeholder=\"Cerca giochi\" onChange={setQuery} onCancel={() => setQuery('')} />"
+      },
+      {
+        "name": "clear-with-x-button",
+        "description": "In `focused` o `typing`, l'utente può tappare la X (`Button Icon` neutral/ghost sm 20×20) per svuotare il campo senza uscire dallo stato focused. Pattern standard sia iOS che Android.",
+        "composition": "Tap su X -> onChange('') ma keep focused"
+      },
+      {
+        "name": "cancel-ios-vs-back-android",
+        "description": "Pattern OS-specifico di uscita dalla ricerca: iOS espone un Link 'Annulla' a destra fuori dal pill (text sottolineato, regola DS: 'Use links for navigation' — qui per uscire dal flow ricerca); Android usa back-arrow ← a sinistra dentro al pill al posto dell'icona search (gesture nativa Android). Entrambi: tap pulisce e chiude la ricerca (esce da focused/typing, torna a default oppure naviga indietro).",
+        "composition": "iOS: <Link label=\"Annulla\" onPress={cancelSearch} />  |  Android: <ButtonIcon icon={<IconArrowLeft />} onPress={cancelSearch} />"
+      },
+      {
+        "name": "search-with-results-listing",
+        "description": "Search Bar accoppiata con Search Results Listing sotto: l'utente digita, il container parent aggiorna la lista di risultati in tempo reale (debounced). Per query vuota mostrare empty state o suggerimenti; per query con 0 risultati mostrare Feedback 'Nessun risultato per <query>'.",
+        "composition": "<SearchBar value={q} onChange={setQ} /><SearchResultsListing results={filteredResults} query={q} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "search-bar-without-listing-below",
+        "reason": "La Search Bar è un INPUT per filtrare/cercare contenuto: presuppone che ci sia un set di risultati sotto (lista, griglia di card) che si aggiorna in base alla query. Search Bar standalone in mezzo a una pagina senza area risultati confonde l'utente — cosa cercare? dove apparirà l'esito?",
+        "alternative": "Sempre accoppiata con Search Results Listing (o Listing filtrabile) sotto. Per pattern di 'apri pagina dedicata di ricerca al tap' usare un Button Icon (search icon) che porta a una pagina con SearchBar in cima."
+      },
+      {
+        "scenario": "missing-back-arrow-or-cancel",
+        "reason": "In `focused`/`typing` l'utente ha bisogno di un'uscita esplicita dal flow di ricerca: senza Link 'Annulla' su iOS o back-arrow su Android, è obbligato a svuotare manualmente il campo + tap fuori. Questo è frizione cognitiva inutile.",
+        "alternative": "iOS: sempre con Link 'Annulla' in focused/typing (è disegnato in Figma). Android: sempre con back-arrow al posto dell'icona search in focused/typing. Non rimuovere queste affordance OS-specifiche."
+      },
+      {
+        "scenario": "force-same-layout-cross-os",
+        "reason": "Forzare iOS a usare back-arrow Android (o viceversa: forzare Android a usare Link 'Annulla') rompe le aspettative native della piattaforma. Gli utenti iOS si aspettano 'Annulla' link, gli utenti Android si aspettano back-arrow.",
+        "alternative": "Rispettare il pattern OS Figma: iOS → Annulla link, Android → back-arrow. Il consumer del componente sceglie automaticamente in base alla piattaforma di runtime."
+      },
+      {
+        "scenario": "search-for-action-trigger",
+        "reason": "La Search Bar è un text input per ricerca/filtraggio testuale. Usarla come trigger di un'azione (es. 'Tap per aprire la modale dei filtri') confonde l'utente che si aspetta di digitare.",
+        "alternative": "Per aprire una modale di filtri usare Button Filter (CTA dedicata). Per pattern misti (search + filter), affiancare SearchBar a un Button Filter come icona separata."
+      },
+      {
+        "scenario": "search-bar-disabled-state",
+        "reason": "La Search Bar Figma NON ha uno State `disabled` disegnato (a differenza di Dropdown, Checkbox, ecc.). Aggiungere uno stato disabled fai-da-te (grigio, non tappabile) genera un trattamento non disegnato e atipico per il pattern di ricerca.",
+        "alternative": "Quando la ricerca non è disponibile, nascondere la Search Bar invece di disabilitarla. Per casi temporanei (es. 'sto caricando i dati'), mostrare un loading state nella zona risultati sotto, non sulla Search Bar."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Container": {
+        "required": true,
+        "description": "Pill di sfondo con bg `search/color/bg/{status}` (grigio chiaro in tutti gli status), border-radius full-round. iOS height `search/size/height/ios` (36); Android height più grande (totale 72h con padding interno). Padding orizzontale OS-specifico: iOS `search/size/padding/ios` (8 in tutti gli status); Android `search/size/padding/android/default` (24) / `/focused`-`/typing` (4 — più stretto quando ci sono back-arrow + X clear)."
+      },
+      "SearchIcon": {
+        "required": true,
+        "description": "Icona search 20×20, colore `search/color/icon/default`. Su iOS: SEMPRE a SINISTRA dentro al pill. Su Android: a DESTRA in `default`, viene sostituita da back-arrow ← a sinistra in `focused`/`typing`. Decorativa (`accessibilityElementsHidden=true`) — la semantica 'search' è data dal context + placeholder."
+      },
+      "InputText": {
+        "required": true,
+        "description": "Campo testo modificabile. Tipografia `typography/body/pLead` (16px regular Roboto). Color text varia per status: `search/color/text/default` (grigio, mostra placeholder), `search/color/text/focused` (grigio, ancora vuoto), `search/color/text/typing` (dark, testo digitato). Cursor color: `textField/inputText/cursor/color/ios` (blu iOS) / `textField/inputText/cursor/color/android` (verde brand Android). Placeholder tipico 'Search' o 'Cerca...'."
+      },
+      "ClearButton": {
+        "required": false,
+        "description": "Button Icon X (`button/neutral/ghost` size sm 32h, icon 20×20) presente in `focused` e `typing` per svuotare il campo senza uscire dallo stato. Nascosto in `default` (non c'è niente da pulire). Su iOS è a destra DENTRO al pill (prima del Link Annulla esterno). Su Android è a destra dentro al pill."
+      },
+      "CancelLink": {
+        "required": false,
+        "description": "SOLO iOS in `focused` e `typing`: Link 'Annulla' (`typography/interaction/link` 14px Bold Roboto sottolineato, color `link/color/text/default`) a destra del pill, FUORI dal container. Tap esegue cancel della ricerca (esce dallo stato focused, ripristina default). Non disegnato su Android (dove la back-arrow svolge la stessa funzione)."
+      },
+      "BackArrow": {
+        "required": false,
+        "description": "SOLO Android in `focused` e `typing`: Button Icon back-arrow ← a sinistra DENTRO al pill, sostituisce l'icona search (`button/neutral/ghost` size md 48h, icon 24×24). Tap esegue cancel della ricerca (come l'Annulla link iOS)."
+      }
+    },
+    "nestedComponents": ["Button Icon", "Link"],
+    "commonPartners": ["Search Results Listing", "Listing", "Page", "Header"],
+    "parentConstraints": [
+      "Tipicamente in cima a una pagina di lista/ricerca, sotto al Header (se presente) o integrata nell'area Header. Larghezza piena del viewport (375 nel Figma).",
+      "Sempre accoppiata a un'area di risultati sotto (Search Results Listing, Listing filtrabile o suggerimenti). Mai standalone in mezzo a una pagina senza area risultati associata.",
+      "Il consumer è responsabile della gestione status (default → focused → typing) e del debouncing della query verso la lista risultati."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "focused", "typing"],
+    "interactions": {
+      "tap-input-enter-focused": "Tap sul pill in `default` attiva il focus del text input → status passa a `focused`. La tastiera nativa appare. Su iOS appare il Link 'Annulla'; su Android l'icona search viene sostituita da back-arrow ←.",
+      "typing": "Mentre l'utente digita, lo status è `typing`: text color passa a `search/color/text/typing` (dark) e appare la X clear button. La lista risultati sotto si aggiorna in tempo reale (consumer responsibility, tipicamente con debounce).",
+      "tap-clear": "Tap sulla X clear in `focused`/`typing` svuota il campo (`onChange('')`) ma MANTIENE il focus (resta in `focused`). Tastiera resta aperta. La X scompare (non c'è più testo da pulire).",
+      "tap-cancel-ios": "iOS: tap sul Link 'Annulla' a destra fuori dal pill esegue cancel — svuota la query, chiude la tastiera, status torna a `default`.",
+      "tap-back-android": "Android: tap sul back-arrow ← a sinistra dentro al pill — equivalente al cancel iOS. Pulisce la query, chiude la tastiera, status torna a `default` (e su Android tipicamente fa pop della pagina di ricerca dedicata se la SearchBar era in una page push)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "searchfield — su iOS `accessibilityTraits = .searchField` (trait nativo) + `accessibilityLabel = 'Campo di ricerca'`; su Android `Role.TextField` + `Modifier.semantics { contentDescription = 'Campo di ricerca'; role = Role.TextField; isContainer = true }`. Il ClearButton è elemento accessibile separato con `Role.Button` + `accessibilityLabel = 'Cancella ricerca'`. Il CancelLink iOS è `accessibilityTraits = .link` + label 'Annulla ricerca'. La BackArrow Android è `Role.Button` + `accessibilityLabel = 'Indietro'`.",
+    "screenReader": "Lo screen reader annuncia: 'Campo di ricerca, [valore corrente o placeholder], [istruzioni di edit]'. Quando l'utente entra in focus: 'In modifica, [valore]'. Per pattern OS-specifici: iOS 'Annulla, link'; Android 'Indietro, pulsante'. Per il ClearButton: 'Cancella ricerca, pulsante'.",
+    "focusManagement": "Focusable. Tap entra in focused → tastiera nativa. Tab esce: su iOS il focus va al Link Annulla (se status=focused/typing); su Android va al ClearButton (se presente). Tap sul Cancel/Back chiude la tastiera e restituisce il focus al contesto precedente (lista, page header).",
+    "touchTarget": "iOS pill 36h — sotto-soglia 44pt: l'intero pill è tappabile, ma l'altezza è marginalmente sotto. Hit-area effettiva via padding extra del wrapper container (consigliato). Android pill 72h — abbondantemente sopra-soglia 48dp. ClearButton sm 32h e CancelLink ~18h (text only) — entrambi sotto-soglia: il Button gestisce hit-area interna, il Link va wrappato con padding sufficiente.",
+    "wcag": "AA — il bg grigio `search/color/bg/default` con text grigio `search/color/text/default` per il placeholder è BORDERLINE WCAG AA per body text (rapporto contrasto basso fra grigi). Per `status=typing` il text passa al dark `search/color/text/typing` — ampiamente AA. Il placeholder grigio è accettabile in WCAG come 'placeholder text' (linee guida meno stringenti), ma il consumer deve verificare con i token risolti del brand corrente. L'icona search a contrasto basso (grigio su grigio) è marcata decorativa — semantica fornita dal placeholder + searchfield role."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["search bar", "search input", "barra di ricerca", "search field", "cerca", "ricerca"],
+    "context": "Input pill per ricerca testuale di contenuto. 2 `OS` × 3 `status` = 6 varianti. Status: `default` (placeholder grigio), `focused` (cursor visibile, vuoto), `typing` (testo digitato dark + X clear). Differenze OS: iOS ha icona search a SINISTRA + Link 'Annulla' fuori dal pill a destra in focused/typing; Android ha icona search a DESTRA in default, sostituita da back-arrow ← in focused/typing (niente Annulla link). Cursor: iOS blu, Android brand-green. SEMPRE accoppiata con area risultati sotto (Search Results Listing). NON usare standalone senza risultati. NON usare come trigger di azione (per quello c'è Button Filter / Button Icon). NIENTE State Disabled disegnato — quando non disponibile nascondere invece di disabilitare. Three-way naming: slug `search-bar`, Figma frame `search`, namespace `search/*`. Nesta Button Icon (X clear + back-arrow android) e Link (Annulla iOS)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

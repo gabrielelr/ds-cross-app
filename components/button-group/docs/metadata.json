@@ -1,44 +1,129 @@
 {
   "slug": "button-group",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-22",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5782:64435",
+    "ios": "5782:64435"
+  },
+
   "component": {
     "name": "Button Group",
     "category": "atoms",
-    "description": "",
+    "description": "Cluster di 1-2 Button atom raggruppati come unità interattiva singola, usato per esporre CTA combinate (azione principale + azione opzionale secondaria/ghost) in posizione coerente all'interno di pagine, card, modali e barre sticky. Tre proprietà × 8 varianti totali: Orientation (Inline = affiancati orizzontalmente / Block = impilati verticalmente) × Size (md 48h / sm 32h) × Sticky (True = container con bg `buttonGroup/color/bg` bianco + border-top 1px `buttonGroup/color/border` + padding `buttonGroup/size/sticky/padding/*` 16/16 + width `buttonGroup/size/sticky/width` 375 / False = nessun chrome, solo gap `buttonGroup/size/default/gap` 8). Compone uno o più atomi Button (Primary verde brand, Secondary bordato bianco, Ghost testo sottolineato). Il gruppo orchestra LAYOUT e SPACING fra i Button, non ridefinisce gli stili dei singoli Button. Three-way naming: slug `button-group`, frame Figma 'Button Group', namespace `buttonGroup/*`.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "sticky-bottom-cta-bar",
+      "card-footer-actions",
+      "modal-bottom-actions",
+      "inline-form-submit",
+      "dual-cta-primary-plus-secondary",
+      "single-primary-cta"
+    ],
+    "requiredProps": ["orientation", "size", "sticky"],
+    "commonPatterns": [
+      {
+        "name": "sticky-bottom-cta-bar",
+        "description": "Pattern d'uso PIÙ FREQUENTE: Button Group con Sticky=True ancorato in basso allo screen come barra di azione persistente. Container bianco con border-top sottile crea separazione visiva dal contenuto scrollabile sopra. Tipicamente Orientation=Inline con primary (verde brand, a destra) + opzionale secondary (bordato bianco, a sinistra) per dare priorità visiva all'azione principale.",
+        "composition": "<ButtonGroup orientation=\"Inline\" size=\"md\" sticky={true}><Button variant=\"secondary\">Annulla</Button><Button variant=\"primary\">Conferma</Button></ButtonGroup>"
+      },
+      {
+        "name": "single-primary-cta",
+        "description": "Una sola CTA primaria nel Button Group per azioni IMPORTANTI dove serve massima focalizzazione. Niente secondary/ghost — solo il pulsante primary verde brand che cattura attenzione. Usabile in qualsiasi Orientation/Size/Sticky.",
+        "composition": "<ButtonGroup orientation=\"Inline\" size=\"md\" sticky={true}><Button variant=\"primary\">Conferma</Button></ButtonGroup>"
+      },
+      {
+        "name": "primary-plus-secondary",
+        "description": "Due CTA: una primary (azione principale, verde brand) + una secondary (azione alternativa, bordata bianca). In Orientation=Inline il primary è SEMPRE A DESTRA, il secondary a sinistra — convenzione mobile-native per distinguere chiaramente azione principale da opzione secondaria. In Block primary è SEMPRE IN ALTO, secondary sotto.",
+        "composition": "<ButtonGroup orientation=\"Inline\" size=\"md\" sticky={true}><Button variant=\"secondary\">Indietro</Button><Button variant=\"primary\">Avanti</Button></ButtonGroup>"
+      },
+      {
+        "name": "primary-plus-ghost",
+        "description": "Pattern con primary + ghost (testo sottolineato senza bg/border). Il ghost è una azione TERZIARIA (es. 'Salta', 'Più tardi') visivamente meno enfatica del secondary bordato. Usato quando l'alternativa non deve competere visivamente col primary.",
+        "composition": "<ButtonGroup orientation=\"Inline\" size=\"md\" sticky={true}><Button variant=\"ghost\">Più tardi</Button><Button variant=\"primary\">Attiva ora</Button></ButtonGroup>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "two-primary-buttons",
+        "reason": "Due Button primary nello stesso Button Group creano competizione visiva — l'utente non sa quale sia l'azione principale. Il pattern del DS prevede UNA sola primary per gruppo (azione di forza) + eventuale secondary o ghost (azione alternativa).",
+        "alternative": "Una sola primary per gruppo. Se entrambe le azioni sono equivalenti, usare due secondary. Se serve gerarchia, primary (azione principale) + secondary (alternativa)."
+      },
+      {
+        "scenario": "primary-on-left-in-inline",
+        "reason": "In Orientation=Inline, il primary a SINISTRA viola la convenzione mobile-native (primary a destra = direzione di lettura latina + posizione del pollice dominante). Confonde l'utente che cerca l'azione principale dove si aspetta di trovarla.",
+        "alternative": "Primary SEMPRE a destra in Inline. Secondary/ghost a sinistra. In Block primary in alto, secondary sotto."
+      },
+      {
+        "scenario": "two-line-button-label",
+        "reason": "Label che va a capo su due righe rompe il rhythm visivo del Button Group, riduce leggibilità rapida e rende il touch target meno prevedibile. Indica che la copy è troppo lunga per il contesto.",
+        "alternative": "Mantenere label su singola riga SEMPRE. Lavorare sulla copy per ridurla (es. 'Conferma' invece di 'Conferma e prosegui al passaggio successivo'). Mai usare line-break o wrap nel testo del Button."
+      },
+      {
+        "scenario": "more-than-two-buttons",
+        "reason": "3+ Button nel Button Group sovraccaricano l'utente e diluiscono la gerarchia delle azioni. Il pattern del DS prevede MAX 2 Button per gruppo (1 primary + 1 secondary/ghost).",
+        "alternative": "Max 2 Button per gruppo. Se servono più azioni, usare una Dropdown menu, una Bottom Sheet con lista azioni, o ripensare la gerarchia delle azioni nella schermata."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Container": {
+        "required": true,
+        "description": "Wrapper layout del gruppo. Con Sticky=False è un layout trasparente (no bg, no border, padding 0 — `buttonGroup/size/default/padding/*`, gap `buttonGroup/size/default/gap` 8). Con Sticky=True diventa container visivo: bg `buttonGroup/color/bg` (bianco), border-top 1px `buttonGroup/size/sticky/border/width` color `buttonGroup/color/border` (grigio chiaro), padding `buttonGroup/size/sticky/padding/horizontal|vertical` (16/16), gap `buttonGroup/size/sticky/gap` (8), width `buttonGroup/size/sticky/width` (375). La direzione del layout è gestita da Orientation (Inline = row / Block = column)."
+      },
+      "PrimaryButton": {
+        "required": true,
+        "description": "Button primary (verde brand `button/color/brand/primary/bg/default`, testo bianco `button/color/brand/primary/text/default`). SEMPRE presente nel gruppo (è l'azione principale). In Orientation=Inline è posizionato a destra (ultimo elemento del row, flex-1 per riempire lo spazio); in Orientation=Block è posizionato in alto (primo elemento della column, width 100%). Size segue il prop Size del Button Group (md 48h o sm 32h)."
+      },
+      "SecondaryButton": {
+        "required": false,
+        "description": "Button secondary OPZIONALE (bordato 1px `button/color/brand/secondary/border/default`, bg bianco `button/color/brand/secondary/bg/default`, testo dark `button/color/brand/secondary/text/default`). Toggle via prop `secondaryButton`. Quando presente, posizionato a SINISTRA del primary in Inline o SOTTO al primary in Block. Stessa Size del primary."
+      },
+      "GhostButton": {
+        "required": false,
+        "description": "Button ghost OPZIONALE (no bg, no border, testo verde brand sottolineato `button/color/brand/ghost/text/default`). Toggle via prop `ghostButton`. Azione TERZIARIA — meno enfatica del secondary. Posizionato come il secondary (sinistra in Inline / sotto in Block). Stessa Size del primary."
+      }
+    },
+    "nestedComponents": ["Button"],
+    "commonPartners": ["Page", "Card", "Bottom Sheet", "Modal"],
+    "parentConstraints": [
+      "Button Group con Sticky=True vive ANCORATO IN BASSO allo screen (position fixed/sticky con bottom: safe-area). È elemento di chrome di pagina, non scrolla col contenuto. Larghezza tipica 375 = width viewport mobile.",
+      "Button Group con Sticky=False vive INLINE nel flusso di contenuto (dentro Card, modali, sezioni di form). Non ha chrome — è layout trasparente che orchestra gap fra Button.",
+      "Compone Button atom — non ridefinisce stili dei Button. Modifiche ai token `button/*` (radius, padding, height) impattano direttamente il Button Group."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "button-tap": "Tap su un singolo Button del gruppo esegue il callback `onPress` di quel Button specifico (ogni Button è atom indipendente con propria handler). Il Button Group non intercetta tap a livello container.",
+      "no-group-level-interaction": "Il Button Group non è un atomo interattivo aggregato — è solo layout/spacing. Le sole affordance interattive sono i singoli Button atom al suo interno.",
+      "sticky-positioning": "Con Sticky=True, il Container è ancorato in basso allo viewport (CSS position: sticky bottom 0 o equivalente nativo) e rimane visibile durante lo scroll del contenuto sopra. Il border-top 1px crea separazione visiva dal contenuto scrollato."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "group — su iOS impostare il Container con `accessibilityElement=false` (il container è layout, non un actionable singolo). Su Android `Modifier.semantics { isContainer = true }`. I singoli Button mantengono ognuno `Role.Button` + `accessibilityLabel` propria.",
+    "screenReader": "Ogni Button del gruppo è elemento accessibile separato. L'ordine di lettura segue Orientation: in Inline left-to-right (secondary/ghost → primary), in Block top-down (primary → secondary/ghost). NON annunciare il container come 'gruppo di pulsanti' — lo screen reader naviga pulsante per pulsante. Il primary è enfatizzato dal contesto visivo, non da prefissi nel label.",
+    "focusManagement": "Container non focusable. Ogni Button focusable separato. Tab/swipe focus ordering segue Orientation: Inline left-to-right, Block top-down. Su Sticky=True, il focus può raggiungere il Button Group anche se contenuto è scrollato sopra (sticky = sempre presente nel DOM accessibility tree).",
+    "touchTarget": "Size=md: 48px height — sopra 44pt iOS / 48dp Android ✅. Size=sm: 32px height — sotto 44pt iOS / 48dp Android ⚠️. Per Size=sm aumentare l'hit area estendendo bounds tappabili oltre i visual bounds (iOS `accessibilityActivationPoint` / Android `TouchDelegate`), o riservare sm a contesti non-critical (densi, inline secondari).",
+    "wcag": "AA — il container sticky bg bianco + border grigio chiaro è layout decorativo (non interactive signal). Il contrasto dei Button singoli è responsabilità del Button atom (verificare token `button/color/*` per AA). Il label dei Button DEVE rimanere su singola riga: line-wrap riduce leggibilità rapida e viola AA per scanning velocità."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["button group", "cta cluster", "sticky cta bar", "footer actions", "action group", "primary secondary buttons"],
+    "context": "Cluster di 1-2 Button atom (Primary + opzionale Secondary o Ghost) come unità di azione coerente. 3 proprietà × 8 varianti: Orientation (Inline orizzontale / Block verticale) × Size (md 48h / sm 32h) × Sticky (True container bianco border-top 1px width 375 padding 16/16 / False layout trasparente solo gap 8). Il Primary è SEMPRE A DESTRA in Inline / SEMPRE IN ALTO in Block — convenzione non negoziabile per gerarchia visiva. Max 2 Button per gruppo (1 primary obbligatorio + 1 secondary/ghost opzionale). Label SEMPRE su singola riga — mai a capo (ridurre copy invece). Pattern principali: sticky-bottom-cta-bar (Sticky=True ancorato in basso a pagina), single-primary-cta (sola azione principale), primary-plus-secondary (azione + alternativa), primary-plus-ghost (azione + terziaria meno enfatica). Token namespace `buttonGroup/*` solo per chrome del container sticky (bg, border, padding, gap, width). I Button singoli ereditano dai token `button/*`. NIENTE pattern Block vs Inline (orientation use case ancora non definito). NON usare 3+ Button (sovraccarico — usare Dropdown o Bottom Sheet). NON usare 2 primary (competizione visiva)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

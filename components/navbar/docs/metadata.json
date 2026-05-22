@@ -1,44 +1,130 @@
 {
   "slug": "navbar",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "6067:94702",
+    "ios": "6067:94702",
+    "navBarItem": "6067:94155",
+    "navBarItemLiquidGlass": "8434:4822",
+    "navbarNavigation": "6068:95607"
+  },
+
   "component": {
     "name": "Navbar",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Barra di navigazione bottom dell'app: 375×56, ancorata al bordo bottom del viewport, sempre visibile durante la navigazione tra le sezioni principali dell'app. Composta da N atomi Nav Bar Item allineati orizzontalmente con gap `navBar/size/gap` (4), padding-h `navBar/size/padding/horizontal` (8), bg `navBar/color/bg` (bianco). Single-choice: SEMPRE un solo nav item in `Selected=true` alla volta (la sezione corrente). 3 atomi distinti per i sub-item: `Nav Bar Item` (atom standard, frame 6067:94155 — selected ha border-top brand-green + icon/text brand-green), `Nav Bar Item Liquid Glass` (atom liquid glass per iOS LG, frame 8434:4822 — selected ha pill-bg semi-trasparente nero 10% con radius full, niente border). Container `Navbar Navigation` (frame 6068:95607) espone 24 varianti combinatorie: 3 `OS` (ios, iosLiquidGlass, android) × 8 `Brand-App` (sisal-Lottery / sisal-Poker / sisal-Betting / sisal-casino-Casinò&Slot / snai-Betting / snai-Casinò&Slot / snai-Gaming / pokerstars-Poker) — ogni Brand-App ha un set DIVERSO di nav items (es. Sisal Lottery: Home/MieGiocate/Giochi/Fedeltà/Promo; Pokerstars Poker: Poker/Casinò/Scommesse/Promo). Three-way naming: slug `navbar`, frame Figma 'Navbar', namespaces `navBar/*` (container), `navBarItem/*` e `navBarItemLiquidGlass/*` (atomi).",
+    "type": "navigation"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "app-bottom-navigation",
+      "primary-section-switcher",
+      "always-visible-app-shell"
+    ],
+    "requiredProps": ["items", "selectedKey", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "primary-app-navigation",
+        "description": "Pattern canonico: la Navbar è SEMPRE VISIBILE in fondo all'app (eccetto in flussi modali/full-screen come onboarding, KYC, checkout). Single-choice: tap su un item naviga alla sezione corrispondente e quell'item passa a `Selected=true`, il precedente torna a `Default`. La sezione corrente è il source-of-truth dello stato.",
+        "composition": "<Navbar items={appSections} selectedKey={currentSection} onChange={navigateToSection} />"
+      },
+      {
+        "name": "brand-app-specific-items",
+        "description": "Le voci della Navbar dipendono dalla combinazione `Brand-App` (impostata a livello build/init dell'app — non scelta dinamica): es. Sisal Lottery mostra 'Home, Mie Giocate, Giochi, Fedeltà, Promo'; Sisal Betting mostra 'Home, My bets, Biglietto, Tipster, Promo'; Pokerstars Poker mostra 'Poker, Casinò, Scommesse, Promo'. La struttura della Navbar è quindi pre-determinata dal Brand-App, non configurabile da UI o feature flag.",
+        "composition": "<Navbar brand=\"sisal\" app=\"Lottery\" selectedKey=\"home\" onChange={...} />"
+      },
+      {
+        "name": "liquid-glass-on-ios-supported-devices",
+        "description": "Su iOS device con Liquid Glass attivo (iOS 17+ su iPhone supportati), il consumer usa la variante `OS=iosLiquidGlass`: l'atomo Nav Bar Item Liquid Glass ha selected con pill semi-trasparente (nero 10% radius fully-round) invece del border-top brand-green dello standard. L'altezza scende a 48h (vs 56h standard). Stessa logica di selezione single-choice.",
+        "composition": "Su iOS LG runtime: render variante OS=iosLiquidGlass"
+      },
+      {
+        "name": "five-items-canonical",
+        "description": "Il pattern Figma mostra tipicamente 4-5 nav items per app. Più di 5 item rende ogni tile troppo stretto (75 wide / 5 = 75; con più di 5 si scende sotto i 75 e label/icona si comprimono).",
+        "composition": "Mantenere 4-5 item per Navbar"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "navbar-with-too-many-items",
+        "reason": "La Navbar è 375 wide con padding 8 — lo spazio utile è ~360 / N item. Con più di 5 item le label `caption` (12px) si compattano o vengono troncate, e l'icona 24×24 deve condividere lo spazio con la label nella stack verticale. La leggibilità scende velocemente.",
+        "alternative": "Mantenere 4-5 nav items. Per ulteriori sezioni navigabili usare Page Navigation (tab interna), Header overflow menu (3-dot), o Drawer del menù. La Navbar deve esporre solo le sezioni PRINCIPALI dell'app."
+      },
+      {
+        "scenario": "navbar-with-zero-selected-or-multiple-selected",
+        "reason": "La Navbar è SINGLE-CHOICE: deve sempre esserci ESATTAMENTE 1 item in `Selected=true`. Zero selezionati confonde (in che sezione sono?); multipli selezionati rompe il modello mentale (sono in 2 posti contemporaneamente?).",
+        "alternative": "Garantire sempre 1 solo nav item selected. Allo startup dell'app pre-selezionare la sezione di default (tipicamente Home). Al cambio di sezione, il consumer aggiorna l'item selected e deseleziona il precedente."
+      },
+      {
+        "scenario": "navbar-with-custom-items-by-user",
+        "reason": "La Navbar è BRAND-APP SPECIFIC: i 14 nomi disponibili (Home, Tipster, Scommesse, Giochi, My bets, Mie Giocate, Biglietto, Promo, Loyalty, Cerca, Casinò, Poker, Snai Plus, Bingo) sono pre-disegnati in Figma con icona+label dedicati. Permettere all'utente di customizzare le voci (es. 'metti Bingo invece di Loyalty') rompe il pattern e richiede icone non disegnate.",
+        "alternative": "Le voci sono fisse per Brand-App, non modificabili da utente. Per personalizzazione di scorciatoie usare Quicklink Navigation (homepage shortcuts modificabili)."
+      },
+      {
+        "scenario": "navbar-with-mixed-os-variants",
+        "reason": "Forzare il rendering Liquid Glass su iOS non-LG (es. iPhone 14) o su Android, o forzare la variante standard su iOS LG, rompe l'aspettativa native della piattaforma. iOS LG ha pill semi-trasparente con effetto blur (compatibile col background blur del sistema); iOS standard ha border-top + colore solido.",
+        "alternative": "Render automaticamente la variante in base al runtime: iosLiquidGlass su iOS con LG attivo, ios su iOS standard, android su Android. Niente override manuale."
+      },
+      {
+        "scenario": "hiding-navbar-randomly-in-pages",
+        "reason": "Nascondere la Navbar a discrezione in pagine random (es. 'in questa lista non si vede') frustra l'utente che perde l'orientamento globale dell'app (non sa più in che sezione è e come tornare a Home).",
+        "alternative": "Nascondere la Navbar SOLO in flussi modali/full-screen ben definiti (onboarding, KYC con steps lineari, checkout multi-step). In tutte le pagine 'di navigazione' (liste, dettagli, settings) la Navbar deve essere visibile."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Items": {
+        "required": true,
+        "description": "Array di N atomi Nav Bar Item (standard, frame 6067:94155, namespace `navBarItem/*`) allineati orizzontalmente. Ogni item è 72 wide × 56h, contiene icon 24×24 sopra + label `typography/body/caption` (12px regular Roboto) sotto, gap `navBarItem/size/gap` (2), padding-v `navBarItem/size/padding/vertical` (8). 2 `Selected`: false (icon+label dark `navBarItem/color/{icon|text}/default`); true (icon+label brand-green `navBarItem/color/{icon|text}/selected` + border-top brand-green `navBarItem/color/border/selected` + label in `captionBold` invece di caption). Su variante container `OS=iosLiquidGlass` si usa l'atomo Nav Bar Item Liquid Glass al posto dello standard."
+      },
+      "ItemsLiquidGlass": {
+        "required": false,
+        "description": "Solo per container `OS=iosLiquidGlass`: array di N atomi Nav Bar Item Liquid Glass (frame 8434:4822, namespace `navBarItemLiquidGlass/*`). Differenze vs Nav Bar Item standard: (a) altezza 48h (vs 56h), (b) selected ha PILL BG semi-trasparente `navBarItemLiquidGlass/color/bg/selected` (nero 10% trasparente) con radius `*/size/border/radius` (128 fully-round) — NIENTE border-top, (c) padding-h `*/size/padding/horizontal` (12). Stesso layout vertical (icon sopra, label sotto) e stessa tipografia caption/captionBold."
+      },
+      "Container": {
+        "required": true,
+        "description": "Container 375×56 (variante iosLiquidGlass ha altezza ~48 derivata dagli item). Bg `navBar/color/bg` (bianco), padding-h `navBar/size/padding/horizontal` (8), gap fra items `navBar/size/gap` (4). Ancorato al bordo bottom del viewport con safe-area-inset-bottom (gestito a livello container parent / OS shell)."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Page", "Header"],
+    "parentConstraints": [
+      "La Navbar è elemento di APP SHELL: vive a livello root dell'app, non dentro a pagine specifiche. Ancorata al bordo bottom del viewport, sempre visibile in pagine 'di navigazione'.",
+      "La struttura items è BRAND-APP SPECIFIC e impostata a livello build/init: NON è configurabile da UI o feature flag dinamici. Ogni Brand-App ha la sua combinazione predefinita di voci (24 varianti documentate in Figma).",
+      "Nasconderla SOLO in flussi modali/full-screen definiti (onboarding, KYC, checkout) — non per pagine arbitrarie."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-item": "Tap su un Nav Bar Item esegue la navigazione alla sezione corrispondente e cambia lo `selectedKey` della Navbar: l'item tappato passa a `Selected=true`, il precedente torna a `Default`. Single-choice — c'è sempre ESATTAMENTE 1 selezionato.",
+      "no-pressed-state": "Niente `State=Pressed` disegnato in Figma. Il feedback di touch è gestito dal pattern nativo di piattaforma (lieve opacity change iOS, ripple Android).",
+      "selection-feedback": "Lo Selected è comunicato visivamente: (a) standard → icon+label brand-green + border-top brand-green + label in captionBold; (b) iosLiquidGlass → pill-bg semi-trasparente sotto l'item (no border) + icon+label brand-green + label in captionBold."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "tab bar — su iOS impostare `accessibilityElements` come tabbar nativo (`UITabBar` ha tutta la semantica gratis); su Android usare `Modifier.semantics { role = Role.Tab; selected = isSelected }` su ogni item dentro a un container con `Role.TabRow`. Per Liquid Glass su iOS la semantica è la stessa (è solo cambio visivo). Per uno screen reader, ogni item è un Tab con label = il `Name` del Nav Bar Item.",
+    "screenReader": "Lo screen reader legge per ogni item: '<Name>, tab, [selezionato/non selezionato], <X di N>' (es. 'Home, tab, selezionato, 1 di 5'). Al cambio di sezione, lo screen reader annuncia il nuovo tab attivo.",
+    "focusManagement": "Focusable: ogni Nav Bar Item. Movimento focus orizzontale con frecce sinistra/destra (su tastiera esterna o switch control). Su mobile gesture tap diretto su ogni item.",
+    "touchTarget": "Nav Bar Item standard 72×56 — abbondantemente sopra-soglia 44pt iOS / 48dp Android. Liquid Glass 72×48 — sopra-soglia anche se più stretto in altezza. Hit area = intero tile (icon + gap + label).",
+    "wcag": "AA — Lo Selected è comunicato sia da colore (brand-green) sia da forma (border-top in standard / pill-bg in LG) sia da peso tipografico (captionBold vs caption): per chi non distingue il verde, il border + bold sono fallback. Il contrasto label dark su bg bianco è ampiamente AA. Il pill-bg liquid glass (nero 10% trasparente) deve essere AA su backgrounds variabili — verificare in contesti dove il content sotto la navbar è chiaro."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["navbar", "bottom navigation", "tab bar", "app shell navigation", "navigazione bottom", "section switcher"],
+    "context": "Barra di navigazione bottom dell'app, sempre visibile. SINGLE-CHOICE: 1 nav item Selected alla volta (la sezione corrente). 3 OS: `ios` (standard, 56h, selected con border-top brand-green + icon/text verde), `iosLiquidGlass` (48h, selected con pill-bg semi-trasparente nero 10% radius full, niente border), `android` (56h, come ios). Atomi: Nav Bar Item (standard) e Nav Bar Item Liquid Glass (per iOS LG runtime). Container Navbar Navigation ha 24 varianti = 3 OS × 8 Brand-App combinations: ogni Brand-App ha set FISSO di voci (es. Sisal Lottery: Home/MieGiocate/Giochi/Fedeltà/Promo; Pokerstars Poker: Poker/Casinò/Scommesse/Promo). Le voci NON sono configurabili da UI/feature flag — sono brand-app specific impostate a build/init. Mantenere 4-5 item (più di 5 le label si comprimono). Visibile in pagine 'di navigazione'; nascondibile SOLO in flussi modali/full-screen (onboarding, KYC, checkout). Niente State Pressed disegnato — feedback nativo della piattaforma. 14 Names predefiniti in Figma: Home, Tipster, Scommesse, Giochi, My bets, Mie Giocate, Biglietto, Promo, Loyalty, Cerca, Casinò, Poker, Snai Plus, Bingo."
   },
+
   "rationale": {
     "designDecisions": ""
   }

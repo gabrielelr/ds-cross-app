@@ -1,44 +1,96 @@
 {
   "slug": "square-button-group",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-22",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5790:4876",
+    "ios": "5790:4876"
+  },
+
   "component": {
     "name": "Square Button Group",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Cluster orizzontale di N Button Square (88×64) usato ESCLUSIVAMENTE nel menu come navigazione visiva a sezioni/pagine secondarie dell'app. Layout row con gap `squareButtonGroup/size/gap` (16) fra ogni Button Square — niente padding container (`squareButtonGroup/size/padding/horizontal|vertical` 0/0). Ogni Button Square è atom standalone: container bordato bianco (bg `buttonSquare/color/bg/default`, border 1px `buttonSquare/color/border/default`, radius `buttonSquare/size/border/radius` 12) di larghezza fissa 88 (`buttonSquare/size/width/min`) × altezza 64 (`buttonSquare/size/height`), con icona 24×24 in alto + label `typography/interaction/microButton` (12px bold Roboto, color `buttonSquare/color/text/default` dark) centrata sotto, gap interno `buttonSquare/size/gap` (4). NIENTE Variant in Figma — single-shape component. Three-way naming: slug `square-button-group`, frame Figma 'Square Button Group', namespace `squareButtonGroup/*` (solo per layout container) + `buttonSquare/*` (per gli atom singoli).",
+    "type": "navigation"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "menu-secondary-navigation",
+      "menu-section-shortcuts"
+    ],
+    "requiredProps": ["items"],
+    "commonPatterns": [
+      {
+        "name": "menu-secondary-pages-row",
+        "description": "USO ESCLUSIVO: row di N Button Square nel MENU dell'app come scorciatoie visive verso pagine secondarie (es. 'Profilo', 'Saldo', 'Bonus', 'Storico'). Ogni Button Square ha un'icona rappresentativa della destinazione + label breve (1 parola), e on-tap naviga alla pagina relativa. Posizionato tipicamente in una sezione dedicata del menu drawer/sheet.",
+        "composition": "<SquareButtonGroup items={[{icon: 'profile', label: 'Profilo', onPress: () => nav('profile')}, {icon: 'wallet', label: 'Saldo', onPress: () => nav('wallet')}, {icon: 'gift', label: 'Bonus', onPress: () => nav('bonus')}]} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-outside-menu",
+        "reason": "Square Button Group è dedicato AL MENU. Usarlo in homepage, listing, dettaglio prodotto, o altri contesti introduce un pattern visivo (row di square card con icona+label) che l'utente associa al menu e crea confusione gerarchica.",
+        "alternative": "Usare Square Button Group SOLO nel menu come link a pagine secondarie. Per scorciatoie visive in altre pagine usare Quicklink (small/default/image/recent-game) o Circle Button Group. Per CTA usare Button o Button Group."
+      },
+      {
+        "scenario": "use-as-tab-switcher",
+        "reason": "Square Button Group naviga a PAGINE SEPARATE, non switcha contenuto in-page. Usarlo come tab-bar interna a una pagina viola la semantica (square card visiva con icona = destination link, non tab indicator).",
+        "alternative": "Per switching di contenuto in-page usare Tab. Per filtri visivi usare Chip Navigation. Square Button Group rimane SOLO per link a pagine dal menu."
+      },
+      {
+        "scenario": "label-multi-word",
+        "reason": "Button Square ha width fissa 88 e label centrata su singola riga in microButton 12px. Label di 2+ parole o lunghe vanno in overflow/wrap rompendo il rhythm visivo del gruppo.",
+        "alternative": "Label SEMPRE singola parola breve (max ~8-10 caratteri): 'Profilo', 'Saldo', 'Bonus', 'Storico', 'Aiuto'. Se serve più contesto, ripensare la label o passare a un Listing Item."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Container": {
+        "required": true,
+        "description": "Wrapper layout del gruppo. Layout trasparente row (no bg, no border) con gap `squareButtonGroup/size/gap` (16) fra Button Square e padding `squareButtonGroup/size/padding/horizontal|vertical` (0/0). Il padding orizzontale verso bordi del menu è gestito dal parent (drawer/sheet)."
+      },
+      "ButtonSquare": {
+        "required": true,
+        "description": "Atom Button Square ripetuto N volte nel row. Ogni Button Square: container bg `buttonSquare/color/bg/default` (bianco) + border 1px `buttonSquare/size/border/width` color `buttonSquare/color/border/default` (grigio chiaro), radius `buttonSquare/size/border/radius` (12), width `buttonSquare/size/width/min` (88), height `buttonSquare/size/height` (64), padding-h `buttonSquare/size/padding/horizontal` (8), gap interno verticale `buttonSquare/size/gap` (4). Contenuto verticale center: Icon 24×24 (color `buttonSquare/color/icon/default` dark) in alto + Label `typography/interaction/microButton` (12px Bold Roboto, line-height 12, color `buttonSquare/color/text/default` dark) centrata sotto. Ogni Button Square è tappabile (`onPress` consumer) e naviga a pagina secondaria del menu."
+      }
+    },
+    "nestedComponents": ["Button Square"],
+    "commonPartners": ["Menu", "Drawer", "Bottom Sheet"],
+    "parentConstraints": [
+      "Square Button Group vive ESCLUSIVAMENTE dentro al menu dell'app (drawer laterale o bottom sheet menu). Non posizionarlo in pagine di contenuto, homepage, o flussi transazionali.",
+      "Layout row con gap 16 — il parent gestisce il padding orizzontale del menu. Tipicamente 3-4 Button Square per row in viewport 375 (3 × 88 + 2 × 16 = 296 di larghezza utile).",
+      "Riusa token `buttonSquare/*` per gli atom singoli. Modifiche a quei token impattano direttamente il Square Button Group."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "button-tap": "Tap su un singolo Button Square esegue il callback `onPress` di quel Button Square specifico — naviga alla pagina secondaria associata (es. profilo, saldo, bonus). Ogni Button Square è atom indipendente con propria handler.",
+      "no-group-level-interaction": "Il Square Button Group non è interattivo a livello container — è solo layout. Le sole affordance interattive sono i singoli Button Square."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "navigation — su iOS impostare Container con `accessibilityElement=false` (layout); ogni Button Square con `Role.Button` + `accessibilityLabel` esplicito (es. 'Profilo, vai alla pagina profilo'). Su Android `Modifier.semantics { role = Role.Button; contentDescription = ... }` per ogni Button Square.",
+    "screenReader": "Ogni Button Square è elemento accessibile separato letto in sequenza left-to-right. Label = testo visibile del Button Square + ruolo 'pulsante' (es. 'Profilo, pulsante'). NON annunciare il container come 'gruppo' — lo screen reader naviga elemento per elemento.",
+    "focusManagement": "Container non focusable. Ogni Button Square focusable separato. Ordine focus row left-to-right.",
+    "touchTarget": "Button Square 88×64 — width 88 ✅ sopra 44pt iOS / 48dp Android, height 64 ✅ ampiamente sopra. Touch target generoso per navigazione menu.",
+    "wcag": "AA — bg bianco `buttonSquare/color/bg/default` + testo dark `buttonSquare/color/text/default` + icona dark `buttonSquare/color/icon/default` garantiscono contrasto AA. Border grigio chiaro è layout decorativo (non signal). Microbutton 12px è bordeline per AA su lettori con vista ridotta — verificare zoom OS funzionale."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "low",
+    "keywords": ["square button group", "menu shortcuts", "menu icon row", "square buttons row", "menu navigation buttons"],
+    "context": "Cluster orizzontale di N Button Square (88×64 con icona 24+label microButton) per navigazione visiva nel MENU dell'app verso pagine secondarie. USO ESCLUSIVO nel menu — non in pagine di contenuto, homepage, dettagli o flussi. Layout row gap 16, niente padding container, niente Variant in Figma. Ogni Button Square è atom bordato bianco radius 12 con icona dark + label microButton 12px Bold dark centrate verticalmente. Label SEMPRE singola parola breve (max 8-10 char) — niente multi-word. Token namespace `squareButtonGroup/*` solo per layout row (gap, padding) + `buttonSquare/*` per atom singolo (bg, border, size, padding, gap interno, color icon/text). NON usare come tab-switcher (sono link a pagine, non tab). NON usare come Quicklink alternativo (Quicklink ha le proprie varianti e contesti). Pattern unico: menu-secondary-pages-row (3-4 Button Square in row dentro al menu)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

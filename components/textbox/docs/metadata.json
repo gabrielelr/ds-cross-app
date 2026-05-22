@@ -1,44 +1,127 @@
 {
   "slug": "textbox",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5814:93745",
+    "ios": "5814:93745"
+  },
+
   "component": {
-    "name": "Textbox",
+    "name": "Text Box",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Primitiva foundational di raggruppamento testuale: stack di Title (`typography/heading/h3` 16px ExtraBold Mulish) + Paragraph (`typography/body/p` 14px regular Roboto) + Link opzionale (`typography/interaction/link` 14px Bold Roboto sottolineato), con gap fisso `textbox/size/gap` (8). 2 `Orientation` × 2 `Link` = 4 varianti: `Orientation=Block` (stack VERTICALE: Title sopra, Paragraph sotto, Link in coda se attivo) o `In line` (allineamento ORIZZONTALE: Title + Paragraph affiancati su una riga, eventualmente con Link a fine riga). Color testo `textbox/color/text` (dark) uniforme per Title e Paragraph. È una primitiva LARGAMENTE riusata in tutto il DS (Hero, Hero Detail, Banner, Listing Item, Card Detail, Bottom Sheet, Feedback) come slot interno per la zona testuale. Three-way naming: slug `textbox`, frame Figma 'Text Box', namespace `textbox/*`.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "card-text-block",
+      "hero-text-block",
+      "section-info-block",
+      "listing-item-text-slot",
+      "inline-label-value-pair"
+    ],
+    "requiredProps": ["title", "paragraph"],
+    "commonPatterns": [
+      {
+        "name": "block-title-paragraph",
+        "description": "Variant=`Block, Link=False`: pattern canonico — Title heading/h3 sopra + Paragraph body/p sotto, gap 8. Usato come slot di testo dentro a card, hero, listing item, feedback, banner. È il default per la maggior parte dei consumer del Text Box.",
+        "composition": "<TextBox orientation=\"Block\" title=\"Sicurezza\" paragraph=\"Verifica 2FA attiva sul tuo account.\" />"
+      },
+      {
+        "name": "block-with-link",
+        "description": "Variant=`Block, Link=True`: Title + Paragraph + Link verticalmente impilati. Il Link sotto fa da CTA di approfondimento (es. 'Scopri di più'). Pattern usato in Card Informative, Feedback con CTA, Banner Gioco Certificato.",
+        "composition": "<TextBox orientation=\"Block\" title=\"Gioco responsabile\" paragraph=\"Trovi gli strumenti di tutela nella tua area utente.\" linkLabel=\"Scopri di più\" onLinkPress={openTools} />"
+      },
+      {
+        "name": "inline-label-value",
+        "description": "Variant=`In line, Link=False`: Title e Paragraph su una riga affiancati. Pattern per coppie 'label: valore' compatte (es. 'IBAN: IT12...', 'Categoria: Calcio') tipicamente in Listing Item Variant=Inline o Table tableRow Variant=Inline.",
+        "composition": "<TextBox orientation=\"In line\" title=\"IBAN\" paragraph=\"IT12 3456 7890\" />"
+      },
+      {
+        "name": "inline-with-link",
+        "description": "Variant=`In line, Link=True`: Title + Paragraph affiancati + Link a fine riga. Pattern compatto per meta-info con azione (es. 'Documenti: 3 da verificare → Vedi'). Adatto a layout densi dove l'azione vive accanto al valore.",
+        "composition": "<TextBox orientation=\"In line\" title=\"Documenti\" paragraph=\"3 da verificare\" linkLabel=\"Vedi\" onLinkPress={openDocs} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "textbox-standalone-in-page-without-context",
+        "reason": "Text Box è una PRIMITIVA: pensata per essere SLOT INTERNO di componenti più grandi (Card, Hero, Banner, Listing Item). Standalone in mezzo a una pagina, senza un container/contesto che la qualifichi, sembra testo orfano senza ancoraggio visivo.",
+        "alternative": "Per pattern standalone usare componenti dedicati con il proprio frame: Card Informative (per un blocco informativo isolato), Feedback (per messaggi a livello pagina), Hero Detail (per titolo prodotto). Text Box è il LEGO che vive dentro a questi componenti."
+      },
+      {
+        "scenario": "long-paragraph-block-orientation",
+        "reason": "Il Paragraph in body/p è dimensionato per 1-3 righe brevi. Paragraph di 4+ righe in orientation=Block fanno crescere il TextBox a dismisura e — quando è slot di una card/hero — rompono l'altezza disegnata del parent.",
+        "alternative": "Mantenere Paragraph conciso. Per spiegazioni più articolate spostare in pagine di dettaglio raggiungibili dal Link/CTA del parent."
+      },
+      {
+        "scenario": "inline-with-long-title-or-paragraph",
+        "reason": "Variant=`In line` impone Title + Paragraph SULLA STESSA RIGA. Testi lunghi forzano il wrap su 2+ righe e l'allineamento si rompe (Title in alto, Paragraph in basso disallineato). Inoltre Inline non è disegnato per ospitare Title heading/h3 lunghi.",
+        "alternative": "Per Inline mantenere Title 1-2 parole (es. 'IBAN', 'Categoria') e Paragraph 1 valore breve. Per contenuti più articolati passare a Block (lascia spazio verticale)."
+      },
+      {
+        "scenario": "link-as-cta-for-action",
+        "reason": "Il Link nello slot di Text Box è un Link semantico — regola DS: 'Use links for navigation, not actions'. Usare il Link per azioni (es. 'Salva') tradisce l'aspettativa e va contro la regola del componente Link.",
+        "alternative": "Per azioni usare Button (dentro al parent del Text Box, fuori dal Text Box stesso). Il Link in Text Box è esclusivamente per navigazione/approfondimento (es. 'Scopri di più', 'Vedi dettagli')."
+      },
+      {
+        "scenario": "wrong-typography-override",
+        "reason": "Modificare Title da heading/h3 a un altro heading (es. h1 'per dargli più importanza') o Paragraph a un altro stile rompe la consistenza tipografica del DS — il Text Box è una PRIMITIVA con typo fisse per garantire coerenza dove vivono.",
+        "alternative": "Rispettare typo Title=heading/h3 e Paragraph=body/p. Per pattern con tipografia diversa (es. titolo più grande per Hero Detail) usare Text Box dedicato di quel componente (es. Hero Detail TextBox usa display/d2 invece di heading/h3) — è un'eccezione disegnata, non un override custom."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Title": {
+        "required": true,
+        "description": "Titolo del blocco testuale. Tipografia `typography/heading/h3` (16px ExtraBold Mulish, line-height 18). Color `textbox/color/text` (dark). Single-line ottimale in Variant=Inline, multi-line accettabile in Variant=Block."
+      },
+      "Paragraph": {
+        "required": true,
+        "description": "Testo descrittivo sotto/accanto al Title. Tipografia `typography/body/p` (14px regular Roboto, line-height 18). Color `textbox/color/text` (dark) — NB: stesso colore del Title (non grigio come in alcune altre primitive es. Listing Item dove il Paragraph è subtle). Pensato per 1-3 righe brevi."
+      },
+      "Link": {
+        "required": false,
+        "description": "Link opzionale (Variant Link=True). Tipografia `typography/interaction/link` (14px Bold Roboto sottolineato). Color `link/color/text/default`. Gap interno del Link `link/size/gap` (4). Tap apre destinazione (regola DS: 'Use links for navigation, not actions'). In Block è posizionato sotto al Paragraph, in In line è a destra al fondo della riga."
+      }
+    },
+    "nestedComponents": ["Link"],
+    "commonPartners": ["Card", "Hero", "Hero Detail", "Banner", "Listing Item", "Feedback", "Bottom Sheet"],
+    "parentConstraints": [
+      "Text Box è una PRIMITIVA destinata a essere slot interno di componenti più grandi. Larghezza ereditata dal parent. Padding orizzontale verso i bordi gestito dal parent (Text Box ha solo gap interno).",
+      "Quando un parent (es. Hero Detail) usa una tipografia diversa per il Title (es. display/d2 al posto di heading/h3), il parent OVERRIDE il default del Text Box — non è un cambio del Text Box base, è un'eccezione disegnata del parent specifico."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-link": "Solo con Variant Link=True: tap sul Link interno esegue `onLinkPress` del consumer — tipicamente navigazione a pagina di approfondimento (vedere doc Link per dettagli sul comportamento).",
+      "no-tap-on-text": "Title e Paragraph NON sono tappabili — sono display. L'unica affordance interattiva del Text Box è il Link (se presente)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "container — su iOS Title con `accessibilityTraits = .header` se il Text Box è top-level del suo container; Paragraph come `.staticText`. Su Android usare `Modifier.semantics { heading() }` per il Title se semanticamente è il titolo della sezione. Il Link interno è elemento accessibile separato con `Role.Link` (vedere doc Link). Per Text Box usato come slot di un parent tappabile (es. Listing Item, Hero), il parent gestisce la label combinata e il Text Box NON è esposto come elemento accessibile separato.",
+    "screenReader": "Annuncio: '[Title], [Paragraph]' (es. 'Sicurezza, Verifica 2FA attiva'). Per Variant=Inline lo screen reader legge comunque Title prima e Paragraph poi nell'ordine semantico, anche se visivamente sono affiancati. Con Link: aggiunge '[Link label], link' dopo Paragraph (es. 'Documenti, 3 da verificare, Vedi, link').",
+    "focusManagement": "Title e Paragraph non focusable. Solo il Link è focusable (in Variant Link=True). Il parent del Text Box governa il movimento del focus globale.",
+    "touchTarget": "N/A per Title e Paragraph (display). Il Link è target tappabile sotto-soglia (line-height 18) — vedere doc Link per estensione hit-area.",
+    "wcag": "AA — il color `textbox/color/text` (dark) su superfici chiare garantisce contrasto AA. Il Link Bold sottolineato è AA per design (color + underline = non solo-colore)."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["textbox", "text box", "text block", "title paragraph", "blocco testuale", "text primitive"],
+    "context": "Primitiva FOUNDATIONAL di raggruppamento testuale: Title heading/h3 + Paragraph body/p + Link opzionale. 4 varianti: 2 `Orientation` (Block verticale / In line orizzontale) × 2 `Link` (False/True). Color testo `textbox/color/text` dark uniforme per Title E Paragraph (NB: alcune primitive simili come Listing Item TextBox usano Paragraph grigio subtle — Text Box mantiene entrambi dark). Gap fisso `textbox/size/gap` (8). USO PRINCIPALE: slot interno di componenti più grandi (Card, Hero, Hero Detail, Banner, Listing Item, Feedback, Bottom Sheet). NON standalone in pagina — per pattern standalone usare Card Informative, Feedback, ecc. Inline per pattern label:valore compatti; Block per spiegazioni più articolate. Il Link interno segue regola DS 'use links for navigation, not actions'. Tipografia FISSA — eventuali override (es. Hero Detail usa display/d2 invece di h3) sono eccezioni disegnate del parent, non modifiche al Text Box primitive."
   },
+
   "rationale": {
     "designDecisions": ""
   }

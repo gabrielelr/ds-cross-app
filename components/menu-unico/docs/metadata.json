@@ -1,44 +1,167 @@
 {
   "slug": "menu-unico",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-22",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6629:19766",
+    "ios": "6629:19766"
+  },
+
   "component": {
     "name": "Menu Unico",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "organisms",
+    "description": "TEMPLATE di pagina per il MENU UNICO dell'app — composizione cross-app standardizzata che aggrega tutti gli ingressi a settings, info account, bonus, supporto e azioni di gioco in un'unica schermata. NON è un componente atomico ma una PAGE TEMPLATE che ASSEMBLA molti componenti del DS in un layout fisso: Header sticky, contenuto scrollabile a sezioni (Account, Bonus, Gestisci il tuo gioco, Utilità, Sisal Community), Help card, Link feedback/Esci, Footer regolatorio. 7 varianti per stato utente/dato: 'No Log' (utente non autenticato — solo Button Group Accedi/Registrati + sezioni Utility e Help), 'Log' (utente autenticato pieno — header con nome+saldo+Square Button Group Area/Movimenti/Messaggi + lista Card Promo bonus + Card Loyalty Sisal Community + tutte le sezioni), 'Sessione Pending' (sessione in attesa di verifica), 'Autoesclusione GAD' (utente con autoesclusione attiva), 'Errore Bonus' (caricamento bonus fallito), 'Errore Saldo' (caricamento saldo fallito), 'Errore Saldo e Bonus' (entrambi falliti). Le varianti differiscono per quali sezioni/dati sono visibili e per fallback states (Feedback/Banner di errore sostituiscono blocchi dati). Three-way naming: slug `menu-unico`, frame Figma 'Profile Menu - {Variant}', namespace n/a (template eredita token dei componenti figli).",
+    "type": "navigation"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "main-app-menu-page",
+      "account-hub-page",
+      "settings-and-utility-entry-point",
+      "logged-out-access-page"
+    ],
+    "requiredProps": ["userState"],
+    "commonPatterns": [
+      {
+        "name": "single-entry-point-app-menu",
+        "description": "Menu Unico è IL menu principale dell'app — un'UNICA pagina (non un drawer/sheet) accessibile da tab bar o icona burger persistente. Raggruppa TUTTI gli ingressi cross-app: account/saldo/bonus (se loggato), settings, info regole, FAQ, app Sisal correlate, gioco responsabile, punti vendita, supporto, logout. Pattern 'one place for everything' — l'utente sa che qualsiasi azione non legata al gioco la trova qui.",
+        "composition": "<MenuUnico userState={authState}>{/* render condizionato delle sezioni in base allo userState */}</MenuUnico>"
+      },
+      {
+        "name": "state-driven-content-rendering",
+        "description": "Il template renderizza sezioni diverse in base alla variante: 'No Log' nasconde tutto ciò che richiede autenticazione (saldo, bonus, Sisal Community, Esci) e mostra Button Group Accedi/Registrati in cima. 'Log' mostra tutto. Le 4 varianti di errore/stato (Sessione Pending, Autoesclusione, Errore Saldo/Bonus) sostituiscono blocchi-dato con componenti di feedback inline (Banner, Feedback card) mantenendo il resto del menu accessibile.",
+        "composition": "userState === 'no-log' ? <NoLogView /> : userState === 'log' ? <LogView /> : <ErrorView state={userState} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "duplicate-menu-in-drawer-or-sheet",
+        "reason": "Menu Unico è una PAGE TEMPLATE — non duplicarne il contenuto in un drawer/bottom-sheet menu. Avere due punti di accesso allo stesso set di azioni confonde la navigazione (l'utente non sa quale usare) e raddoppia il costo di manutenzione del contenuto.",
+        "alternative": "Single source: tutto il menu vive in Menu Unico. Il drawer/sheet può ospitare scorciatoie veloci (Square Button Group con link a pagine secondarie) ma non duplicare l'intero menu."
+      },
+      {
+        "scenario": "in-page-mutation-of-account-data",
+        "reason": "Menu Unico è un HUB di ingresso — non un editor inline. Non aggiungere form di modifica password, modifica dati anagrafici, o cambio email direttamente nel menu (rompe la separation of concerns: menu = navigation, page dedicata = editing).",
+        "alternative": "Ogni voce 'Impostazioni', 'Informazioni e regole di gioco', etc. è un Listing Item che naviga alla rispettiva pagina di editing/dettaglio. Il menu rimane navigation-only."
+      },
+      {
+        "scenario": "add-marketing-cta-in-menu",
+        "reason": "Menu Unico è un contesto utility (account/settings/info), non un contesto marketing. Inserire Card Highlight promozionali, banner promo, o CTA marketing rompe il contratto visivo del menu (utente si aspetta lookup di funzioni, non sales pitch).",
+        "alternative": "Marketing CTA vanno in homepage, listing prodotti, o dedicated landing. Menu Unico ospita SOLO Card Loyalty (Sisal Community) come elemento brand-relazionale già parte del programma utente."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Header": {
+        "required": true,
+        "description": "Header sticky in alto: title 'Menu' + close icon (X) a destra. Usa il componente Header del DS. Su tap della X chiude il menu e torna alla schermata precedente."
+      },
+      "AuthCTAs": {
+        "required": false,
+        "description": "Solo variante 'No Log': Button Group Inline con due Button — secondary 'Accedi' (bordato bianco) + primary 'Registrati' (verde brand). Posizionato in cima subito sotto l'Header. Conduce ai flussi di login/signup."
+      },
+      "UserHeader": {
+        "required": false,
+        "description": "Solo variante 'Log' (e derivate): blocco di intestazione con 'Ciao [Nome]' (h2/h3 bold), 'Ultimo accesso: [data ora]' (body small subtle), riga 'Saldo' + valore (es. '103,41€') + Button Group con Preleva (secondary) e Ricarica (primary)."
+      },
+      "QuickActionsRow": {
+        "required": false,
+        "description": "Solo variante 'Log' (e derivate): Square Button Group con 3 shortcut: 'Area Riservata' (icon profile), 'Movimenti Conto' (icon wallet), 'Messaggi' (icon mail + badge notification se nuovi messaggi). Naviga a pagine secondarie di account."
+      },
+      "BonusList": {
+        "required": false,
+        "description": "Solo variante 'Log': sezione 'I tuoi bonus' con heading h3 + link 'Vedi tutti' a destra + lista verticale di Card Promo (Real Bonus, Fun Bonus, Freebet, Freespin, etc.) ognuna con label + valore €+ chevron-right. Nelle varianti 'Errore Bonus' / 'Errore Saldo e Bonus' questa sezione è sostituita da Feedback/Banner di errore."
+      },
+      "SisalCommunityCard": {
+        "required": false,
+        "description": "Solo variante 'Log': Card Loyalty (Sisal Community / WeSisal) con label utente + avatar + immagine pattern brand verde. Ingresso al programma di community/loyalty Sisal."
+      },
+      "ManageGameSection": {
+        "required": true,
+        "description": "Sezione 'Gestisci il tuo gioco': heading h3 + lista di Listing Item con icona leading + label + chevron-right. Voci tipiche: 'Impostazioni tavoli Poker', 'Ricompense Poker'. Sezione presente in TUTTE le varianti (anche No Log)."
+      },
+      "UtilitySection": {
+        "required": true,
+        "description": "Sezione 'Utilità': heading h3 + lista di Listing Item con label + chevron-right. Voci: 'Impostazioni', 'Informazioni e regole di gioco', 'FAQ e contatti', 'Le app Sisal', 'Gioco responsabile', 'Punti vendita'. Sezione presente in TUTTE le varianti."
+      },
+      "HelpCard": {
+        "required": true,
+        "description": "Card scura 'Hai bisogno di aiuto?' (Feedback component variante dark/help) con paragraph + Button 'Ricevi supporto'. Conduce all'Help center Sisal. Presente in tutte le varianti."
+      },
+      "FeedbackLink": {
+        "required": true,
+        "description": "Riga con label 'La tua opinione è importante!' + Link sottolineato 'Lasciaci un feedback'. Atom Link. Presente in tutte le varianti."
+      },
+      "LogoutLink": {
+        "required": false,
+        "description": "Solo variante 'Log' (e derivate): Link con icon leading (exit/door) + label 'Esci'. Tap esegue logout. Non presente in No Log."
+      },
+      "Footer": {
+        "required": true,
+        "description": "Footer regolatorio: row di loghi ADM + Responsabili Insieme + 18+ + testo 'IL GIOCO È VIETATO AI MINORI E PUÒ CAUSARE DIPENDENZA PATOLOGICA' + legal text Sisal Italia (P.IVA, sede, concessione GAD). Usa il componente Footer del DS. Presente in tutte le varianti."
+      }
+    },
+    "nestedComponents": [
+      "Header",
+      "Button Group",
+      "Square Button Group",
+      "Listing Item",
+      "Card Promo",
+      "Card Loyalty",
+      "Feedback",
+      "Link",
+      "Heading",
+      "Footer"
+    ],
+    "commonPartners": ["Page"],
+    "parentConstraints": [
+      "Menu Unico è una PAGE TEMPLATE — vive a livello router come pagina dedicata, non dentro a un drawer/sheet o card.",
+      "Viewport 375 mobile-native (iOS/Android). Larghezza fissa, padding orizzontale 16 (gestito da Page wrapper). Contenuto scrollabile verticalmente sotto Header sticky.",
+      "Riusa MOLTI componenti del DS — modifiche ai token dei componenti figli (Header, Listing Item, Card Promo, Footer, etc.) impattano direttamente la pagina."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": [
+      "no-log",
+      "log",
+      "sessione-pending",
+      "autoesclusione-gad",
+      "errore-bonus",
+      "errore-saldo",
+      "errore-saldo-e-bonus"
+    ],
+    "interactions": {
+      "section-navigation": "Ogni Listing Item naviga alla pagina dedicata della funzione (Impostazioni → /settings, FAQ → /help/faq, etc.). Tap esegue navigation route.",
+      "quick-action-tap": "I 3 Square Button Group (Area Riservata, Movimenti Conto, Messaggi) navigano a pagine account dedicate. Badge notification su Messaggi indica nuovi messaggi non letti.",
+      "auth-cta-tap": "Variante No Log: tap su 'Accedi' apre flow login, tap su 'Registrati' apre flow signup.",
+      "logout": "Variante Log: tap su 'Esci' richiede conferma (Modal/Bottom Sheet) e su conferma esegue logout — redirect a No Log variant o Splash.",
+      "balance-actions": "Variante Log: 'Preleva' apre flow prelievo, 'Ricarica' apre flow ricarica saldo.",
+      "bonus-tap": "Tap su Card Promo di un bonus apre il dettaglio del bonus (regole, scadenza, condizioni d'uso).",
+      "error-state-retry": "Varianti errore (Errore Saldo/Bonus/entrambi): la Feedback/Banner di errore può includere CTA 'Riprova' per re-tentare il caricamento del dato."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "page — il template è una pagina di navigazione. Header con `accessibilityTraits = .header` su iOS / `Modifier.semantics { heading() }` su Android. Ogni sezione (Manage Game, Utility) ha un Heading accessibile come landmark di sezione. Le righe Listing Item / Square Button Group / Card hanno role button con label esplicito.",
+    "screenReader": "Annuncio sequenziale top-down: Header 'Menu, intestazione' → (se Log) 'Ciao Marco, ultimo accesso ...' → 'Saldo 103,41€' → Button Group + Square Button Group letti come pulsanti separati → Heading 'I tuoi bonus' → Card Promo bonus letti uno per uno → Heading 'Sisal Community' → Card Loyalty → Heading 'Gestisci il tuo gioco' → Listing Items → Heading 'Utilità' → Listing Items → Help card → Link feedback → (se Log) Link Esci → Footer. Le sezioni di errore annunciano lo stato di errore al posto del dato (es. 'Errore caricamento saldo, pulsante riprova').",
+    "focusManagement": "Header sticky non interferisce con il focus durante lo scroll (rimane navigabile separatamente). Ogni elemento interattivo (Button, Listing Item, Square Button, Link) è focusable in ordine verticale top-down. Su apertura del menu, focus iniziale su Header X (close).",
+    "touchTarget": "Tutti gli elementi tappabili rispettano 44pt iOS / 48dp Android (Listing Item ~48h, Square Button 64h, Button Group md 48h, Link con padding verticale adeguato).",
+    "wcag": "AA — colori dei componenti figli (Header, Listing Item, Card Promo, Card Loyalty, Feedback) garantiscono già AA. La Help card scura ha testo bianco su bg dark — verificare contrasto specifico del componente Feedback variant dark. Footer testo regolatorio piccolo ma alta densità di contrasto."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["menu unico", "profile menu", "main menu", "account menu", "menu page", "menu app", "settings menu", "menu hub"],
+    "context": "TEMPLATE DI PAGINA per il menu principale dell'app — NON un componente atomico ma un'orchestrazione di molti componenti DS. 7 varianti per stato utente: 'No Log' (Button Group Accedi/Registrati + sezioni Utility + Help + Footer), 'Log' (header utente + saldo + Square Button Group quick actions + lista Card Promo bonus + Card Loyalty + sezioni Manage/Utility + Help + Esci + Footer), 'Sessione Pending', 'Autoesclusione GAD', 'Errore Bonus', 'Errore Saldo', 'Errore Saldo e Bonus' (queste 4 sostituiscono blocchi-dato con Feedback/Banner errore mantenendo il resto navigabile). Composizione: Header sticky + scroll content (Auth CTAs OR User header → Quick Actions → Bonus list → Sisal Community → Gestisci il tuo gioco → Utilità → Help card → Lasciaci feedback → Esci → Footer regolatorio). Riusa Header, Button Group, Square Button Group, Listing Item, Card Promo, Card Loyalty, Feedback, Link, Heading, Footer. È IL menu — pattern 'single entry point' per tutte le azioni account/settings/info dell'app. NON duplicare in drawer/sheet, NON aggiungere editing inline (è navigation hub), NON inserire CTA marketing (è contesto utility)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

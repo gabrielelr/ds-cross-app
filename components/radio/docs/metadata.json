@@ -1,0 +1,134 @@
+{
+  "slug": "radio",
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6032:4809",
+    "ios": "6032:4809",
+    "atom": "8213:720372"
+  },
+
+  "component": {
+    "name": "Radio",
+    "category": "atoms",
+    "description": "Input single-select per scegliere UNA opzione fra N mutuamente esclusive. Composto da un radioButton (cerchio 20×20 con dot interno quando checked — atomo Figma 'radioButton', truth table 8213:720372 con 4 stati `isChecked × isDisabled`) + TextBox (Title `typography/body/pLead` 16px regular + supportingText `typography/body/p` 14px grigio). 2 `isDisabled` per la row completa (`radio` component 6032:4809). Layout orizzontale: radioButton a sinistra + stack verticale Title+supportingText a destra, gap `radio/size/gap` (12). NOTA NAMING: folder `radio` (rinominato da `radio-button`), Figma component `radio`, atom `radioButton`, token namespace `radio/*` con sotto-namespace `radio/radioButton/*` per il cerchio. Pattern semantic: SINGLE-CHOICE EXCLUSIVE — selezionare un radio in un gruppo DESELEZIONA automaticamente gli altri. Per scelte multiple usare Checkbox.",
+    "type": "input"
+  },
+
+  "usage": {
+    "useCases": [
+      "single-choice-from-set",
+      "form-mutually-exclusive-option",
+      "settings-enum-value",
+      "preference-selection",
+      "payment-method-selection"
+    ],
+    "requiredProps": ["checked", "onChange", "title"],
+    "commonPatterns": [
+      {
+        "name": "radio-group-payment-method",
+        "description": "Gruppo di N Radio in un form per scelta mutuamente esclusiva del metodo di pagamento (es. 'Carta di credito', 'PayPal', 'Bonifico'). Un solo Radio in `isChecked=true` alla volta; tap su uno deseleziona automaticamente l'attuale e seleziona il nuovo. Title = nome del metodo, supportingText opzionale per dettagli (es. 'Carta di credito' / 'Visa terminante in 4242').",
+        "composition": "{paymentMethods.map(m => <Radio key={m.id} title={m.name} supportingText={m.detail} checked={selectedId === m.id} onChange={() => setSelectedId(m.id)} />)}"
+      },
+      {
+        "name": "settings-enum-preference",
+        "description": "Radio group per preferenza enum nelle impostazioni (es. 'Tema': Light / Dark / Automatic). Un Radio per ogni valore possibile. La selezione corrente è quella in `isChecked=true`. Il cambio applica la preferenza al sistema.",
+        "composition": "<Radio title=\"Light\" checked={theme==='light'} onChange={() => setTheme('light')} /><Radio title=\"Dark\" checked={theme==='dark'} onChange={() => setTheme('dark')} /><Radio title=\"Automatic\" checked={theme==='auto'} onChange={() => setTheme('auto')} />"
+      },
+      {
+        "name": "radio-with-description",
+        "description": "Radio con supportingText per dare contesto alla scelta (es. 'Spedizione standard' / 'Arriva in 3-5 giorni, gratis'). Title in pLead 16px, supportingText in body/p 14px grigio (`radio/supportingText/color/text/default`). Pattern utile quando il significato della scelta non è auto-esplicativo dal solo Title.",
+        "composition": "<Radio title=\"Spedizione standard\" supportingText=\"Arriva in 3-5 giorni, gratis\" checked={...} onChange={...} />"
+      },
+      {
+        "name": "disabled-not-available",
+        "description": "Radio con `isDisabled=true` quando l'opzione esiste ma non è scegliebile per il contesto (es. 'Spedizione express' grigio se non disponibile per la destinazione). Tutto il Radio (radioButton + Title + supportingText) passa ai token disabled — visivamente attenuato. Non tappabile.",
+        "composition": "<Radio title=\"Spedizione express\" supportingText=\"Non disponibile per la tua destinazione\" disabled />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "radio-for-multi-select",
+        "reason": "Radio è SINGLE-SELECT per design: selezionare un radio deseleziona gli altri. Usarlo per multi-select (l'utente vorrebbe scegliere 2+ opzioni) frustra l'utente che vede sparire la prima scelta quando seleziona la seconda.",
+        "alternative": "Per multi-select usare Checkbox. Regola DS: 'Use radio buttons for mutually exclusive options' (radio = scelta unica fra N), 'Use checkboxes for multi-select' (vedi doc Checkbox)."
+      },
+      {
+        "scenario": "single-isolated-radio",
+        "reason": "Un Radio singolo (non in un gruppo) non ha senso semantico: il pattern presuppone N≥2 opzioni mutuamente esclusive. Un Radio isolato è confondente — l'utente può solo attivarlo (e non c'è una seconda opzione esclusa).",
+        "alternative": "Per binary on/off (yes/no) usare Checkbox o Toggle. Per single radio in pattern di consenso (es. accetto i termini) NON è il componente giusto — Checkbox è il pattern canonico per consensi singoli."
+      },
+      {
+        "scenario": "no-default-selection-in-required-group",
+        "reason": "In un Radio group OBBLIGATORIO (es. metodo di pagamento richiesto), avere zero radio selezionati all'apertura del form genera ambiguità — l'utente non sa che 'nessuna scelta' è il default-iniziale e potrebbe pensare che la prima sia pre-selezionata.",
+        "alternative": "Per scelte obbligatorie: pre-selezionare il default più sensato (es. il metodo più usato). Per scelte opzionali (può anche non scegliere niente) considerare se Radio è il pattern giusto — magari serve un Checkbox 'Voglio scegliere' che apre il radio group."
+      },
+      {
+        "scenario": "long-multiline-title",
+        "reason": "Il Title è in pLead 16px e occupa la riga accanto al radioButton. Title lunghi (>6-8 parole) wrappano in modo che il radioButton resta in alto e il testo occupa più righe — visivamente poco bilanciato.",
+        "alternative": "Mantenere Title corto (1-4 parole). Per spiegazioni più articolate usare supportingText (sotto al Title, in body/p 14px grigio — pensata per il contesto)."
+      },
+      {
+        "scenario": "no-supporting-text-when-ambiguous",
+        "reason": "Title da solo (es. 'Standard' / 'Premium') può essere ambiguo per scelte enum. Senza supportingText l'utente non sa cosa sta scegliendo realmente.",
+        "alternative": "Quando il Title non è auto-esplicativo, valorizzare il supportingText con la differenza chiave (es. 'Premium' / 'Accesso a tutti i contenuti, 9,99€/mese'). Il supportingText è opzionale ma fortemente raccomandato per pattern di scelta con conseguenze (pagamento, deletion, ecc.)."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "RadioButton": {
+        "required": true,
+        "description": "Atomo cerchio 20×20 (`radio/radioButton/size`) a sinistra. 4 stati visivi da truth table `isChecked × isDisabled`: (a) `false/false` = outer ring dark (`radio/radioButton/default`), no fill interno; (b) `true/false` = outer ring brand (`radio/radioButton/checked/default`, verde brand) + dot interno pieno brand; (c) `false/true` = outer ring grigio (`radio/radioButton/disabled`), no fill; (d) `true/true` = outer ring + dot grigio (`radio/radioButton/checked/disabled`). La transizione checked/unchecked è instantanea (nessuna animazione disegnata in Figma)."
+      },
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale Title + supportingText a destra del RadioButton. Gap interno `radio/content/size/gap` (2). Padding `radio/content/size/padding` (2 — micro-padding per allineamento ottico col radioButton). Allineato `items-start` (top-aligned col radioButton)."
+      },
+      "Title": {
+        "required": true,
+        "description": "Etichetta principale della scelta. Tipografia `typography/body/pLead` (16px regular Roboto, line-height 18). Colore via token `radio/title/color/text/{default|disabled}`. Single-line ottimale (1-4 parole) — wrappa su 2+ righe per testi lunghi ma rompe l'allineamento ottico col radioButton."
+      },
+      "SupportingText": {
+        "required": false,
+        "description": "Testo di contesto/descrizione sotto al Title. Tipografia `typography/body/p` (14px regular Roboto, line-height 18). Colore via token `radio/supportingText/color/text/{default|disabled}` (default = grigio scuro per de-emphasis vs Title dark). Pensato per 1-2 righe brevi che spiegano la scelta (es. dettagli, costi, conseguenze)."
+      }
+    },
+    "nestedComponents": [],
+    "commonPartners": ["Form Field", "Listing", "Bottom Sheet"],
+    "parentConstraints": [
+      "Tipicamente in gruppo (Radio group) dentro a un Form Field, Listing, o Bottom Sheet con N≥2 Radio mutuamente esclusivi. Lo stato di selezione del gruppo è gestito dal consumer (selectedId).",
+      "Singolarmente, un Radio standalone non ha senso semantico — per pattern binari (yes/no, on/off) usare Checkbox o Toggle. Il Radio brilla in pattern di scelta esclusiva fra N opzioni note."
+    ]
+  },
+
+  "behavior": {
+    "states": ["default", "selected", "disabled"],
+    "interactions": {
+      "tap": "Tap sull'intera row (radioButton + Title + supportingText) attiva il toggle: l'item diventa `isChecked=true` e l'eventuale Radio precedentemente selezionato nel gruppo diventa `isChecked=false`. Single-select semantica gestita dal consumer (Radio group).",
+      "disabled": "In `isDisabled=true` il componente non è tappabile. RadioButton, Title e supportingText passano tutti ai token `disabled`. Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false` + `accessibilityTraits` include `.notEnabled`.",
+      "no-pressed-state": "NIENTE State Pressed disegnato in Figma per il Radio (a differenza di Button). Il feedback di touch è gestito dal pattern nativo di piattaforma (lieve opacity change iOS, ripple Android)."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "radio — su iOS impostare `accessibilityTraits = .button` + `accessibilityValue = '1' / '0'` per selected/unselected; iOS non ha trait nativo `.radio` ma button+value è la combinazione standard. Su Android usare `Role.RadioButton`. Il gruppo di Radio deve essere dichiarato come radiogroup: su iOS impostare `accessibilityElements` sul container; su Android usare `Modifier.semantics { selectableGroup() }` sul container. `accessibilityLabel` di ogni Radio = Title visibile + supportingText (se presente).",
+    "screenReader": "Lo screen reader legge per ogni Radio: 'Title, [supportingText,] selezionato/non selezionato'. Per il container del gruppo, annunciare il numero di opzioni e quale è quella corrente (es. 'Metodo di pagamento, 3 opzioni, Carta di credito selezionato'). Per `isDisabled=true` aggiungere 'non disponibile'.",
+    "focusManagement": "Focusable in `default` e `selected`, non focusable in `disabled`. In un gruppo di Radio, le frecce su/giù (Android/iOS con tastiera) navigano fra opzioni; tap/Enter seleziona. Movimento focus standard di piattaforma — Tab tra gruppi diversi, frecce dentro al gruppo corrente.",
+    "touchTarget": "RadioButton da solo è 20×20, sotto-soglia (44pt iOS / 48dp Android). L'intera row (RadioButton + Title + supportingText) è tappabile e deve coprire almeno 44pt verticali — questo è il touch target effettivo del componente. Implementare il wrapper tappabile con padding-vertical sufficiente.",
+    "wcag": "AA — lo stato Selected è comunicato sia da colore (cerchio + dot brand verde) sia da forma (presenza/assenza del dot interno): per chi non distingue il verde, il dot riempito vs vuoto è il fallback. Lo State=Disabled è comunicato sia da colore (grigio) sia da semantica (`accessibilityTrait .notEnabled`). Non solo-colore in nessuno State."
+  },
+
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["radio", "radio button", "single choice", "mutually exclusive", "scelta esclusiva", "radio group"],
+    "context": "Usa Radio per SINGLE-CHOICE da un set di N opzioni MUTUAMENTE ESCLUSIVE (regola DS: 'Use radio buttons for mutually exclusive options. Use radio buttons for choices where only one option can be selected from a set.'). Tap su un Radio del gruppo deseleziona automaticamente gli altri. Composto da radioButton 20×20 (atom cerchio con/senza dot interno) + Title pLead 16px + supportingText opzionale body/p 14px grigio. 2 `isDisabled` (false/true). NIENTE State Pressed disegnato (feedback nativo della piattaforma). USO IN GRUPPO: minimo 2 Radio mutualmente esclusivi. Per multi-select usa Checkbox. Per binary on/off (yes/no) usa Checkbox/Toggle. Per scelte obbligatorie pre-selezionare il default più sensato. Il supportingText è opzionale ma raccomandato quando il Title è ambiguo. Hit area = intera row (radioButton 20×20 da solo è sotto-soglia). Rinominato folder da `radio-button` a `radio` (Figma component è `radio`, atom è `radioButton`)."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

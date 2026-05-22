@@ -1,44 +1,159 @@
 {
   "slug": "text-field",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5966:3890",
+    "ios": "5966:3890",
+    "inputField": "5966:3639",
+    "additionalText": "5809:5193"
+  },
+
   "component": {
     "name": "Text Field",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Input testuale a riga singola per acquisire dati dell'utente (nome, email, numero, codice). Composto da 2 atomi: `inputField` (frame Figma 5966:3639 — la pill con border, label e cursore) + `additionalText` (frame Figma 5809:5193 — helper/error message in caption sotto al field). Component `textField` (frame 5966:3890) integra i due atomi in 3 `status`: `default`, `disabled`, `error`. L'inputField atom è ricco di varianti (20 in Figma): `status` (default | active | error | active error | disabled) × `is Filled` (false=placeholder visibile | true=label flottante in alto) × `is Error` (bool derivato dallo status) × `system` (ios 44h | android 56h, padding 16, radius 4, border 1). Pattern FLOATING LABEL: a campo vuoto la label vive INSIDE come placeholder pLead 16px; a campo focused o filled, la label FLOTTA in alto (caption 12px) sopra il border, con bg che 'taglia' il border per effetto cutout. Three-way namespace: `textField/*` per il component, `textField/inputText/*` per l'inputField atom, `textField/inputText/additionalText/*` per l'additionalText atom.",
+    "type": "input"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "form-text-input",
+      "form-email-phone-input",
+      "form-numeric-input",
+      "form-otp-code",
+      "login-credentials",
+      "kyc-personal-data"
+    ],
+    "requiredProps": ["label", "value", "onChange"],
+    "commonPatterns": [
+      {
+        "name": "default-empty-with-placeholder-label",
+        "description": "`status=default, is Filled=false`: campo vuoto, label visibile INSIDE come placeholder in pLead 16px grigio. Border grigio chiaro `textField/inputText/color/border/default`. Pattern iniziale di un form prima che l'utente tocchi il campo.",
+        "composition": "<TextField label=\"Nome\" value={name} onChange={setName} />"
+      },
+      {
+        "name": "active-floating-label",
+        "description": "`status=active, is Filled=true/false`: utente ha tappato il campo. Label FLOTTA in alto (caption 12px dark `textField/inputText/label/color/text/active`), il bg della label 'taglia' il border per effetto cutout. Border passa al verde brand `textField/inputText/color/border/active`. Cursor visibile (ios blu, android verde-brand). Il campo è in focus — la tastiera nativa è aperta.",
+        "composition": "{focused=true}"
+      },
+      {
+        "name": "filled-not-focused",
+        "description": "`status=default, is Filled=true`: l'utente ha digitato valore + ha lasciato il focus. Label rimane flottante in alto (caption 12px grigio), input text dark, border torna al default. Pattern di campo già compilato in attesa di submit o di altro input.",
+        "composition": "<TextField label=\"Email\" value=\"user@example.com\" onChange={setEmail} />"
+      },
+      {
+        "name": "error-validation-failed",
+        "description": "`status=error` (o `active error`): validazione fallita. Bg passa a `textField/inputText/color/bg/error` (rosso chiaro pastello), border `textField/inputText/color/border/error` (rosso), label/input text/cursore tutti rossi. Icon X rossa a destra (token `textField/inputText/color/icon/error`). additionalText sotto in rosso descrive il problema (es. 'Email non valida'). Pattern obbligatorio: lo State=Error SEMPRE accompagnato dall'additionalText che spiega cosa fare.",
+        "composition": "<TextField label=\"Email\" value=\"foo\" error errorMessage=\"Email non valida\" />"
+      },
+      {
+        "name": "disabled-not-editable",
+        "description": "`status=disabled`: campo non editabile (es. valore pre-compilato non modificabile dall'utente, oppure feature non ancora attiva). Bg passa a `textField/inputText/color/bg/disabled` (grigio chiaro), border `*/disabled`, label/input/additionalText tutti ai token disabled grigi.",
+        "composition": "<TextField label=\"Codice fiscale\" value=\"...\" disabled />"
+      },
+      {
+        "name": "with-additional-helper-text",
+        "description": "TextField con `additionalText` (caption 12px) sotto al field per dare contesto/aiuto (es. 'Inserisci la tua email principale'). Color text `textField/inputText/additionalText/color` (dark default). Si differenzia dall'error message: l'helper è informativo, l'error è correttivo. Entrambi usano lo stesso slot additionalText con color diverso."
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "missing-label-only-placeholder",
+        "reason": "Il TextField è progettato attorno al pattern floating-label: la label DEVE esserci sempre, perché diventa flottante quando il campo è filled. Sostituire la label con un solo placeholder (che sparisce al focus) lascia l'utente che ha digitato senza sapere cosa rappresenta il valore — soprattutto se torna al campo dopo aver scrollato il form.",
+        "alternative": "Sempre con label valorizzata. Il floating-label garantisce che il significato del valore sia visibile anche a campo riempito."
+      },
+      {
+        "scenario": "error-without-additional-text",
+        "reason": "`status=error` colora di rosso bg/border/label/input ma NON spiega cosa è andato storto. Senza additionalText sotto, l'utente vede solo 'qualcosa di rosso' e non sa come correggere.",
+        "alternative": "SEMPRE accoppiare lo `status=error` a un additionalText esplicativo in rosso (es. 'Email non valida', 'Inserisci almeno 8 caratteri'). L'additionalText è il messaggio correttivo che dà all'utente l'azione da intraprendere."
+      },
+      {
+        "scenario": "long-multiline-content",
+        "reason": "Il TextField è SINGLE-LINE per design (`is Filled` controlla solo se c'è valore, non il numero di righe). Contenuti multi-riga vengono troncati o si comportano in modo imprevedibile.",
+        "alternative": "Per textarea multi-line usare un componente Text Area dedicato (NB: non documentato in questo DS — se serve, va richiesto come nuovo componente). Il TextField rimane SINGLE-LINE."
+      },
+      {
+        "scenario": "disabled-without-explanation",
+        "reason": "Un campo `disabled` senza contesto fa pensare all'utente che 'il sistema è rotto'. Disabilitare un campo senza dire perché (es. 'compila prima X') frustra.",
+        "alternative": "Sempre accompagnare il disabled con un additionalText che spiega la condizione (es. 'Disponibile dopo aver verificato l'email') o con un visual contestuale (radio gated, sezione gated). Considerare anche di nascondere il campo se la condizione di abilitazione è lontana."
+      },
+      {
+        "scenario": "wrong-keyboard-type",
+        "reason": "Il TextField visivamente è uguale per tipo email/tel/number/password — è il keyboard nativo che cambia in base al tipo di input (email keyboard per email, numerico per numeri, ecc.). Lasciare il keyboard default 'text' per un campo numerico costringe l'utente a fare tap su '123' per cambiare modalità.",
+        "alternative": "Il consumer del TextField deve impostare il `keyboardType` / `inputMode` corretto in base alla natura del dato (email → email keyboard, tel → numeric, password → password mode con secure entry). Il visual del TextField rimane lo stesso, è il behavior di sistema che cambia."
+      },
+      {
+        "scenario": "forcing-color-via-style-override",
+        "reason": "Modificare manualmente i colori del TextField (es. forzare un border verde per 'valid' state) tradisce il pattern e introduce stati non disegnati in Figma — il design system ha solo default/active/error/disabled, non un 'success/valid' state.",
+        "alternative": "Rispettare i 4 status disegnati. Per indicare 'valid', usare un icon di check a destra del valore (gestito dal consumer) o lasciare semplicemente lo status=default con valore compilato. Non aggiungere status custom."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "InputField": {
+        "required": true,
+        "description": "Atom principale (frame Figma 5966:3639, namespace `textField/inputText/*`). Pill bordata con border 1px (`*/border/width`), radius 4 (`*/border/radius`), padding 16 (`*/padding`). Altezza OS-specifica: iOS `*/size/ios/height` (44), Android `*/size/android/height` (56). Bg dipende da status: default/active = bianco, error = rosso pastello (`textField/inputText/color/bg/error`), disabled = grigio chiaro. Border dipende da status: default = grigio chiaro, active = verde brand, error = rosso, disabled = grigio chiarissimo. Cursor color OS-specifico: ios blu, android verde-brand (rosso quando error su Android)."
+      },
+      "Label": {
+        "required": true,
+        "description": "Etichetta del campo. PATTERN FLOATING-LABEL: quando `is Filled=false` e non-focused, vive INSIDE il pill come placeholder in `typography/body/pLead` (16px regular Roboto), colore `textField/inputText/label/color/text/default` (grigio). Quando `is Filled=true` o `status=active`, FLOTTA in alto sopra il border in `typography/body/caption` (12px), colore `*/label/color/text/active` (dark) o `/error` (rosso). Il bg della label flottante (`*/label/color/bg/*`) 'taglia' il border per effetto cutout — sempre bianco tranne in error/active dove rimane bianco anche con bg rosa del field."
+      },
+      "Input": {
+        "required": true,
+        "description": "Il valore digitato dall'utente. Tipografia `typography/body/pLead` (16px regular Roboto). Color `textField/inputText/input/color/text/{default|active|disabled|error}` (default e active dark, disabled grigio, error rosso). Visibile solo quando `is Filled=true`."
+      },
+      "Cursor": {
+        "required": false,
+        "description": "Cursor di input visibile in `status=active`. Color OS-specifico: `textField/inputText/cursor/color/ios` (blu sistema), `textField/inputText/cursor/color/android` (verde brand), `textField/inputText/cursor/color/android/error` (rosso quando error su Android)."
+      },
+      "ErrorIcon": {
+        "required": false,
+        "description": "Icona X cerchiata rossa a destra del field in `status=error` / `active error`. Color `textField/inputText/color/icon/error`. Tap (opzionale) può svuotare il campo. Non disegnata in default/active/disabled."
+      },
+      "AdditionalText": {
+        "required": false,
+        "description": "Atom helper/error message (frame Figma 5809:5193, namespace `textField/inputText/additionalText/*`). Caption 12px regular Roboto (`typography/body/caption`), line-height 14. Color via status: `textField/inputText/additionalText/color` (default dark — helper text), `*/color/text/disabled` (grigio), `*/color/text/error` (rosso — error message). Posizionato sotto al field, padding-h coerente col field."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Form Field", "Page", "Drawer", "Bottom Sheet"],
+    "parentConstraints": [
+      "Tipicamente dentro a un Form Field che orchestra label esterna (se ne serve una al di sopra del TextField), helper text, validation logic, e gap verticale del form.",
+      "Larghezza tipica = larghezza piena del container parent. Il TextField non ha versioni half-width o inline — è un campo full-width per single-line input."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "active", "filled", "error", "active-error", "disabled"],
+    "interactions": {
+      "tap-focus": "Tap sul field attiva il focus → status passa a `active`. Tastiera nativa appare. La Label si solleva in posizione flottante (se non già flottante per `is Filled=true`). Border passa al verde brand. Cursor lampeggia.",
+      "type": "Mentre l'utente digita, il valore si popola in tempo reale. `is Filled` diventa `true`. La Label rimane flottante. Nessun cambio di colore mentre si digita (il colore active permane fino al blur).",
+      "blur": "Tap fuori dal field o submit del form: focus si toglie → status torna a `default` (se valido) o `error` (se validation fail). Border verde scompare. La Label RIMANE flottante se `is Filled=true`, torna inside come placeholder se `is Filled=false`.",
+      "error-active-vs-error": "`status=error` (unfocused error) vs `active error` (focused error): visualmente quasi identici (bg rosa, border rosso, label rossa). Differenza: in `active error` il cursor è visibile (rosso su Android, blu su iOS — il cursor color non passa al rosso su iOS per design). L'errore può comparire al blur (validation lazy) o al type (validation eager) — è scelta del consumer.",
+      "disabled": "In `status=disabled` il campo non è tappabile. Bg/border/label/input/additionalText tutti ai token disabled grigi. Cursor non visibile. Su Android `enabled=false`; su iOS `isUserInteractionEnabled=false`."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "textfield — su iOS `accessibilityTraits = .none` per default (UITextField è già esposto come textfield nativo) + `accessibilityLabel = <Label>` + `accessibilityValue = <Input value>`. Su Android usare `Role.TextField` con `Modifier.semantics { contentDescription = <Label>; stateDescription = <status> }`. Per `status=error` impostare `accessibilityInvalid=true` + `accessibilityErrorMessage = <additionalText>`.",
+    "screenReader": "Lo screen reader legge: '<Label>, campo di testo, [valore corrente o 'vuoto']'. In `status=error`: aggiungere 'errore: <additionalText>' (es. 'Email, campo di testo, valore foo, errore: Email non valida'). In `status=disabled`: aggiungere 'non disponibile' (iOS) o 'disabilitato' (Android). L'AdditionalText decorativo (helper non-error) può essere letto dopo il valore (es. 'Nome, campo di testo, vuoto, Inserisci il tuo nome completo').",
+    "focusManagement": "Focusable in tutti gli status tranne `disabled`. Tap entra in `active` → tastiera appare. Tab navigation (con tastiera esterna) si sposta al campo successivo del form. In `error`, il consumer può forzare il focus sul primo campo errato al submit del form (utente focus segue l'errore).",
+    "touchTarget": "iOS 44h — esattamente alla soglia 44pt (borderline accettabile). Android 56h — abbondantemente sopra-soglia 48dp. L'intero pill è tappabile, non solo il testo del placeholder/value.",
+    "wcag": "AA — Bg bianco / border grigio chiaro su default è marginale per WCAG (il border è decorativo, l'affordance è il rectangle stesso). Il color del valore digitato (dark su bianco) è ampiamente AA. Il color label flottante (dark su bianco) è AA. Lo status=error usa rosso brand `color/text/danger/default` su bg rosa chiaro — verificare AA col token risolto. La cursor color (blu ios / verde brand android) è visibile su bg bianco per design. Per chi non distingue il rosso, l'errore è comunicato anche dall'icon X rossa (forma + colore) e dall'additionalText (testo esplicito) — non solo-colore."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["text field", "text input", "input", "campo di testo", "form input", "floating label", "textfield"],
+    "context": "Input testuale a riga singola con pattern FLOATING-LABEL (a campo vuoto label inside come placeholder pLead 16px, a campo filled/focused label flotta in alto caption 12px con bg che 'taglia' il border). Composto da 2 atomi: `inputField` (la pill con border/label/cursore) + `additionalText` (helper/error in caption sotto). Component `textField` ha 3 `status`: default, disabled, error. inputField atom ha 20 varianti in Figma (5 status × 2 filled × 2 system ios/android). Status: default (grigio), active (focused, border verde brand, cursor visibile), error (bg rosa, border rosso, X icon), disabled (grigio chiaro), active error (focused + error). iOS 44h Android 56h. Cursor color: ios blu, android verde-brand (rosso quando error). SEMPRE con label valorizzata (pattern floating-label richiede). SEMPRE error accoppiato a additionalText esplicativo. NIENTE state 'valid/success' disegnato (per indicare valid usa icon check del consumer, non modifiche custom). Three-way namespace: `textField/*` (component), `textField/inputText/*` (inputField atom), `textField/inputText/additionalText/*` (helper text atom). NON usare per multi-line (TextArea separato — non documentato in DS attuale). Keyboard type è responsabilità del consumer (email/tel/number/password)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

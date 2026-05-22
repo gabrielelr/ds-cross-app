@@ -1,0 +1,144 @@
+{
+  "slug": "listing-item",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6199:2322",
+    "ios": "6199:2322",
+    "listingItemTrail": "6645:60270"
+  },
+
+  "component": {
+    "name": "Listing Item",
+    "category": "atoms",
+    "description": "Singola riga di una Listing. 3 `Variant` strutturalmente diversi: `Block` (lead icon + TextBox verticale Title heading/h3 sopra + Paragraph body/p sotto, padding-v 16, 77h con trail e divider), `Inline` (lead icon + Title pBold inline accanto a Paragraph body/p, padding-v 12, 49h compatto), `Image` (lead = ImageContainer 80×80 radius 8 + TextBox verticale, padding-v 8, 96h con immagine — niente divider). Slot esteso a destra (`listingItemTrail`) con 4 sotto-varianti (text+icon, text, icon, badge) per dare contesto/azione di navigazione. Divider opzionale sotto l'item nelle varianti Block/Inline (NON in Image). Show toggles: `showIcon` (lead icon), `showItemTrail` (trail), `showDivider`. Pensato come row di una Listing — usabile standalone solo come eccezione.",
+    "type": "interactive"
+  },
+
+  "usage": {
+    "useCases": [
+      "navigation-list-row",
+      "account-settings-row",
+      "transaction-history-row",
+      "media-list-row",
+      "category-list-row",
+      "compact-info-row"
+    ],
+    "requiredProps": ["variant", "title"],
+    "commonPatterns": [
+      {
+        "name": "block-with-title-and-description",
+        "description": "Variant=Block (padding-v 16): row con icon a sinistra, Title (heading/h3 16px ExtraBold Mulish) sopra, Paragraph (body/p 14px regular grigio) sotto. Trail tipico = `text+icon` ('Item' pBold + chevron-right) per pattern di navigazione. Adatto a row con descrizione contestuale del Title (es. 'Sicurezza' / 'Verifica 2FA attiva', 'Notifiche' / '5 nuove').",
+        "composition": "<ListingItem variant=\"Block\" icon={<IconShield />} title=\"Sicurezza\" paragraph=\"Verifica 2FA attiva\" trail=\"text+icon\" trailLabel=\"Modifica\" onPress={...} />"
+      },
+      {
+        "name": "inline-compact-meta-row",
+        "description": "Variant=Inline (padding-v 12): row dove Title (pBold 14px) e Paragraph (body/p 14px grigio) stanno SULLA STESSA RIGA — pattern compatto per coppie 'Label: Valore' (es. 'IBAN: IT12...', 'Categoria: Calcio'). Adatto a liste di meta-dati densi.",
+        "composition": "<ListingItem variant=\"Inline\" icon={<IconAccount />} title=\"IBAN\" paragraph=\"IT12 3456 7890\" trail=\"icon\" onPress={copyIban} />"
+      },
+      {
+        "name": "image-media-row",
+        "description": "Variant=Image (padding-v 8): row con ImageContainer 80×80 radius 8 a sinistra, Title heading/h3 + Paragraph body/p verticali a destra, chevron-right trail. Pattern canonico per liste di prodotti, contenuti media, partite/match con visual associato (es. lista slot, lista promo, lista partite con team-logo). NIENTE divider sotto.",
+        "composition": "<ListingItem variant=\"Image\" imageUrl={slotImg} title=\"Mega Roulette\" paragraph=\"Playtech\" onPress={openSlot} />"
+      },
+      {
+        "name": "trail-with-badge",
+        "description": "Trail `variant=badge` per esporre un metadato categorico nella parte destra dell'item (es. 'Default' badge per status, label numerica). Riusa un Badge Default md (24h, radius 128 fully-round). Usato in pattern dove la riga rappresenta una scelta con un attributo di stato visivo immediato.",
+        "composition": "<ListingItem variant=\"Block\" title=\"Account principale\" paragraph=\"Conto gioco verificato\" trail=\"badge\" trailBadgeLabel=\"Attivo\" />"
+      },
+      {
+        "name": "trail-icon-only-navigation",
+        "description": "Trail `variant=icon` (solo chevron-right 24×24, niente label testuale) per row di pura navigazione dove il pattern '> apri pagina dettaglio' è già chiaro dal contesto (lista) e non serve la label 'Item' aggiuntiva. Riduce il rumore visivo nelle liste lunghe.",
+        "composition": "<ListingItem variant=\"Block\" icon={<IconBell />} title=\"Notifiche\" paragraph=\"Gestisci preferenze\" trail=\"icon\" onPress={openNotifications} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "listing-item-as-standalone",
+        "reason": "Listing Item è disegnato come ROW di una Listing: padding-vertical, divider opzionale, trail con chevron sono coerenti dentro a una sequenza ripetuta di item. Standalone in mezzo a una pagina sembra un widget orfano (specie con il chevron a destra che promette 'altro contenuto sotto', che però non c'è).",
+        "alternative": "Usare Listing Item DENTRO una Listing (almeno 2-3 row). Per un singolo elemento isolato usare Card o Listing Item Block come parte di un layout pensato per il singolo (Card Detail, Card Informative)."
+      },
+      {
+        "scenario": "image-variant-without-image",
+        "reason": "Variant=Image presuppone un visual significativo nello slot ImageContainer 80×80. Lasciarlo vuoto o con placeholder generico (es. icon astratta) spreca lo spazio dedicato e fa apparire la row visivamente sbilanciata.",
+        "alternative": "Per row senza visual specifico usare Variant=Block (icon 24×24 a sinistra è ben proporzionata) o Variant=Inline (più compatto). Riservare Image alle liste con asset visivo significativo (foto, copertina, logo team)."
+      },
+      {
+        "scenario": "block-with-long-paragraph",
+        "reason": "Il Paragraph in Block è in body/p 14px ed è pensato per 1-2 righe brevi (descrizione/meta del Title). Paragraph di 3+ righe fanno crescere ogni row in altezza, rompono il ritmo della Listing e rendono difficile lo scanning.",
+        "alternative": "Mantenere Paragraph conciso. Per descrizioni più articolate usare Card Detail o aprire una pagina di dettaglio raggiungibile dal tap sull'item (e il chevron-right del trail comunica già questa affordance)."
+      },
+      {
+        "scenario": "image-variant-with-divider",
+        "reason": "Il Variant=Image in Figma NON include il divider sotto (a differenza di Block/Inline). Forzare un divider sotto a una row Image crea un trattamento visivo non disegnato e rompe la consistenza del pattern.",
+        "alternative": "Per row Image affidarsi alla spaziatura dell'ImageContainer per separare gli item; in pattern miste Block+Image valutare se il pattern visivo regge o se serve un wrapper Card per ogni Image."
+      },
+      {
+        "scenario": "trail-icon-without-tap-action",
+        "reason": "Il chevron-right comunica 'tappa per andare a vedere di più'. Esporlo su una row che NON è tappabile (es. row puramente informativa che mostra un dato statico) tradisce l'aspettativa dell'utente.",
+        "alternative": "Per row non tappabili usare `showItemTrail={false}` o trail=`text` (solo label, senza chevron). Riservare il chevron a row che porta effettivamente a navigazione/azione."
+      },
+      {
+        "scenario": "inline-variant-with-icon-and-long-title",
+        "reason": "Variant=Inline ha Title pBold + Paragraph body/p sulla STESSA riga in uno spazio limitato. Title lunghi spaccano il layout (il Title è whitespace-nowrap nel Figma — non wrappa) o spingono fuori il Paragraph. Aggiunta dell'icon a sinistra restringe ulteriormente lo spazio orizzontale.",
+        "alternative": "Per Inline mantenere il Title corto (1-2 parole, es. 'IBAN', 'Saldo', 'Categoria'). Per Title più articolati passare a Block (verticale, ha più spazio in larghezza). Per pattern molto densi considerare di nascondere l'icon (showIcon=false)."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Lead": {
+        "required": true,
+        "description": "Slot sinistro con due forme alternative: (a) icon 24×24 + TextBox (per Variant=Block e Variant=Inline) — l'icon è opzionale via `showIcon`, gap fra icon e TextBox = `listingItem/lead/size/gap/sm` (8); (b) ImageContainer 80×80 (per Variant=Image) — bg image fill, radius `imageContainer/size/border/radius` (8), gap fra image e TextBox = `listingItem/lead/size/gap/lg` (16). Colore icon dal token `listingItem/icon/color`."
+      },
+      "TextBox": {
+        "required": true,
+        "description": "Stack del testo. In Block e Image è VERTICALE (Title sopra, Paragraph sotto, gap `textbox/size/gap` 8). In Inline è ORIZZONTALE (Title pBold sulla stessa riga del Paragraph). Title in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18) per Block/Image; Title in pBold 14px per Inline. Paragraph in `typography/body/p` (14px regular Roboto). Colori via token: `listingItem/title/color/text` (Title dark), `listingItem/paragraph/color/text/subtle` (Paragraph grigio scuro per de-emphasis vs Title)."
+      },
+      "ListingItemTrail": {
+        "required": false,
+        "description": "Slot destro con 4 sotto-varianti (frame Figma 'listingItemTrail' 6645:60270, namespace `listingItem/trail/*`): `text+icon` (label pBold 14px + chevron-right 24×24, gap 8 token `listingItem/trail/size/gap/sm`); `text` (solo label pBold); `icon` (solo chevron-right 24×24); `badge` (Badge Default md 24h, riusa atomo Badge Default). Controllato a livello Listing Item da `showItemTrail` (default true). Per Variant=Image il trail è tipicamente solo icon (chevron-right), per Block/Inline tipicamente text+icon."
+      },
+      "Divider": {
+        "required": false,
+        "description": "Linea orizzontale 1px (token `divider/size/width`, color `divider/color/bg`) sotto la row. Presente in Block e Inline (controllata da `showDivider`, default true); ASSENTE in Image (la spaziatura della 80×80 ImageContainer fa da separatore visivo). La logica di nascondere il divider sull'ultimo item della Listing è responsabilità del consumer (Listing) — il Listing Item espone solo il toggle."
+      }
+    },
+    "nestedComponents": ["Badge Default"],
+    "commonPartners": ["Listing", "Search Results Listing", "Drawer", "Card", "Form Field"],
+    "parentConstraints": [
+      "Pensato come ROW dentro a una Listing. La Listing è il consumer naturale che ripete N Listing Item e gestisce showDivider sull'ultimo (nasconderlo).",
+      "Larghezza tipica = larghezza del container parent (nel design Figma 311 = 343 viewport - 32 padding orizzontale). Il Listing Item non gestisce padding orizzontale verso i bordi — è responsabilità del parent (Listing o pagina)."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap": "Tap sull'intera row esegue `onPress` — tipicamente apertura di una pagina di dettaglio, di una modale di gestione, o esecuzione di un'azione semplice (es. copia IBAN, attiva/disattiva). Il chevron-right nel trail (variant text+icon o icon) comunica l'affordance di navigazione.",
+      "no-state-visuals": "In Figma non sono disegnati `State=Pressed`/`Disabled`/`Selected` espliciti per Listing Item — il feedback di touch è gestito dal pattern nativo (ripple Android, opacity-change iOS). Per pattern selezionabili (es. lista multi-select) wrappare un Checkbox dentro al trail o usare un componente diverso (Form Field con checkbox)."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "button (l'intera row è tappabile come unità di navigazione) — su iOS `accessibilityTraits = .button` + `accessibilityLabel` combinato (es. 'Sicurezza, Verifica 2FA attiva, Modifica, pulsante'); su Android `Role.Button` con `contentDescription` analoga. Per Variant=Image l'ImageContainer ha `accessibilityLabel` se l'immagine è semantica, marcato decorativo se è solo visual.",
+    "screenReader": "Lo screen reader legge in sequenza: '[icon-label se semantica], [Title], [Paragraph], [trail label se text/text+icon], pulsante'. Per row in lista, gli annunci diventano ripetitivi velocemente — considerare di aggregare con accessibilityHint contestuale al primo item della Listing (es. 'Lista di 5 elementi, ognuno apre il dettaglio').",
+    "focusManagement": "L'intera row è focusable come singolo elemento (NON i sotto-componenti separatamente — Title, Paragraph, Trail non hanno focus indipendente perché tutti contribuiscono al click sull'item). Eccezione: se il trail è un Button/Action separato (es. icona delete), allora il trail diventa elemento focusable a sé.",
+    "touchTarget": "Block (padding-v 16, ~50h totale considerando il contenuto): sopra-soglia. Image (padding-v 8 ma altezza 96h grazie all'ImageContainer 80): sopra-soglia. Inline (padding-v 12, ~42h): borderline 44pt iOS — verificare l'hit area effettiva e considerare di estendere il padding-v in contesti critici, oppure accettare il sotto-soglia per pattern dense (compromesso noto).",
+    "wcag": "AA — Il Title (`listingItem/title/color/text` dark) garantisce contrasto AA su superficie chiara. Il Paragraph (`listingItem/paragraph/color/text/subtle` grigio scuro) è in tonalità più morbida ma rimane AA sul body text 14px. La distinzione Title/Paragraph è comunicata sia da peso tipografico (bold vs regular) sia da colore (dark vs grigio), non solo-colore."
+  },
+
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["listing item", "list row", "list item", "row", "list cell", "navigation row"],
+    "context": "Usa Listing Item come row dentro a una Listing. 3 `Variant`: `Block` (verticale, Title heading/h3 + Paragraph sotto, padding-v 16 — pattern canonico per row con descrizione), `Inline` (orizzontale, Title pBold + Paragraph sulla stessa riga, padding-v 12 — pattern compatto per coppie label:valore), `Image` (ImageContainer 80×80 + TextBox verticale, padding-v 8 — pattern per liste prodotto/media; SENZA divider). Slot Trail (`listingItemTrail`, 4 sotto-varianti: text+icon | text | icon | badge) per dare contesto di navigazione o attributo categorico a destra. Show toggles: showIcon (lead), showItemTrail (right), showDivider (bottom, solo Block/Inline). Pensato come row di Listing — standalone come eccezione (preferire Card per elementi singoli). Nesta Badge Default (nella variante trail=badge)."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

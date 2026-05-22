@@ -1,0 +1,106 @@
+{
+  "slug": "banner-race",
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6257:36597",
+    "ios": "6257:36597"
+  },
+
+  "component": {
+    "name": "Banner Race",
+    "category": "molecules",
+    "description": "Template di Banner per iniziative 'Race' (tornei/competizioni con classifica giornaliera/settimanale, es. Daily Quick Race). Layout SPLIT TEXT+IMAGE (328×179): TextBox a sinistra (Title `heading/h3` + Paragraph `pLead` su 3 righe) + illustration a destra (asset `Illustrations/Races & Events/Races App` che mostra una preview della classifica/trofei della race). Background scuro `neutral/800`. NIENTE Button — il Banner è tappabile come unità di navigazione verso la pagina race. Testo bianco (`banner/color/text`). Variante strutturale del pattern Banner perché il layout text-left + image-right side-by-side NON è uno dei 3 `Text Type` del Banner base (che ha image full-bleed).",
+    "type": "interactive"
+  },
+
+  "usage": {
+    "useCases": [
+      "race-tournament-callout",
+      "daily-quick-race-promo",
+      "competition-engagement"
+    ],
+    "requiredProps": ["title", "paragraph", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "daily-quick-race-promo",
+        "description": "Banner Race per il pattern 'Daily Quick Race' (race giornaliera): Title 'Daily Quick Race' + Paragraph che esplicita meccanica (es. 'Compi azioni per scalare la classifica giornaliera') + illustration preview-classifica a destra. Tap navigazione alla pagina race con regole, classifica corrente e azioni qualificanti.",
+        "composition": "<BannerRace title=\"Daily Quick Race\" paragraph=\"Compi azioni per scalare la classifica giornaliera e vincere bonus.\" onPress={() => navigate('/race/daily-quick')} />"
+      },
+      {
+        "name": "weekly-tournament-callout",
+        "description": "Banner Race per tornei settimanali con monte premi (es. 'Torneo della settimana'). Stessa struttura: text descrittivo a sinistra, illustration race a destra. Il Banner è tappabile come unica CTA verso la pagina torneo.",
+        "composition": "<BannerRace title=\"Torneo Settimanale\" paragraph=\"Vinci fino a 500€ scalando la classifica.\" onPress={openTournament} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-with-explicit-button",
+        "reason": "Il Banner Race è disegnato SENZA Button — la CTA è il tap sull'intera card. Aggiungere un Button sotto al testo non è coerente col layout (non c'è spazio verticale sotto al Paragraph di 3 righe) e duplica l'affordance (già il banner è tappabile).",
+        "alternative": "Mantenere il pattern senza Button: l'intero Banner è tappabile come unità (onPress sul container). Per banner con CTA esplicita usare Banner base (3 `Text Type` con Button Group)."
+      },
+      {
+        "scenario": "long-paragraph-overflow",
+        "reason": "Il Paragraph è disegnato in `pLead` (16px) su max 3 righe. Testi più lunghi spaccano il TextBox (lo spazio orizzontale è limitato dall'image a destra) o sforano verticalmente l'altezza 179h.",
+        "alternative": "Mantenere Paragraph ≤3 righe brevi. Per descrizioni più articolate spostare il dettaglio nella pagina di destinazione."
+      },
+      {
+        "scenario": "use-for-non-race-content",
+        "reason": "L'illustration a destra è specifica del contesto 'race' (classifica, trofei). Usare il template per contenuto non-race (es. promo generica) con illustration sostituita rompe la coerenza visiva del pattern e l'asset stesso (l'asset Races è fisso per design).",
+        "alternative": "Per promo generiche usare Banner base. Per altri tipi di tornei o iniziative dedicate, valutare se serve un nuovo template dedicato (es. banner-tournament-monthly)."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale Title + Paragraph a sinistra. Title in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18). Paragraph in `typography/body/pLead` (16px regular Roboto, line-height 18) max 3 righe. Entrambi nel token `banner/color/text` (bianco) per contrasto sul background `neutral/800` scuro. Gap `banner/size/gap` (8) fra Title e Paragraph."
+      },
+      "Illustration": {
+        "required": true,
+        "description": "Asset illustrativo 'Races App' a destra (token asset `Illustrations/Races & Events/Races App`) — preview della classifica/trofei tipica di una race. NON sostituibile col consumer — è parte dell'identità del template race."
+      },
+      "Background": {
+        "required": true,
+        "description": "Background a tinta unita `neutral/800` (grigio scuro quasi nero) — niente immagine full-bleed. Crea contrasto col testo bianco e con l'illustration colorata della race."
+      }
+    },
+    "nestedComponents": [],
+    "commonPartners": ["Page", "Header"],
+    "parentConstraints": [
+      "Tipicamente in homepage o nella sezione race/torneo. Padding orizzontale verso i bordi pagina gestito dal parent.",
+      "L'intero Banner è tappabile (`onPress`) — il consumer assicura che il container abbia hit-area completa e un singolo gesture handler."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-banner": "Tap sull'intero Banner esegue `onPress` — tipicamente navigazione alla pagina race con classifica corrente, regole e azioni qualificanti.",
+      "no-button": "NON ha Button espliciti — la CTA è il tap-on-card."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "button (l'intera card è tappabile come unità di navigazione) — su iOS `accessibilityTraits = .button` + `accessibilityLabel` combinato (Title + Paragraph). L'illustration è decorativa (`accessibilityElementsHidden=true`).",
+    "screenReader": "Annuncio: '[Title], [Paragraph], pulsante' (es. 'Daily Quick Race, Compi azioni per scalare la classifica giornaliera, pulsante').",
+    "focusManagement": "L'intero Banner è 1 elemento focusable.",
+    "touchTarget": "Banner 328×179 — abbondantemente sopra-soglia. Hit area = tutta la card.",
+    "wcag": "AA — testo bianco su `neutral/800` (grigio scuro quasi-nero) garantisce contrasto AA ampio. L'illustration colorata a destra non interferisce con la leggibilità del testo (è in zona separata)."
+  },
+
+  "aiHints": {
+    "priority": "low",
+    "keywords": ["banner race", "race banner", "daily quick race", "torneo banner", "competition banner"],
+    "context": "Template per iniziative race/tornei con classifica. Layout split: text a sinistra (Title h3 + Paragraph pLead max 3 righe) + illustration race a destra. Background dark `neutral/800`. NIENTE Button — la CTA è il tap sull'intera card. Usare per Daily Quick Race, tornei settimanali, competizioni con classifica. NON aggiungere Button (non disegnato), NON usare per contenuto non-race (asset illustration è fisso). Per altre promo usare il Banner base."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

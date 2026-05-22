@@ -1,44 +1,135 @@
 {
   "slug": "card-loyalty",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5954:2850",
+    "ios": "5954:2850"
+  },
+
   "component": {
     "name": "Card Loyalty",
-    "category": "atoms",
-    "description": "",
+    "category": "molecules",
+    "description": "Card di MARKETING per showcase del livello loyalty WeSisal dell'utente e invito al programma. 6 `Loyalty` × 2 `Buttons` = 12 varianti. 6 Loyalty levels: `Starter` (bg light-green + border verde, illustration coppa Starter-ok), `Talent` (bg grigio chiaro + border grigio, illustration Talent), `Master` (bg crema + border marrone scuro, illustration Master), `Star` (bg verde acqua + border verde, illustration Star), `Expert` (bg arancione chiaro + border arancione scuro, illustration Expert), `Registration` (bg `cardLoyalty/color/noLog/bg` verde brand + text bianco, illustration logo WeSisal — riservato a utenti NON loggati / NON iscritti al programma, invito alla registrazione). 2 `Buttons` modes: `False` (compact, sm size 328×68 per i 5 livelli e 328×94 per Registration — layout illustration + Title + Paragraph 'Hai X Sisal Point' + chevron-right, intera card tappabile) / `True` (expanded, md size 328×108 per i 5 livelli e 328×152 per Registration — stesso layout ma con Button Group sotto: 1 Button `inverse/ghost` sottolineato + 1 Button `inverse/primary` solid, niente chevron). Token namespace `cardLoyalty/*` con sotto-set color per ogni level (`*/color/{starter|talent|master|star|expert|noLog}/{bg|border|text|icon}`) — UNICO componente del DS con palette color dedicata per ogni level (non solo brand-token override). Illustration asset `Illustrations/Loyalty/Coppe/{level}` per ogni livello. Three-way naming: slug `card-loyalty`, frame Figma 'Card Loyalty', namespace `cardLoyalty/*`.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "loyalty-level-status-display",
+      "wesisal-program-invitation",
+      "loyalty-cta-callout",
+      "user-points-summary"
+    ],
+    "requiredProps": ["loyalty"],
+    "commonPatterns": [
+      {
+        "name": "level-status-compact-display",
+        "description": "Pattern canonico per utenti GIÀ ISCRITTI al programma: Card Loyalty con `Loyalty` = livello corrente dell'utente (Starter/Talent/Master/Star/Expert) e `Buttons=False` (compact 68h). Mostra illustration coppa del livello + 'Sei uno [Level]!' + 'Hai X Sisal Point' + chevron-right. Tap apre la pagina programma loyalty con dettaglio punti/livello/benefit. Posizionata tipicamente in area utente (Account/Profilo) o homepage personale.",
+        "composition": "<CardLoyalty loyalty=\"Master\" buttons={false} title=\"Sei uno Master!\" paragraph=\"Hai 2000 Sisal Point\" onPress={openLoyalty} />"
+      },
+      {
+        "name": "registration-invitation-non-member",
+        "description": "Pattern per utenti NON iscritti al programma: `Loyalty=Registration` con bg verde brand + text bianco + illustration logo WeSisal + Title 'Programma WeSisal' + Paragraph 'Scopri come guadagnare punti col programma fedeltà WeSisal'. Buttons=True con CTA esplicite (es. 'Scopri' inverse/ghost + 'Iscriviti' inverse/primary) per accelerare la conversion all'iscrizione.",
+        "composition": "<CardLoyalty loyalty=\"Registration\" buttons title=\"Programma WeSisal\" paragraph=\"Scopri come guadagnare punti col programma fedeltà WeSisal\" primaryAction={{label:'Iscriviti',onPress:openRegistration}} secondaryAction={{label:'Scopri',onPress:openInfo}} />"
+      },
+      {
+        "name": "level-with-actions",
+        "description": "Variante `Buttons=True` per livelli iscritti: Card Loyalty con livello corrente + Button Group con CTA esplicite (es. 'Vedi punti' inverse/ghost + 'Usa punti' inverse/primary). Usato in pagine dedicate al programma loyalty o in callout di marketing dove l'utente deve essere spinto a usare i punti.",
+        "composition": "<CardLoyalty loyalty=\"Star\" buttons title=\"Sei uno Star!\" paragraph=\"Hai 2500 Sisal Point\" primaryAction={{label:'Usa punti',onPress:usePoints}} secondaryAction={{label:'Vedi catalogo',onPress:openCatalog}} />"
+      },
+      {
+        "name": "level-color-palette-mapping",
+        "description": "Ogni Loyalty level ha la propria PALETTE COLOR dedicata (bg + border + text + icon) — non token brand-standard. Mappatura: Starter (verde chiaro), Talent (grigio neutro), Master (crema/oro — livello premium dorato), Star (verde acqua), Expert (arancione — livello expert/avanzato), Registration (verde brand pieno — pattern di invito). Le illustration delle coppe seguono lo stesso color-coding del bg per consistency visiva. Il livello non è una scelta del designer/consumer — è dato dal status loyalty dell'utente nel backend.",
+        "composition": "// Mapping: backend.user.loyaltyLevel → loyalty prop"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "wrong-level-for-user",
+        "reason": "Mostrare un Loyalty level diverso da quello effettivo dell'utente confonde il pattern marketing: l'utente vede 'Sei uno Master!' ma sa di essere Starter, perdendo fiducia nel sistema. Le palette color dedicate per livello rendono visivamente IMMEDIATAMENTE riconoscibile lo stato — quindi un mismatch è subito evidente.",
+        "alternative": "Il livello è dato dal status loyalty dell'utente nel backend. Mappare 1:1 — non lasciare il prop configurabile da UI o feature flag dinamici. Per utenti non iscritti usare Loyalty=Registration (lo state dedicato per non-member)."
+      },
+      {
+        "scenario": "registration-state-for-existing-members",
+        "reason": "Loyalty=Registration è disegnato per utenti NON ISCRITTI (bg verde brand pieno + invito 'Scopri come guadagnare punti'). Mostrarlo a utenti già iscritti che hanno un livello (Starter/Talent/Master/Star/Expert) li fa sentire 'invisibili' al sistema — vedono un invito a iscriversi a un programma di cui sono già parte.",
+        "alternative": "Per utenti iscritti SEMPRE mostrare il loro livello corrente (uno dei 5 level cards). Loyalty=Registration ESCLUSIVAMENTE per non-member (controllo backend isMember=false)."
+      },
+      {
+        "scenario": "use-with-only-secondary-button-no-primary",
+        "reason": "Quando `Buttons=True`, il Button Group è disegnato con primary (inverse/primary solid dark) + secondary (inverse/ghost sottolineato) — la gerarchia visiva è chiara. Mostrare solo il secondary senza il primary (o solo il primary senza il secondary, in modo non disegnato) rompe il pattern delle azioni nel componente.",
+        "alternative": "Con Buttons=True usare sempre il pattern primary+secondary disegnato. Per varianti single-button considerare Buttons=False (con tap-on-card) e dare la CTA alla card intera."
+      },
+      {
+        "scenario": "custom-loyalty-level-not-in-figma",
+        "reason": "I 5 level + Registration sono i 6 disegnati in Figma con palette+illustration dedicate. Inventare un livello custom (es. 'Diamond', 'Legend') richiede asset+token+illustration che NON esistono nel DS.",
+        "alternative": "Stiamo ai 5 level disegnati. Se il programma WeSisal aggiunge nuovi livelli, richiedere a Figma+DS la creazione del nuovo Loyalty variant con palette e illustration coerenti col sistema."
+      },
+      {
+        "scenario": "card-loyalty-as-generic-info-card",
+        "reason": "La Card Loyalty è DEDICATA al marketing del programma WeSisal e showcase punti utente. Usarla per altri pattern (es. info generiche, status generici, tier di altro tipo) svilisce il significato marketing e crea confusione con il programma loyalty reale.",
+        "alternative": "Per status generici / info utente / tier non-loyalty usare componenti dedicati: Card Informative (info con drill-down), Card Highlight (CTA driver), Badge Default (per tier semplici)."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Container": {
+        "required": true,
+        "description": "Wrapper della card. Dimensione dipende da `Buttons`: `Buttons=False` usa `cardLoyalty/size/sm/*` (height 68 per 5 level, 94 per Registration), `Buttons=True` usa `cardLoyalty/size/md/*` (height 108 per 5 level, 152 per Registration). Tutti i Variant: width 328, radius `cardLoyalty/size/{sm|md}/border/radius` (8), border 2px `*/border/width` color `cardLoyalty/color/{level}/border` (level-specific), padding asimmetrico — `*/padding/horizontal/left` 52 (spazio per illustration sporgente a sinistra) + `*/padding/horizontal/right` 16 + `*/padding/vertical` 16, gap `*/gap` (8). Bg `cardLoyalty/color/{level}/bg` (level-specific palette)."
+      },
+      "Illustration": {
+        "required": true,
+        "description": "Asset illustrativo 64×64 (token `Size/64`) sporgente a sinistra del container (entra parzialmente nel padding-left 52). Asset dedicato per ogni level: `Illustrations/Loyalty/Coppe/Starter-ok` / `Talent` / `Master` / `Star` / `Expert` (coppe stilizzate con palette del level). Per Loyalty=Registration: illustration logo WeSisal (asset dedicato al pattern di invito). NON sostituibile dal consumer — è parte dell'identità visiva del level."
+      },
+      "TextBlock": {
+        "required": true,
+        "description": "Stack verticale Title + Paragraph a destra dell'illustration. Title in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18). Paragraph in `typography/body/p` (14px regular Roboto, line-height 18). Color text via `cardLoyalty/color/{level}/text` — dark per i 5 level con palette chiara, BIANCO per Registration (`cardLoyalty/color/noLog/text` per bg verde brand pieno). Gap interno `textbox/size/gap` (8). Copy canonici: Title 'Sei uno [Level]!' (es. 'Sei uno Master!') o 'Programma WeSisal' (Registration); Paragraph 'Hai X Sisal Point' o descrizione del programma."
+      },
+      "ChevronRight": {
+        "required": false,
+        "description": "SOLO in `Buttons=False`: icona chevron-right 24×24 a destra del Container, color `cardLoyalty/color/{level}/icon`. Comunica che l'intera card è tappabile come unità di navigazione (verso pagina dettaglio loyalty). NON presente in `Buttons=True` (le azioni sono nel Button Group)."
+      },
+      "ButtonGroup": {
+        "required": false,
+        "description": "SOLO in `Buttons=True`: Button Group `default` (gap `buttonGroup/size/default/gap` 8) sotto al TextBlock, con 2 Button size sm (32h, radius 12). 1° Button: variante `inverse/ghost` (testo dark sottolineato, color `button/color/inverse/ghost/text/default` — NB: per i level chiari, `inverse` qui ha text dark, non bianco). 2° Button: variante `inverse/primary` (bg dark solid + text bianco, color `button/color/inverse/primary/bg/default`). Pattern di CTA secondary + primary per azioni del livello."
+      }
+    },
+    "nestedComponents": ["Button", "Button Group"],
+    "commonPartners": ["Page"],
+    "parentConstraints": [
+      "Card Loyalty vive in pagine di MARKETING del programma WeSisal (homepage personale, area utente, pagina dedicata loyalty). Larghezza fissa 328 — padding orizzontale verso bordi pagina gestito dal parent (~viewport 375 con padding 24).",
+      "Il `Loyalty` level è guidato dal STATUS UTENTE nel backend, non scelta del designer/consumer. Per utenti non iscritti SEMPRE Loyalty=Registration; per utenti iscritti SEMPRE il loro livello corrente."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-card": "SOLO in `Buttons=False`: tap sull'intera card esegue `onPress` — tipicamente navigazione alla pagina del programma loyalty con dettaglio punti/livello/benefit. Il chevron-right comunica l'affordance.",
+      "tap-primary-button": "SOLO in `Buttons=True`: tap sul Button primary (inverse/primary solid dark) esegue azione principale (es. 'Iscriviti' per Registration, 'Usa punti' per level cards).",
+      "tap-secondary-button": "SOLO in `Buttons=True`: tap sul Button secondary (inverse/ghost sottolineato) esegue azione di approfondimento (es. 'Scopri' per Registration, 'Vedi catalogo' per level cards)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "Per `Buttons=False`: l'intera card è un `Role.Button` (tappabile come unit) — `accessibilityLabel` combinato (Title + Paragraph, es. 'Sei uno Master, hai 2000 Sisal Point, pulsante'). Per `Buttons=True`: container `Role.None`, i 2 Button sono elementi accessibili separati con propri label. L'Illustration è SEMANTICA del level — esporre `accessibilityLabel = 'Livello [Level]'` per non lasciarla muta, oppure includere il nome del level nell'accessibilityLabel del container.",
+    "screenReader": "Annuncio: `Buttons=False` legge la card intera con suffix 'pulsante'. `Buttons=True` legge Title+Paragraph come testo, poi i 2 Button come elementi successivi (es. 'Programma WeSisal, Scopri come guadagnare punti, Scopri, pulsante, Iscriviti, pulsante').",
+    "focusManagement": "`Buttons=False`: container è 1 elemento focusable. `Buttons=True`: container non focusable, i 2 Button sono focusable separati nell'ordine secondary → primary.",
+    "touchTarget": "Container 328×68 (sm) o 328×108 (md) — abbondantemente sopra-soglia. Button sm 32h: sotto-soglia in altezza, estendere hit-area con padding del wrapper.",
+    "wcag": "AA — Color text dark sui bg chiari dei 5 level (verde chiaro, grigio chiaro, crema, verde acqua, arancione chiaro) garantisce contrasto AA. Text bianco su bg verde brand pieno di Registration è AA per design (verde brand sufficientemente scuro). Border 2px dedicato per ogni level rinforza visivamente il livello — pattern multi-canale (color bg + color border + illustration + text) garantisce riconoscibilità anche per chi non distingue la palette."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["card loyalty", "loyalty card", "wesisal", "programma fedeltà", "sisal points", "loyalty level"],
+    "context": "Card di MARKETING per programma loyalty WeSisal — showcase del livello utente e invito al programma. 6 `Loyalty` × 2 `Buttons` = 12 varianti. 6 levels: Starter, Talent, Master, Star, Expert (per utenti iscritti — ognuno con palette color + illustration coppa dedicata) + Registration (per utenti NON iscritti — bg verde brand + text bianco + illustration WeSisal logo). 2 modes: `Buttons=False` (compact 68h, tap-on-card con chevron-right) / `Buttons=True` (expanded 108h con Button Group secondary+primary). Width 328, border 2px level-specific, padding asimmetrico (52 sinistra per illustration sporgente). Ogni level ha palette color dedicata (NON brand-token override): bg, border, text, icon distinti. Il level è dato dal STATUS UTENTE backend — NON configurabile da UI. Loyalty=Registration ESCLUSIVAMENTE per non-member; gli altri 5 per iscritti col loro level corrente. Non usare per status generici / tier non-loyalty (usare Card Informative, Card Highlight, Badge Default). Nesta Button e Button Group (in mode Buttons=True). Three-way naming: slug `card-loyalty`, frame Figma 'Card Loyalty', namespace `cardLoyalty/*`."
   },
+
   "rationale": {
     "designDecisions": ""
   }

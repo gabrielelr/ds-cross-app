@@ -1,44 +1,139 @@
 {
   "slug": "header",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-22",
+  "status": "full",
+
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "6135:69721",
+    "ios": "6135:69721",
+    "ios-liquid-glass": "6135:69721"
+  },
+
   "component": {
     "name": "Header",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Top Navigation bar (header) ancorato in alto allo screen — barra di chrome di pagina che orchestra brand identity, navigation back/close, page title, info utente sintetiche e ingresso al menu. 3 proprietà × varianti: User is logged (False / True) × Navigation Level (Homepage / 2-3-4+ / Menu or Webview) × OS (android / ios / iosLiquidGlass) = 18 varianti totali. La proprietà OS è critica perché ogni piattaforma ha height, padding e chrome dedicati: Android `topNavigation/android/size/height` 64 con padding 16-left/4-right, iOS `topNavigation/ios/size/height` 48 con padding 16-left/12-right, iOS Liquid Glass 48h con bottoni pill 32 round (`buttonLiquidGlass/size/sm/border/radius` 128) e nessun border-bottom (effetto vetro traslucido). Composizione strutturale (variabile per Navigation Level): LEADING [Logo Sisal (Homepage) / Icon Button back-arrow (lvl 2-3-4+) / Title text 'Menu' (Menu or Webview)] + TITLE centrato h3 (solo lvl 2-3-4+) + TRAILING [Button 'Accedi' sm + Icon Button menu hamburger (logged-out, Homepage/lvl 2-3-4+) / Balance text 'Saldo + Real Bonus' + Icon Button menu (logged-in, Homepage/lvl 2-3-4+) / Icon Button close X (Menu or Webview)]. Brand logo: logged-out mostra logo completo 'Sisal' a colori, logged-in mostra solo icona star compatta. Three-way naming: slug `header`, frame Figma 'Top Navigation', namespace `topNavigation/{android|ios}/*` + `topNavigationAction/*` (trailing slot tokens) + `trailing/*`.",
+    "type": "navigation"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "homepage-top-bar",
+      "secondary-page-top-bar-with-back",
+      "modal-or-menu-top-bar-with-close",
+      "webview-wrapper-top-bar",
+      "logged-out-cta-to-login",
+      "logged-in-balance-display"
+    ],
+    "requiredProps": ["userLogged", "navigationLevel", "os"],
+    "commonPatterns": [
+      {
+        "name": "homepage-brand-and-auth-cta",
+        "description": "Homepage logged-out: leading logo Sisal completo (brand identity hero) + trailing Button primary 'Accedi' sm + Icon Button menu (hamburger). Pattern di apertura cross-app — utente non autenticato vede subito brand + invito al login + accesso al menu utility.",
+        "composition": "<Header userLogged={false} navigationLevel=\"Homepage\" os={platformOS} />"
+      },
+      {
+        "name": "homepage-balance-display-when-logged",
+        "description": "Homepage logged-in: leading icona Sisal compatta (solo star, lascia spazio al saldo) + trailing 'Saldo: 12,50€' + 'Real Bonus: 12,50€' (caption + caption bold per i valori) + Icon Button menu. L'utente vede a colpo d'occhio le proprie risorse senza scrollare alla pagina account.",
+        "composition": "<Header userLogged={true} navigationLevel=\"Homepage\" os={platformOS} balance={user.balance} realBonus={user.realBonus} />"
+      },
+      {
+        "name": "secondary-page-with-back-and-title",
+        "description": "Navigation Level 2/3/4+: leading Icon Button back-arrow (◀) + Title h3 centrato 'Trailing title example' (nome della pagina corrente) + trailing identico alla Homepage (Accedi/Balance + Menu). Pattern per pagine interne dell'app (categoria, prodotto, dettaglio) dove serve return-to-parent + identificazione pagina.",
+        "composition": "<Header userLogged={user.isLogged} navigationLevel=\"2-3-4+\" os={platformOS} title=\"Dettaglio Slot\" onBack={() => nav.goBack()} />"
+      },
+      {
+        "name": "modal-menu-or-webview-with-close",
+        "description": "Navigation Level Menu or Webview: leading title 'Menu' inline + trailing solo Icon Button close (X). Pattern per il Menu Unico (pagina menu accessibile dal hamburger) e per Webview embedded (es. promo landing, regolamento). NIENTE back, NIENTE balance, NIENTE Accedi — è un layer modale che si dismette completamente.",
+        "composition": "<Header userLogged={user.isLogged} navigationLevel=\"Menu or Webview\" os={platformOS} onClose={() => nav.dismiss()} />"
+      },
+      {
+        "name": "os-aware-rendering",
+        "description": "L'header DEVE rispettare l'OS host: Android 64h con border-bottom, iOS 48h con border-bottom, iOS Liquid Glass 48h glass-translucent senza border + Icon Button pill 32 round. La proprietà `os` viene determinata a livello platform detection (non scelta utente) — su iOS 17+ con materiale Liquid Glass abilitato, usare la variante iosLiquidGlass; altrimenti iOS standard.",
+        "composition": "<Header os={Platform.OS === 'android' ? 'android' : isLiquidGlassEnabled ? 'iosLiquidGlass' : 'ios'} ... />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "wrong-os-variant-on-platform",
+        "reason": "Usare la variante Android su iOS (o viceversa) viola la consistenza con il sistema operativo host. L'utente percepisce un header 'non nativo' che rompe la fiducia visiva: padding diversi, height diversa, bottoni con border-radius incoerenti con il resto dell'OS.",
+        "alternative": "OS rilevato runtime tramite Platform API. Mai forzare la variante a livello design — è sempre platform-driven. Su iOS 17+ con Liquid Glass UI considerare la variante iosLiquidGlass."
+      },
+      {
+        "scenario": "title-on-homepage",
+        "reason": "Homepage Navigation Level NON ha title centrato — il leading è il LOGO brand Sisal. Aggiungere un title 'Home' centrato è ridondante (la home è identificata dal brand) e occupa spazio che serve per il trailing (balance / Accedi).",
+        "alternative": "Homepage: solo logo + trailing. Title h3 centrato compare SOLO a Navigation Level 2-3-4+ (pagine interne). Per Menu or Webview il title è inline a sinistra ('Menu'), non centrato."
+      },
+      {
+        "scenario": "balance-on-non-homepage",
+        "reason": "Il pattern 'Saldo + Real Bonus' nel trailing è dedicato alla Homepage e alle pagine derivate (lvl 2/3/4+) per dare visibilità costante alle risorse utente. NON mostrarlo su Menu or Webview (è un layer modale di chrome, non un contesto di gioco — il balance è già nel menu).",
+        "alternative": "Balance trailing: SOLO Homepage e lvl 2-3-4+. Menu or Webview: trailing solo Icon Button close X."
+      },
+      {
+        "scenario": "back-and-close-together",
+        "reason": "Combinare back-arrow (leading lvl 2-3-4+) e close X (trailing Menu or Webview) confonde il modello mentale: back = torna alla pagina precedente nello stack, close = dismetti il layer modale. Sono due semantiche opposte.",
+        "alternative": "lvl 2-3-4+ usa SOLO back-arrow (stack navigation). Menu or Webview usa SOLO close X (modal dismiss). Mai entrambi insieme."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Container": {
+        "required": true,
+        "description": "Barra orizzontale OS-aware. Android: bg `topNavigation/android/color/bg` (bianco) + border-bottom `topNavigation/android/size/border/width` 1 color `topNavigation/android/color/border` (grigio chiaro) + height `topNavigation/android/size/height` (64) + padding L `topNavigation/android/size/padding/horizontal/left` (16) / R `topNavigation/android/size/padding/horizontal/right` (4) + gap `topNavigation/android/size/gap` (8). iOS: bg `topNavigation/ios/color/bg` (bianco) + border-bottom 1px + height 48 + padding L 16 / R 12 + gap 8. iOS Liquid Glass: height 48 + padding analogo iOS, MA bg traslucido + nessun border-bottom (effetto vetro depth)."
+      },
+      "Leading": {
+        "required": true,
+        "description": "Slot a sinistra, contenuto cambia per Navigation Level: (a) Homepage = Logo Sisal (logo completo 'Sisal' con star a colori se logged-out; solo star icon se logged-in per lasciare spazio al balance); (b) 2-3-4+ = Icon Button back-arrow (◀ chevron-left) Size sm 32×32 con icon 20×20 color `button/color/neutral/ghost/icon/default` dark; (c) Menu or Webview = Title text 'Menu' in `typography/heading/h3` (16px ExtraBold Mulish) color `trailing/color/text` dark, inline a sinistra (non centrato)."
+      },
+      "Title": {
+        "required": false,
+        "description": "Solo Navigation Level 2-3-4+: title centrato della pagina corrente. Tipografia `typography/heading/h3` (16px ExtraBold Mulish) color `trailing/color/text` dark. Allineato center con flex-1 per riempire lo spazio tra Leading e Trailing. NON presente in Homepage (il brand fa da identificatore) né in Menu or Webview (il title è nel Leading inline)."
+      },
+      "Trailing": {
+        "required": true,
+        "description": "Slot a destra, contenuto cambia per User is logged + Navigation Level: (Homepage / lvl 2-3-4+) logged-out = Button primary sm 'Accedi' `button/color/brand/primary/bg/default` verde brand + Icon Button menu (hamburger) Size sm 32 ghost; logged-in = blocco testuale 'Saldo: 12,50€' (caption + caption bold per il valore) + 'Real Bonus: 12,50€' allineato right (gap `trailing/size/gap` 4) + Icon Button menu. (Menu or Webview) = SOLO Icon Button close (X) Size sm 32 ghost — niente Accedi, niente balance. iOS Liquid Glass: i Button hanno border-radius `buttonLiquidGlass/size/sm/border/radius` 128 (pill 32 round) e bg `buttonLiquidGlass/color/brand/secondary/bg/default` con effetto vetro."
+      }
+    },
+    "nestedComponents": ["Button", "Button Icon", "Heading"],
+    "commonPartners": ["Page", "Bottom Sheet", "Menu Unico"],
+    "parentConstraints": [
+      "Header è elemento di chrome di pagina — vive ancorato in alto allo screen (position sticky o fixed), tipicamente parte del Page wrapper. Non vive inline nel flusso di contenuto.",
+      "Width tipica 375 (full viewport mobile). Altezza dipende dall'OS: Android 64, iOS 48, iOS Liquid Glass 48. Il contenuto sotto deve riservare offset top corrispondente.",
+      "Il render condizionato dei slot dipende da userLogged + navigationLevel + os — il consumer è responsabile di passare i 3 prop coerenti col contesto. La detection OS è platform-driven, non scelta utente."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-logo-homepage": "Tap sul Logo Sisal (Homepage) tipicamente non fa nulla (siamo già in home) o re-scroll-to-top. Mai navigate-away.",
+      "tap-back-arrow": "Navigation Level 2-3-4+: tap su Icon Button back-arrow esegue navigation.goBack() — torna alla pagina precedente nello stack.",
+      "tap-close-x": "Menu or Webview: tap su Icon Button close X dismette il layer modale (pop modal stack / close webview).",
+      "tap-accedi": "Logged-out: tap su Button 'Accedi' apre il flow login (modale o pagina dedicata).",
+      "tap-menu-hamburger": "Tap su Icon Button menu (hamburger) apre il Menu Unico (pagina dedicata o sheet — dipende dall'implementazione cross-app).",
+      "tap-balance-area": "Logged-in: tap sul blocco 'Saldo + Real Bonus' può aprire la pagina account/movimenti (quick shortcut). Implementazione consumer-driven.",
+      "scroll-behavior": "Header tipicamente sticky-top — rimane visibile durante lo scroll della pagina sotto. iOS Liquid Glass: l'effetto vetro reagisce al contenuto sotto (saturation/blur dinamici)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "header/banner — su iOS impostare il Container come landmark `accessibilityRole = .header`. Su Android `Modifier.semantics { heading() }` sul Title (se presente). Ogni Icon Button del Trailing/Leading ha label esplicito: back-arrow = 'Indietro', menu = 'Apri menu', close = 'Chiudi'. Il Button 'Accedi' ha role button e label 'Accedi'.",
+    "screenReader": "Annuncio al focus o all'apertura di pagina: (Homepage) 'Sisal' / icona brand + 'Accedi, pulsante' / 'Saldo 12 euro e 50, Real Bonus 12 euro e 50' + 'Apri menu, pulsante'. (lvl 2-3-4+) 'Indietro, pulsante' + 'Titolo pagina, intestazione' + trailing. (Menu/Webview) 'Menu, intestazione' + 'Chiudi, pulsante'. Il balance utente è annunciato con valuta verbalizzata per chiarezza.",
+    "focusManagement": "Header è sticky in alto — il focus può essere raggiunto via tab/swipe focus prima del contenuto di pagina. Ordine focus left-to-right: Leading → Title (non focusable, solo annuncio) → Trailing (Accedi → menu / balance → menu / close X). All'apertura della pagina, focus iniziale tipicamente sul primo elemento di contenuto NON sull'Header (per non distrarre).",
+    "touchTarget": "Icon Button sm 32×32 — sotto 44pt iOS / 48dp Android ⚠️. Considerare estensione hit area via padding container (l'header padding L/R aiuta). Button 'Accedi' sm 32h — borderline anch'esso; in alternativa per touch target safe passare a Button md (ma rompe l'altezza 48 di iOS). Brand logo: non actionable (decorativo) — niente touch target requirement. Balance text: se tappabile, garantire 44pt+ hit area estesa via padding.",
+    "wcag": "AA — bg bianco + testi dark (`topNavigationAction/color/text`, `trailing/color/text`) sono ampiamente AA. Border-bottom grigio chiaro è layout decorativo. iOS Liquid Glass con bg traslucido può ridurre il contrasto del contenuto sotto — verificare AA con contesti scuri di sfondo (potrebbe richiedere materiale più opaco)."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["header", "top navigation", "app bar", "navigation bar", "topbar", "navbar top", "navigation header"],
+    "context": "Top Navigation bar ancorato in alto allo screen — 18 varianti (User is logged False/True × Navigation Level Homepage/2-3-4+/Menu or Webview × OS android/ios/iosLiquidGlass). OS critico: Android 64h border-bottom, iOS 48h border-bottom, iOS Liquid Glass 48h glass senza border + Button pill round 128. Slot pattern (Leading + Title + Trailing) varia per Navigation Level: Homepage = logo brand + trailing (Accedi or Balance + Menu); 2-3-4+ = back-arrow + title h3 centrato + trailing (Accedi or Balance + Menu); Menu or Webview = 'Menu' inline left + close X only (niente balance, niente Accedi). Logged-out trailing = Button 'Accedi' primary sm + Icon Button menu; Logged-in trailing = caption text 'Saldo + Real Bonus' + Icon Button menu. Token namespace `topNavigation/{android|ios}/*` + `topNavigationAction/*` + `trailing/*` (slot trailing) + `buttonLiquidGlass/*` (variante iOS LG). OS detection è platform-driven, NON scelta utente. NIENTE title su Homepage (è il brand logo). NIENTE balance su Menu or Webview. NIENTE back + close insieme (semantica opposta: back stack vs modal dismiss)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

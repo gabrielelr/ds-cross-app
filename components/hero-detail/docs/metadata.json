@@ -1,0 +1,145 @@
+{
+  "slug": "hero-detail",
+  "lastUpdated": "2026-05-20",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6157:77450",
+    "ios": "6157:77450"
+  },
+
+  "component": {
+    "name": "Hero Detail",
+    "category": "molecules",
+    "description": "Hero della pagina di dettaglio prodotto: mostra il media del prodotto (immagine/video) in alto e, sotto, le info chiave (nome, partner/produttore, promo/jackpot attivi). Composto da 2 zone verticali: Player (300h, full-width) con immagine + gradient top scuro per leggibilità + Gioco Certificato logo + cluster di Badge (Promo/Jackpot/Default) + Close icon button (X) + Player Button circolare opzionale (per preview video); Body (bg bianco, padding 16/16, gap 16) con PageControl (8 dots, paginazione del media del prodotto) + TextBox left-aligned (Title `display/d2` 24px ExtraBold Mulish + Paragraph `body/pLead` 16px con 'Partner: Nome' in bold-mixed). Single variant in Figma — solo `showPlayerButton` come prop boolean. Token namespace `heroDetail/*` con sotto-spazi `heroDetail/player/*` e `heroDetail/body/*`. Componente specifico della pagina di dettaglio (es. dettaglio slot/gioco/evento) — NON usabile in homepage o pagine listing.",
+    "type": "display"
+  },
+
+  "usage": {
+    "useCases": [
+      "product-detail-page-top",
+      "game-detail-hero",
+      "event-detail-hero",
+      "slot-detail-hero"
+    ],
+    "requiredProps": ["title", "partnerName", "mediaUrl"],
+    "commonPatterns": [
+      {
+        "name": "slot-game-detail-hero",
+        "description": "Hero Detail su pagina di un singolo slot/gioco: immagine del gioco a tutta larghezza (300h), badge Promo+Jackpot in alto, X per chiudere la pagina, Player Button al centro per anteprima video. Body sotto con Title (nome del gioco in display/d2) e 'Partner: Playtech' o equivalente.",
+        "composition": "<HeroDetail title=\"Mega Fire Blaze Roulette\" partnerName=\"Playtech\" mediaUrl={gameImg} showPlayerButton onClose={() => goBack()} badges={['Promo','Jackpot']} />"
+      },
+      {
+        "name": "detail-hero-no-preview",
+        "description": "Hero Detail con `showPlayerButton=false`: quando il prodotto NON ha un video/preview tappabile (es. evento sportivo senza highlight clip, prodotto con sola immagine statica). L'immagine resta full-bleed senza il bottone play centrale.",
+        "composition": "<HeroDetail title=\"Atalanta vs Inter\" partnerName=\"Serie A\" mediaUrl={matchImg} showPlayerButton={false} onClose={...} />"
+      },
+      {
+        "name": "detail-hero-multiple-media",
+        "description": "Hero Detail con N media swipable (immagini, video del gioco): la PageControl in Body indica posizione corrente nel media gallery. L'utente swipa orizzontalmente la zona Player per cambiare media; i dots si aggiornano. Pattern standard per pagine prodotto con galleria.",
+        "composition": "<HeroDetail title={t} partnerName={p} mediaItems={mediaArray} currentIndex={idx} onMediaChange={setIdx} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "hero-detail-on-homepage",
+        "reason": "Hero Detail è dimensionato e disegnato per la pagina di dettaglio prodotto (Player 300h + Body sotto). Usarlo in homepage al posto del Hero homepage rompe la consistenza visiva e introduce un Title display/d2 (24px) dove in homepage si usa heading/h1 (20px) — il display/d2 segnala 'titolo di pagina', non 'titolo di sezione homepage'.",
+        "alternative": "Per homepage usare Hero (componente separato, `heroHomepage/*` namespace). Hero Detail SOLO in cima a pagine di dettaglio prodotto."
+      },
+      {
+        "scenario": "hero-detail-without-close-x",
+        "reason": "La X in alto a destra è parte intrinseca del pattern: comunica che la pagina di dettaglio è una vista temporanea (push/modale full-screen) da cui l'utente esce per tornare alla pagina precedente. Rimuoverla lascia l'utente senza uscita esplicita — costretto a usare back system o swipe.",
+        "alternative": "La X è sempre presente nel design Figma del Hero Detail. Se il pattern di navigazione della pagina ospite è diverso (es. tab interna, non push), riconsiderare se Hero Detail è il componente giusto o se serve una variante senza X (da disegnare in Figma)."
+      },
+      {
+        "scenario": "no-partner-info",
+        "reason": "Il Paragraph contiene 'Partner: [Nome]' (es. Playtech, Pragmatic Play): è informazione di produzione che dà credibilità + supporta la scelta dell'utente (chi conosce il provider sa cosa aspettarsi). Lasciarlo vuoto o ometterlo svuota il pattern.",
+        "alternative": "Sempre valorizzare il Partner (per giochi/slot) o l'equivalente per il prodotto (es. 'Lega: Serie A' per eventi sportivi, 'Operatore: ...' per scommesse esterne). Se davvero non c'è informazione di partner/produttore, è plausibile che Hero Detail non sia il pattern giusto."
+      },
+      {
+        "scenario": "too-many-badges",
+        "reason": "I 3 slot badge (Promo / Jackpot / Default) sono pensati per essere selettivi: tipicamente 1-2 attivi. Attivare sempre tutti e tre sovraccarica la zona top-left del Player e dilui il significato semantico dei singoli badge.",
+        "alternative": "Mostrare solo i badge effettivamente rilevanti per quel prodotto. Se non ci sono caratteristiche da segnalare, nasconderli tutti — il Hero Detail funziona perfettamente senza badge."
+      },
+      {
+        "scenario": "long-paragraph-overflow",
+        "reason": "Il Paragraph è `typography/body/pLead` (16px) con line-height 18 — pensato per 1 riga concisa ('Partner: Nome'). Paragraph lunghi (descrizione del prodotto, regole del gioco) sforano la sezione Body e rompono l'altezza compatta del Hero Detail.",
+        "alternative": "Mantenere il Paragraph a 1 riga ('Partner: X'). Per descrizioni più articolate aggiungere una sezione separata sotto al Hero Detail nella pagina (es. Card Informative, Accordion 'Come si gioca')."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Player": {
+        "required": true,
+        "description": "Zona alta (300h, full-width) con immagine del prodotto a tutta superficie (object-cover). Sopra applica un gradient top → transparent (bg-gradient-to-b from-nero) per migliorare la leggibilità dei contenuti sovrapposti in alto. Padding `heroDetail/player/size/padding/{horizontal|vertical}` (16/16). Contiene: GiocoCertificatoLogo, BadgeCluster, CloseButton (assoluto top-right) e PlayerButton (centrale, opzionale)."
+      },
+      "GiocoCertificatoLogo": {
+        "required": true,
+        "description": "Logo 'Gioco Certificato' 72×25 in alto a sinistra (sopra ai badge), asset istituzionale che certifica il gioco regolamentato ADM. Asset PNG/SVG (`Illustrations/Brand/Brand reference/Product/Gioco certificato`), non un token icon — è parte del pattern di compliance."
+      },
+      "BadgeCluster": {
+        "required": false,
+        "description": "Riga di Badge Default `marketing` md (24h, radius 128) in alto-sinistra sotto al logo certificato, gap `heroDetail/player/size/gap` (8). 3 slot: Promo (arancione), Jackpot (verde), Default (chiaro con border + label custom). Indipendenti, mostrati selettivamente in base ai metadata del prodotto."
+      },
+      "CloseButton": {
+        "required": true,
+        "description": "Icon button X in alto-destra del Player (48×48 area, radius 12, icona 24×24 bianca), per chiudere la pagina di dettaglio e tornare alla precedente. Posizione assoluta `right:0 top:0`. Color icona `heroDetail/player/button/color/icon` (bianco) per contrasto sul gradient scuro top. Ha hit area sopra-soglia (48dp Android / quasi 44pt iOS)."
+      },
+      "PlayerButton": {
+        "required": false,
+        "description": "Pulsante circolare 60×60 (radius 100, fully-round) al CENTRO del Player con icona Play 24×24, opzionale via `showPlayerButton` (default true). Tap avvia preview video del prodotto (es. trailer/clip del gioco). Nascondere quando il prodotto non ha media video associato — l'immagine statica rimane come unico visual."
+      },
+      "Body": {
+        "required": true,
+        "description": "Zona bassa full-width con bg `heroDetail/body/color/bg` (bianco), padding `heroDetail/body/size/padding/{horizontal|vertical}` (16/16), gap `heroDetail/body/size/gap` (16). Contiene PageControl (in alto) e TextBox sotto. Allineato `items-start` (left-aligned). Posato direttamente sotto al Player con `heroDetail/size/gap` (0) — niente separator visivo, il body bianco crea il contrasto."
+      },
+      "PageControl": {
+        "required": false,
+        "description": "Row di dots 8×8 (radius 128 fully-round) come paginazione del media del prodotto. Quando il prodotto ha più media (immagini/video), il dot active (token `pageControl/color/bg/active`, verde brand) indica il media corrente e gli altri sono `pageControl/color/bg/default` (grigio chiaro). Per prodotti con un solo media nascondere PageControl o mostrare 1 solo dot (a scelta del consumer)."
+      },
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale left-aligned (Title sopra, Paragraph sotto, gap `textbox/size/gap` 8). Title in `typography/display/d2` (24px ExtraBold Mulish, line-height 28) per il nome del prodotto. Paragraph in `typography/body/pLead` (16px regular Roboto) per 'Partner: [Nome]' — la parte 'Nome' è in `typography/body/pLeadBold` (16px ExtraBold) per dare risalto al provider. Entrambi nel token `heroDetail/body/color/text` (dark)."
+      }
+    },
+    "nestedComponents": ["Badge Default", "Button Icon", "Page Control"],
+    "commonPartners": ["Page", "Drawer"],
+    "parentConstraints": [
+      "Esclusivamente in cima alla pagina di dettaglio prodotto (slot/gioco/evento), come primo elemento visivo della pagina sotto eventuale sistema di status bar. NON usabile in homepage (per quella c'è Hero), NON in pagine listing/categoria, NON in pagine secondarie generiche.",
+      "Larghezza = viewport completo (375 nel design Figma, full-bleed). NON ha padding orizzontale verso i bordi della pagina — è progettato per attaccare ai bordi del viewport.",
+      "La Close button (X) è parte intrinseca del pattern: presuppone che la pagina di dettaglio sia raggiunta via push/modale full-screen e che la X esegua un dismiss verso la pagina precedente."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-close": "Tap sulla X in alto-destra esegue `onClose` — tipicamente dismiss della pagina di dettaglio (pop dello stack di navigazione o close del modale). Hit area 48×48.",
+      "tap-player-button": "Solo con `showPlayerButton=true`: tap sul bottone play centrale esegue `onPlayPreview` — tipicamente apre il video/animation preview del prodotto in player full-screen o inline.",
+      "swipe-media": "Gesture swipe orizzontale sulla zona Player cambia il media corrente quando il prodotto ha più media; PageControl si aggiorna in sincrono. Pattern standard per galleria di immagini/video del prodotto.",
+      "no-tap-on-text": "TextBox (Title + Paragraph) non è tappabile — è informativo. L'utente che vuole un'azione tappa la X (per uscire) o il PlayerButton (per video) o swipa per il media."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "container (non un button unico come Hero homepage) — su iOS impostare ogni elemento interattivo (CloseButton, PlayerButton) come `accessibilityElement=true` con propri trait + label; gli elementi informativi (Title, Paragraph, Badge) sono statici raggruppati con `accessibilityElement=false` sui contenitori e l'announcement combinato a livello pagina. Su Android stesso schema: container `Role.None` con figli marcati Button/Image/Text.",
+    "screenReader": "Annuncio iniziale al mount della pagina di dettaglio: '[badge attivi], [Title], [Paragraph]' (es. 'Promo, Jackpot, Mega Fire Blaze Roulette, Partner Playtech'). CloseButton ha label esplicita 'Chiudi' (iOS) / 'Chiudi dettaglio' (Android). PlayerButton 'Riproduci anteprima' / 'Play preview'. Per media multipli con PageControl, annunciare 'media X di N' quando l'utente swipa.",
+    "focusManagement": "Ordine focus: CloseButton (X) primo (per dare via di uscita immediata anche a navigazione tastiera/switch control), poi PlayerButton (se presente), poi Title, Paragraph, PageControl dots (se navigabili come elementi separati). Il media (immagine) non è focusable — è decorativo a livello accessibilità.",
+    "touchTarget": "CloseButton 48×48 — sopra-soglia (44pt iOS / 48dp Android). PlayerButton 60×60 — abbondantemente sopra-soglia. Badge nel cluster sono 24h ma non interattivi (display only). PageControl dot 8×8 — sotto-soglia ma in pattern swipable lo swipe è il gesture principale, non il tap sul dot.",
+    "wcag": "AA — Il gradient top-to-transparent sul Player garantisce contrasto del testo bianco e dei badge sull'immagine variabile (l'immagine è dato del consumer, l'overlay è progettato per normalizzarne il contrasto). Il Body bianco con `heroDetail/body/color/text` dark è ampiamente AA. La Close button bianca su gradient scuro garantisce alta visibilità. Per chi non swipa, considerare di esporre prev/next button come fallback se i media sono multipli (oggi non c'è in Figma — è un gap potenziale)."
+  },
+
+  "aiHints": {
+    "priority": "high",
+    "keywords": ["hero detail", "product detail hero", "game detail", "slot detail", "dettaglio prodotto hero", "media player hero"],
+    "context": "Usa Hero Detail ESCLUSIVAMENTE in cima a pagine di dettaglio prodotto (slot, gioco, evento). 2 zone verticali: Player (300h full-bleed con media, badge, X close, Player Button play opzionale, logo Gioco Certificato) e Body (bg bianco, PageControl + TextBox left-aligned). Title in `display/d2` (24px ExtraBold Mulish) — più grande del Hero homepage perché qui è il titolo della pagina. Paragraph in pLead con 'Partner: [Nome]' (parte Nome in pLeadBold). Token namespace `heroDetail/*` con sotto-spazi `heroDetail/player/*` e `heroDetail/body/*`. Distinto da Hero (homepage) — non interscambiabili: Hero per cima homepage con showcase swipable, Hero Detail per cima pagina prodotto con media + info. Componenti nested: Badge Default, Button Icon (per X), Page Control. La X è parte intrinseca del pattern (uscita dalla pagina dettaglio) — non rimuoverla. Il PlayerButton è opzionale (nasconderlo se il prodotto non ha video preview)."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

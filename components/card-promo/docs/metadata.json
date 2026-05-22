@@ -1,44 +1,155 @@
 {
   "slug": "card-promo",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5925:30226",
+    "ios": "5925:30226",
+    "carouselTemplate": "5925:30781"
+  },
+
   "component": {
     "name": "Card Promo",
-    "category": "atoms",
-    "description": "",
+    "category": "molecules",
+    "description": "Card per promo/bonus dell'utente. 7 `State` SEMANTICI che rappresentano il LIFECYCLE del bonus/promo associato (non state di interazione standard): `Default` (260×240, promo attiva pronta da claim/giocare — image + Title + Caption + opzionale Counter lg countdown + opzionale Badge Ribbon highlight 'New' blu); `Pending` (260×240, bonus in attesa — overlay scuro + illustrated icon Clock + text 'in attesa'); `Error` (260×240, bonus fallito/errato — overlay + illustrated icon 'SI Failed' + text d'errore); `Success`/Completed (260×240, bonus completato — overlay arancione `cardPromo/color/completed/overlay` + illustrated icon 'SI Bonus completed' + text celebrativo); `Disabled` (260×240, bonus non disponibile — overlay grigio chiaro, bg disabled `cardPromo/color/disabled/bg`, text dim); `Registration` (260×240, promo di registrazione — bg dark + Button primary CTA per azione di iscrizione/conferma); `Landscape` (296×141 wide horizontal — variante landscape con border 2px arancione `cardPromo/color/landscape/border` + Badge Ribbon 'Promo' arancione, layout orizzontale per pattern non-grid). 6 dei 7 State condividono dimensioni 260×240 e radius 8 (`cardPromo/size/default/border/radius`); `Landscape` è l'eccezione strutturale a 296×141. Ogni state ha proprio set di token `cardPromo/{state}/*` per bg/text/overlay/label/padding. USATA TIPICAMENTE in carousel orizzontale (vedere frame `Card Promo Carousel Template` 5925:30781). Three-way naming: slug `card-promo`, frame Figma 'Card Promo', namespace `cardPromo/*`.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "active-bonus-card",
+      "bonus-lifecycle-display",
+      "promo-carousel-tile",
+      "registration-promo-card",
+      "claimable-bonus-callout"
+    ],
+    "requiredProps": ["state", "title"],
+    "commonPatterns": [
+      {
+        "name": "default-active-bonus-with-countdown",
+        "description": "State=`Default`: promo attiva da claim o usare, con Counter lg countdown (es. '03 Giorni / 11 Ore' = atom Counter Size=lg con due box stack number/label) sovrapposto in alto-destra. Badge Ribbon highlight 'New' blu (`badgeRibbon/color/highlight/bg`) in alto-sinistra per nuove promo. Title + Caption sotto su gradient bottom scuro per leggibilità. Tap → claim/usa la promo.",
+        "composition": "<CardPromo state=\"Default\" title=\"Welcome bonus\" caption=\"Fino a 500€...\" countdown={{days:3,hours:11}} showNewBadge onPress={claimBonus} />"
+      },
+      {
+        "name": "lifecycle-states-bonus-area",
+        "description": "Nella sezione 'I miei bonus' / 'Promo attive' dell'utente, le Card Promo mostrano il LIFECYCLE STATE corrente di ogni bonus: `Pending` (in attesa di attivazione), `Default` (attivo, claimabile/usabile), `Success` (completato — il bonus è stato vinto/usato), `Error` (qualcosa è andato storto — es. requisiti non soddisfatti), `Disabled` (non disponibile per l'utente). Ogni state ha overlay + illustrated icon dedicata + token color set distinto. Il consumer renderizza lo State corrente dal backend.",
+        "composition": "{userBonuses.map(b => <CardPromo state={mapBonusStatus(b.status)} {...b} />)}"
+      },
+      {
+        "name": "registration-promo-with-cta-button",
+        "description": "State=`Registration`: promo per nuovi utenti / KYC / verifica. Bg dark + Title + Caption + Button primary md (es. 'Registrati', 'Verifica conto') come CTA esplicita. Diversamente dagli altri state che sono entry-point per claim/dettaglio, Registration ha Button visibile in card per accelerare la conversion.",
+        "composition": "<CardPromo state=\"Registration\" title=\"Verifica il tuo conto\" caption=\"Sblocca tutti i bonus\" primaryAction={{label:'Verifica', onPress:openKYC}} />"
+      },
+      {
+        "name": "landscape-promo-wide",
+        "description": "State=`Landscape` (296×141, formato wide orizzontale): variante per pattern non-grid dove serve uno spazio orizzontale ridotto in altezza (es. Banner-style integrato in pagina lista). Border 2px arancione + Badge Ribbon 'Promo' arancione tradizionale (`badgeRibbon/color/promo/*`). Layout testo + image affiancati orizzontalmente.",
+        "composition": "<CardPromo state=\"Landscape\" title=\"Promo del giorno\" caption=\"Scopri di più\" imageUrl={promoImg} />"
+      },
+      {
+        "name": "horizontal-carousel-template",
+        "description": "Pattern di uso canonico (frame Figma 'Card Promo Carousel Template' 5925:30781): N Card Promo Default in carosello orizzontale scrollable, con Heading 'I miei bonus' + outlet Link 'Vedi tutti' sopra. Peek delle card adiacenti per segnalare scroll disponibile. Le card mantengono altezza fissa 240 — il carosello è la modalità d'uso primaria documentata.",
+        "composition": "<Heading title=\"Bonus attivi\" outlet=\"Link\" linkLabel=\"Vedi tutti\" /><HorizontalScroll>{bonuses.map(b => <CardPromo state=\"Default\" {...b} />)}</HorizontalScroll>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "wrong-state-for-bonus-lifecycle",
+        "reason": "I 7 State rappresentano il LIFECYCLE SEMANTICO del bonus (Pending → Default → Success/Error/Completed → Disabled). Usare lo state sbagliato (es. Default su un bonus già completato, o Success su un bonus appena ricevuto) confonde l'utente — il color + illustrated icon + overlay comunicano UNA condizione precisa.",
+        "alternative": "Mappare 1:1 lo stato del bonus dal backend al State della Card Promo. Pending=in attesa di attivazione/erogazione; Default=attivo claimabile; Success=completato vinto/usato; Error=fallito (requisiti non soddisfatti, scaduto); Disabled=non disponibile per l'utente; Registration=promo per nuovi utenti."
+      },
+      {
+        "scenario": "use-landscape-in-grid",
+        "reason": "Variant=`Landscape` (296×141 wide orizzontale, border arancione) è disegnato per pattern STANDALONE in pagine liste o sezioni — NON per griglie verticali insieme alle altre varianti 260×240. Mescolare Landscape e Default in griglia crea righe di altezza+larghezza diverse, rompendo l'allineamento.",
+        "alternative": "Per griglie/caroseli usare gli state Default/Pending/Success/Error/Disabled/Registration (tutti 260×240 — pattern omogeneo). Riservare Landscape a uso isolato in liste verticali di altri componenti."
+      },
+      {
+        "scenario": "show-error-without-recovery-context",
+        "reason": "State=`Error` con illustrated icon SI Failed comunica visivamente che qualcosa è andato storto col bonus — ma senza fornire una RECOVERY CONTEXTUAL (testo che spiega cosa fare) l'utente vede solo 'errore' e non sa come procedere.",
+        "alternative": "Per State=Error sempre con Caption esplicativa che dice cosa è andato storto (es. 'Hai superato i 30 giorni per usarlo') e — idealmente — un tap che porta a una pagina di dettaglio errore con eventuale recovery (es. 'Contattaci')."
+      },
+      {
+        "scenario": "missing-countdown-on-default-when-relevant",
+        "reason": "State=Default con Counter lg countdown comunica urgenza ('hai X giorni per usarlo'). Omettere il Counter quando il bonus HA scadenza fa perdere il driver di conversion temporale — l'utente non sa che il bonus scade.",
+        "alternative": "Per bonus con scadenza mostrare sempre il Counter lg (atom Counter Size=lg, 32h, con stack number/label tipo 'Giorni'/'Ore'). Per bonus senza scadenza (es. evergreen) il Counter è nascosto — pattern accettabile."
+      },
+      {
+        "scenario": "carousel-with-mixed-states",
+        "reason": "In carosello dei propri bonus (canonical pattern), mescolare bonus in tutti gli state (Pending + Default + Success + Error + Disabled fianco a fianco) crea rumore visivo — l'utente non riesce a focalizzarsi su quello attivo/da claim.",
+        "alternative": "In carosello mostrare bonus ATTIVI/CLAIMABILI (Default) o, al massimo, Default + Pending. Per la cronologia completa (inclusi Success/Error/Disabled) usare una sezione 'Storico' dedicata con lista verticale invece del carosello."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Container": {
+        "required": true,
+        "description": "Container variabile per State: 6 state condividono `cardPromo/size/default/width` (260) × `*/default/height` (240) × `*/default/border/radius` (8); `Landscape` ha `cardPromo/size/landscape/width` (296) × `*/landscape/height` (141) + border 2px `*/landscape/border/width` color `cardPromo/color/landscape/border` (arancione). Bg base per state: default/pending/error/registration/landscape usano `cardPromo/color/{state}/bg` (grigio scuro); completed/disabled hanno bg propri. Padding 16/16 (`cardPromo/size/{state}/padding/horizontal|vertical`)."
+      },
+      "BackgroundImage": {
+        "required": false,
+        "description": "Immagine full-bleed del prodotto/promo (asset consumer). Visibile in State=Default e Landscape sotto al gradient/overlay. Negli altri state è coperta o sostituita dall'illustrated icon dedicata (Pending=Clock, Error=SI Failed, Success=SI Bonus completed). In Disabled e Registration può essere assente."
+      },
+      "Overlay": {
+        "required": false,
+        "description": "Overlay semi-trasparente applicato sopra l'image per ogni state. Token `cardPromo/color/{state}/overlay`: pending/error/registration = nero ~80% trasparente; completed = arancione opaco; disabled = grigio chiaro opaco (copre l'image). L'overlay è il driver visivo principale dello state — chi guarda riconosce immediatamente la condizione del bonus dal colore dell'overlay."
+      },
+      "IllustratedIcon": {
+        "required": false,
+        "description": "Icona illustrata 24×24 specifica per lo state, sovrapposta al center/overlay: Pending → 'Clock' (`Icons/Illustrated icons/Bonus and promo/Progress bar/Clock`); Error → 'SI Failed' (`*/Bonus/SI Failed`); Success/Completed → 'SI Bonus completed' (`*/Bonus/SI Bonus completed`). Assenti in Default, Landscape, Disabled, Registration (questi usano image + text senza illustrated icon)."
+      },
+      "Counter": {
+        "required": false,
+        "description": "SOLO in State=Default: Counter Size=lg (atom Counter, 32h, padding 4/4, radius 4, bg `counter/lg/color/bg` grigio scuro, text bianco) sovrapposto in alto-destra dell'image. Stack number + label es. '03 / Giorni', '11 / Ore' — countdown alla scadenza del bonus. Nascosto se il bonus non ha scadenza."
+      },
+      "BadgeRibbon": {
+        "required": false,
+        "description": "Badge Ribbon sovrapposto in alto-sinistra. 2 varianti viste: `highlight` (blu `badgeRibbon/color/highlight/bg`, text bianco) per label 'New' in State=Default — riservato a promo recenti; `promo` (arancione `badgeRibbon/color/promo/bg`, text quasi nero) per State=Landscape — pattern Promo tradizionale."
+      },
+      "TextBlock": {
+        "required": true,
+        "description": "Title + Caption in basso (sopra il gradient o sotto l'illustrated icon). Title in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18). Caption in `typography/body/caption` (12px regular Roboto, line-height 14). Color text via state: `cardPromo/color/{state}/text` (bianco per stati scuri, dim per disabled). Per State=Default Caption è body/caption regular; per altri state può essere captionBold per emphasis dello stato."
+      },
+      "Button": {
+        "required": false,
+        "description": "SOLO in State=Registration: Button primary `brand/primary` size sm (`button/size/sm/height` 32, `*/border/radius` 12) con label CTA (es. 'Registrati', 'Verifica'). Posizionato sotto al TextBlock. Negli altri state non c'è Button — il tap è sull'intera card."
+      }
+    },
+    "nestedComponents": ["Counter", "Badge Ribbon", "Button"],
+    "commonPartners": ["Heading", "Page", "Bottom Sheet"],
+    "parentConstraints": [
+      "Card Promo (state diversi da Landscape) vive tipicamente in CAROSELLO orizzontale (frame 'Card Promo Carousel Template' 5925:30781) o in pagine dedicate 'I miei bonus' / 'Promo attive'. Preceduta da Heading di sezione con outlet Link 'Vedi tutti'.",
+      "State=Landscape è pensato per uso STANDALONE in liste verticali o sezioni inline — non in griglie/caroseli con altri state.",
+      "Lo State è guidato dal LIFECYCLE del bonus dal backend — il consumer mappa lo status semantico del bonus al State della Card Promo."
+    ]
   },
+
   "behavior": {
-    "states": [],
-    "interactions": {},
+    "states": ["default", "pending", "error", "success", "disabled", "registration", "landscape"],
+    "interactions": {
+      "tap-card": "Tap sull'intera card (per State Default, Pending, Error, Success, Landscape) esegue navigation/azione contestuale — tipicamente apre la pagina dettaglio del bonus o il flusso di claim. Per State=Disabled niente tap (non interattivo). Per State=Registration il tap PRINCIPALE è sul Button primary (non sulla card).",
+      "tap-button-registration": "SOLO State=Registration: tap sul Button primary esegue `onPrimaryPress` (es. apre flow di registrazione/KYC).",
+      "no-pressed-state-visuals": "I State della Card Promo sono SEMANTICI (lifecycle del bonus), non interattivi. Il feedback di touch è gestito dal pattern nativo di piattaforma (lieve opacity change/ripple)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "Per Default/Pending/Error/Success/Landscape (card tappabile): `Role.Button` con label combinata (state semantico + Title + Caption + countdown se presente, es. 'In attesa, Welcome bonus, Sarà attivo dopo la prima ricarica, pulsante'). Per Disabled: `Role.None` + `accessibilityLabel` informativo (lo state non è tappabile). Per Registration: container `Role.None`, Button interno è elemento accessibile separato con `Role.Button`. L'illustrated icon è SEMANTICA dello state — deve essere ANNUNCIATA via accessibilityLabel del container (es. 'Bonus in attesa', 'Bonus fallito'), non lasciata muta.",
+    "screenReader": "Annuncio combinato che include LO STATE come prefisso semantico: 'In attesa, [Title], [Caption], pulsante' / 'Errore, [Title], [Caption]' / 'Completato, [Title], [Caption]'. Per Default con Counter: 'Welcome bonus, scade fra 3 giorni e 11 ore, pulsante'. Per Disabled: 'Non disponibile, [Title]'.",
+    "focusManagement": "Default/Pending/Error/Success/Landscape: 1 elemento focusable (container). Registration: container non focusable, Button è focusable. Disabled: non focusable.",
+    "touchTarget": "Tutti i state 260×240 (e Landscape 296×141) — abbondantemente sopra-soglia 44pt iOS / 48dp Android. Button in Registration: 32h sm — sotto-soglia in altezza, estendere hit-area con padding del wrapper.",
+    "wcag": "AA — Text bianco su bg grigio scuro è AA. Overlay scuri (nero ~80% trasparente) garantiscono contrasto del testo sopra l'image. Overlay arancione di Success con text bianco è AA (verificare con token risolto). Disabled è intenzionalmente low-contrast (token `*/disabled/text` grigio dim) — semantica 'non disponibile'. Lo state semantico è comunicato DA PIÙ CANALI: colore overlay + illustrated icon + text esplicativo + (a11y) prefisso annuncio — non solo-colore."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["card promo", "promo card", "bonus card", "card bonus", "lifecycle card", "promo carousel"],
+    "context": "Card per promo/bonus dell'utente con 7 `State` SEMANTICI (lifecycle del bonus, NON state di interazione): `Default` (attivo, 260×240, con Counter countdown opzionale + Badge Ribbon 'New' blu), `Pending` (in attesa, overlay scuro + illustrated icon Clock), `Error` (fallito, overlay + icon SI Failed), `Success`/Completed (completato, overlay arancione + icon SI Bonus completed), `Disabled` (non disponibile, overlay grigio chiaro), `Registration` (per nuovi utenti, bg dark + Button primary CTA), `Landscape` (296×141 wide, border 2px arancione + Badge Ribbon 'Promo'). 6 state hanno dimensione 260×240, Landscape è eccezione 296×141. Token namespace `cardPromo/*` con sotto-set per ogni state (`cardPromo/color/{state}/*` e `cardPromo/size/{state}/*`). Pattern d'uso canonico: CAROSELLO orizzontale di Card Promo Default in sezioni 'I miei bonus' / 'Promo attive' (frame 'Card Promo Carousel Template'). Mappare lo State dal lifecycle backend del bonus (status). NON mescolare Landscape e altre varianti nella stessa griglia. Per Error sempre con Caption che spiega cosa è andato storto. Counter lg in Default per bonus con scadenza. State semantico ANNUNCIATO da screen reader come prefisso. Riusa atomi: Counter (lg), Badge Ribbon (highlight/promo), Button (per Registration)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

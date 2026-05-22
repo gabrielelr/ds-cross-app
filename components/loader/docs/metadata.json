@@ -1,44 +1,120 @@
 {
   "slug": "loader",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5954:5520",
+    "ios": "5954:5520"
+  },
+
   "component": {
     "name": "Loader",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "Indicatore visivo di caricamento/processing INDETERMINATO (non mostra percentuale di completamento). 40×40 (`loader/size/height`), ruota in loop fino al completamento dell'operazione. 2 `OS` con pattern visivi nativi distinti: **Android** (frame 5954:5519) usa un CIRCULAR PROGRESS con arc che ruota — track grigio chiaro `loader/color/border` + arc verde brand `loader/color/bg` (Material indeterminate circular indicator pattern). **iOS** (frame 5954:5518) usa un SEGMENTED ACTIVITY INDICATOR con 12 raggi/segmenti che ruotano in opacità sfumando (UIActivityIndicatorView pattern). Entrambi sono indeterminati — comunicano 'sto lavorando' senza promettere un tempo di completamento. Non interattivo (display puro), niente State, niente label.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
+    "useCases": [
+      "data-fetch-loading",
+      "submit-form-pending",
+      "full-screen-loading-overlay",
+      "inline-loading-in-button",
+      "list-item-loading",
+      "media-buffering"
+    ],
     "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "commonPatterns": [
+      {
+        "name": "full-screen-loading-overlay",
+        "description": "Loader centrato in un overlay full-screen quando l'app sta caricando dati critici al boot o dopo navigazione importante (es. login → home, deposito → riepilogo). Tipicamente con Backdrop semitrasparente sopra al contenuto sottostante per indicare blocco utente.",
+        "composition": "<Backdrop><Loader /></Backdrop>"
+      },
+      {
+        "name": "inline-loading-replacing-content",
+        "description": "Loader inline al posto del contenuto in caricamento (es. al centro di una Listing finché i dati non arrivano, dentro a un Hero finché l'immagine non si carica). L'utente vede chiaramente che 'qui sta arrivando qualcosa' invece di un vuoto silente.",
+        "composition": "{loading ? <Loader /> : <Listing items={data} />}"
+      },
+      {
+        "name": "submit-button-pending",
+        "description": "Loader piccolo (può essere scalato sotto 40×40 dal consumer) DENTRO a un Button durante azione async (es. tap 'Salva' → button mostra Loader al posto della label per il tempo della richiesta API). Pattern di feedback immediato che l'azione è in corso. Il Button entra in stato disabled/non-tappabile durante questo periodo per evitare double-submit.",
+        "composition": "<Button variant=\"primary\" disabled={isSubmitting}>{isSubmitting ? <Loader /> : 'Salva'}</Button>"
+      },
+      {
+        "name": "os-native-rendering",
+        "description": "Il consumer renderizza automaticamente la variante OS corretta in base al runtime: `OS=android` su Android (arc circolare) / `OS=ios` su iOS (segmenti rotanti). Mantenere il pattern nativo è importante: gli utenti riconoscono lo spinner della propria piattaforma e capiscono subito 'sto aspettando, non c'è un errore'.",
+        "composition": "<Loader />  // auto-pick OS variant at runtime"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "loader-for-fast-operations",
+        "reason": "Mostrare il Loader per operazioni SUB-300ms crea sfarfallio: l'utente vede uno spinner che appare e scompare istantaneamente, percependo l'app come 'glitchy' invece che reattiva. Sotto i 100ms l'operazione sembra istantanea — il Loader spunta inutile.",
+        "alternative": "Mostrare Loader SOLO per operazioni >300ms (idealmente con un breve delay 200-300ms prima dell'apparizione, così operazioni più veloci non lo mostrano mai). Per operazioni veloci affidarsi al feedback nativo (ripple Android, opacity-change iOS) del Button/elemento tappato."
+      },
+      {
+        "scenario": "loader-without-context-or-blocking-without-cancel",
+        "reason": "Loader full-screen senza spiegazione di cosa sta caricando (es. 'Sto verificando...', 'Caricamento giocate...') lascia l'utente nel limbo. Peggio: loader full-screen che blocca l'utente >5 secondi senza opzione di cancel/retry forza un'attesa indefinita.",
+        "alternative": "Per operazioni lunghe (>1-2 secondi) accompagnare il Loader con testo descrittivo (Feedback o subtitle); per operazioni >5 secondi offrire 'Annulla' o 'Riprova'. Per operazioni veramente bloccanti senza alternative, almeno aggiungere un timeout di fallback con error state."
+      },
+      {
+        "scenario": "loader-for-determinate-progress",
+        "reason": "Il Loader è INDETERMINATO — non comunica 'a che punto siamo'. Usarlo per operazioni dove la percentuale è nota (download di file con dimensione, upload con bytes/total, multi-step con N step) frustra l'utente che vorrebbe sapere quanto manca.",
+        "alternative": "Per progress determinato usare un componente Progress Bar dedicato (NB: non documentato nel DS attuale — se serve, richiederlo come nuovo componente). Il Loader rimane esclusivamente indeterminato."
+      },
+      {
+        "scenario": "wrong-os-variant-cross-platform",
+        "reason": "Forzare il rendering Android su iOS (o viceversa) rompe l'aspettativa nativa: gli utenti riconoscono lo spinner della propria piattaforma e leggono inconsciamente 'questo è lo spinner del mio sistema' come segnale di affidabilità. Spinner di altra piattaforma può sembrare 'finto' o 'pirata'.",
+        "alternative": "Rispettare il pattern OS Figma: `OS=android` su Android device (arc circular Material), `OS=ios` su iOS device (segmented activity indicator UIKit). Il consumer del componente sceglie automaticamente in base alla piattaforma di runtime."
+      },
+      {
+        "scenario": "static-non-animated-loader",
+        "reason": "Il Loader È un'animazione di rotazione — un Loader statico (PNG senza animation, o paused) NON comunica 'caricamento in corso'. Sembra solo un'icona astratta o uno stato bloccato.",
+        "alternative": "Il consumer deve garantire l'animation continua del Loader: 1.4s linear infinite rotation (Android arc) o ~0.8s opacity cycling dei 12 segmenti (iOS). Se l'animazione si ferma per problemi runtime/performance, valutare error state invece di loader statico."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Spinner": {
+        "required": true,
+        "description": "L'unico elemento del Loader. 40×40 (`loader/size/height`). 2 varianti OS-specifiche: `OS=android` (arc circolare in rotazione: track grigio chiaro `loader/color/border` + arc verde brand `loader/color/bg` che ruota — Material indeterminate circular indicator); `OS=ios` (12 raggi/segmenti disposti in cerchio che 'ruotano' aumentando/diminuendo l'opacità in sequenza — UIActivityIndicatorView pattern). Color brand verde `loader/color/bg` per la parte attiva in entrambi gli OS."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Backdrop", "Button", "Page", "Drawer", "Bottom Sheet", "Listing"],
+    "parentConstraints": [
+      "Pensato per essere centrato dove indica caricamento. Standalone in pagina (overlay con Backdrop), inline al posto del contenuto in caricamento, o piccolo dentro a un Button durante azione async.",
+      "Il consumer è responsabile dell'animazione continua del Loader — Figma disegna lo stato statico, è il rendering layer (UIKit/Material/CSS) che applica il pattern di rotazione nativo."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "animation-loop": "Il Loader RUOTA in loop continuo fino al completamento dell'operazione. Android: arc che ruota a velocità costante (~1.4s per giro). iOS: 12 segmenti che illuminano in sequenza creando l'illusione di rotazione (~0.8s ciclo completo). Niente interruzione/pause — l'unico modo di nasconderlo è rimuoverlo dal layout (operazione completata o cancellata).",
+      "no-tap": "Il Loader non è tappabile (display puro). Non ha onPress, non ha State. Per cancellare l'operazione in corso il consumer deve esporre un Button 'Annulla' SEPARATO accanto/sotto al Loader."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "progressbar (indeterminate) — su iOS impostare `accessibilityTraits = .updatesFrequently` + `accessibilityLabel = 'Caricamento in corso'` (UIActivityIndicatorView ha la semantica gratis se usato come componente nativo). Su Android usare `Modifier.semantics { role = Role.ProgressIndicator; progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate }`. Per Loader full-screen overlay, considerare di marcare il contenuto sottostante come `accessibilityElementsHidden=true` (focus trap nel loader).",
+    "screenReader": "Lo screen reader annuncia 'Caricamento in corso, in corso' (iOS) o 'Caricamento, indicatore di progresso indeterminato' (Android). NON ripetere l'annuncio in loop — basta una volta all'apparizione (e una all'eventuale scomparsa con annuncio di completamento dal consumer, es. 'Dati caricati'). Per Loader inline accompagnati da testo descrittivo, lo screen reader legge il testo + 'caricamento'.",
+    "focusManagement": "Non focusable (display puro). In overlay full-screen, il focus screen reader si sposta sul Loader al mount; al completamento si sposta sul primo elemento del contenuto caricato (responsabilità del consumer).",
+    "touchTarget": "N/A — non tappabile.",
+    "wcag": "AA — il verde brand `loader/color/bg` e il grigio chiaro track `loader/color/border` hanno contrasto basso fra loro, ma il pattern di rotazione e la riconoscibilità del 'spinner' OS-native sono fallback non-cromatici (la riconoscibilità della forma + animazione comunica 'caricamento' anche per chi non distingue il verde). Su backgrounds custom verificare contrasto."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["loader", "spinner", "loading indicator", "progress indeterminate", "caricamento", "wait spinner"],
+    "context": "Indicatore di caricamento INDETERMINATO 40×40. 2 OS con pattern visivi NATIVI distinti: Android = arc circolare in rotazione (Material), iOS = 12 segmenti rotanti in opacità (UIKit). Il consumer renderizza la variante OS corretta in base al runtime — non forzare cross-OS. Color brand verde per la parte attiva. NON usare per progress DETERMINATO (per quello servirebbe ProgressBar dedicato, non documentato nel DS attuale). NON mostrare per operazioni <300ms (sfarfallio). Per operazioni >1-2 secondi accompagnare con testo descrittivo; per >5 secondi offrire Annulla/Riprova. Non interattivo (display puro, niente onPress). Animazione CONTINUA in loop — il consumer non deve metterlo paused/statico. Use case: data fetch, submit form pending, full-screen overlay (con Backdrop), inline al posto di content, dentro a Button durante azione async."
   },
+
   "rationale": {
     "designDecisions": ""
   }

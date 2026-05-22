@@ -1,44 +1,155 @@
 {
   "slug": "filter",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-22",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6061:50191",
+    "ios": "6061:50191"
+  },
+
   "component": {
     "name": "Filter",
-    "category": "atoms",
-    "description": "",
+    "category": "organisms",
+    "description": "TEMPLATE Bottom Sheet di FILTRAGGIO — pagina modale che permette all'utente di selezionare uno o più filtri (Chip) per restringere un elenco di risultati (homepage, listing prodotti/giochi, ricerca). Composizione fissa: Bottom Sheet (Drawer) con Drag Handle + Header sticky ('Filters' h3 centrato + Icon Button close X) → Body scrollabile con H1 'Filters' (textbox titolo) + N sezioni di filtri (ognuna con TextBox heading h3 + paragraph descrittivo + FilterRow di Chip multi-select con stato default/selected) → Button Group sticky in basso con secondary 'Delete filters' (cancella tutti) + primary 'See results (N)' (conferma con contatore live dei risultati). Niente Variant in Figma — single-shape template che orchestra il pattern di filtraggio cross-app. FilterRow ha proprio token `filterRow/size/gap` (4) per il gap tra Chip dentro alla row wrap. Chip selected = bg `chip/color/bg/selected` (verde chiaro) + border `chip/color/border/selected` (verde brand). Three-way naming: slug `filter`, frame Figma 'Filters Page Template', namespace `filterRow/*` (solo per layout chip row) — il resto eredita da `bottomSheet/*`, `chip/*`, `buttonGroup/*`, `textbox/*`.",
     "type": "interactive"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "homepage-product-filtering",
+      "listing-multi-filter-selection",
+      "search-results-refinement",
+      "category-filter-modal"
+    ],
+    "requiredProps": ["sections", "onApply", "onClear", "resultsCount"],
+    "commonPatterns": [
+      {
+        "name": "fab-triggered-filter-flow",
+        "description": "Pattern UX completo del filtraggio: (1) utente tappa il FAB Filter (Button Filter) in homepage/listing → (2) si apre il Filter Bottom Sheet → (3) utente seleziona/deseleziona Chip nelle sezioni → (4) il contatore live nel CTA primary aggiorna 'See results (N)' man mano → (5) conferma tappando 'See results (N)' che applica i filtri e chiude il Bottom Sheet → (6) la pagina sotto mostra i risultati filtrati.",
+        "composition": "<FAB onPress={openFilterSheet} /> ... <Filter sections={filterSections} resultsCount={liveCount} onApply={applyFilters} onClear={clearAll} onClose={closeSheet} />"
+      },
+      {
+        "name": "clear-filters-double-entry-point",
+        "description": "L'utente ha DUE modi per cancellare i filtri attivi: (a) dalla pagina sotto, tappando 'Cancella' (Link) accanto al conteggio risultati per clear-all immediato; (b) riaprendo il Filter Bottom Sheet e tappando il Button secondary 'Delete filters' (Cancella filtri). Inoltre per rimuovere UN SINGOLO filtro l'utente può tappare la X sulla chip attiva (visibile nella row di filtri attivi sotto la pagina).",
+        "composition": "// in page: <ActiveFiltersRow chips={activeFilters} onRemove={removeFilter} onClearAll={clearAll} /> // in filter sheet: <Filter onClear={clearAll} ... />"
+      },
+      {
+        "name": "live-results-count-in-cta",
+        "description": "Il CTA primary del Button Group inferiore mostra SEMPRE il count live dei risultati che applicheranno i filtri correnti — es. 'See results (12)'. Il count si aggiorna in real-time mentre l'utente toggla le Chip, dando feedback immediato sull'effetto della selezione PRIMA di confermare.",
+        "composition": "<Button variant=\"primary\">See results ({liveResultsCount})</Button>"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-as-fullscreen-page",
+        "reason": "Il Filter è un Bottom Sheet modale — apre sopra la pagina mantenendo contesto visivo del listing sotto (backdrop scuro semi-trasparente). Trasformarlo in fullscreen page rompe il flow mentale 'sto filtrando QUESTA lista' → l'utente perde contesto e si chiede dove tornerà.",
+        "alternative": "Mantenere Bottom Sheet con backdrop. Su Android usa modal bottom sheet, su iOS usa sheet con drag handle e detente. Niente fullscreen page per il filter."
+      },
+      {
+        "scenario": "missing-results-count-in-cta",
+        "reason": "Senza count live nel CTA primary, l'utente non sa quanti risultati otterrà PRIMA di applicare → applica al buio e potrebbe scoprire 0 risultati o troppi risultati dopo aver chiuso il sheet. UX peggiore (forza re-apertura del sheet per aggiustare).",
+        "alternative": "CTA primary SEMPRE con count: 'See results (N)' / 'Mostra risultati (N)'. Se N=0, considerare di disabilitare il CTA o cambiare label in 'Nessun risultato — modifica i filtri'."
+      },
+      {
+        "scenario": "auto-apply-on-chip-tap",
+        "reason": "Applicare i filtri automaticamente al tap di ogni Chip (senza CTA conferma) crea ricalcoli continui sul backend, può scrollare la lista sotto in modo disorientante, e impedisce la 'selezione batch' (configurare N filtri prima di vedere il risultato).",
+        "alternative": "Selezione batch: l'utente toggla Chip, vede il count aggiornarsi live nel CTA, conferma una sola volta tappando 'See results (N)'. I filtri si applicano solo allora."
+      },
+      {
+        "scenario": "single-select-only-filters",
+        "reason": "Il Filter Bottom Sheet è disegnato per MULTI-SELECT di Chip — sezioni con Chip che toggle (default/selected). Forzare single-select per scelta esclusiva snatura il pattern (per single-choice esclusivo usa Radio, non Chip).",
+        "alternative": "Per filtri multi-select usare le Chip nelle sezioni del Filter. Per scelta esclusiva (es. ordina per) usare Radio in una sezione dedicata. Non mescolare i due pattern senza segnale visivo chiaro."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Backdrop": {
+        "required": true,
+        "description": "Layer di overlay scuro semi-trasparente bg `color/elevation/backdrop/default` (opacity 80%) sotto al Drawer. Tap sul backdrop chiude il Bottom Sheet (senza applicare i filtri pending). Mantiene visibilità del contesto di pagina sottostante."
+      },
+      "Drawer": {
+        "required": true,
+        "description": "Container Bottom Sheet ancorato in basso allo viewport — bg `bottomSheet/color/body/bg` (bianco), radius-top `bottomSheet/size/border/radius` (12), shadow `shadow/md/*` per separazione visiva. Compone Header + Body + Button Group sticky."
+      },
+      "DragHandle": {
+        "required": true,
+        "description": "Indicatore visivo di trascinabilità del sheet: barra 32×5 color `bottomSheet/color/header/handle` (grigio chiaro) centrata in alto sopra il titolo. Su iOS gestisce i detente (snap point: medium, large). Su Android segnala swipe-to-dismiss."
+      },
+      "Header": {
+        "required": true,
+        "description": "Header sticky del Bottom Sheet: bg `bottomSheet/color/header/bg` (bianco) + border-bottom 1px `bottomSheet/color/header/border` (grigio chiaro) + padding `bottomSheet/size/header/padding/horizontal|vertical` (16/16) + radius-top `bottomSheet/size/header/border/radius/ios` (40 iOS). Contenuto: spacer 40×40 sx + Title 'Filters' h3 ExtraBold centrato + Icon Button close (X) 32×32 a destra. Su tap della X chiude il sheet senza applicare."
+      },
+      "Body": {
+        "required": true,
+        "description": "Area scrollabile del Bottom Sheet: bg `bottomSheet/color/body/bg` (bianco) + padding `bottomSheet/size/body/padding/horizontal|vertical` (16/16) + gap verticale `bottomSheet/size/body/gap` (16) tra elementi. Contiene Hero text (H1 'Filters') + N sezioni di filtri (TextBox heading h3 + paragraph + FilterRow di Chip)."
+      },
+      "HeroTitle": {
+        "required": true,
+        "description": "TextBox in cima al Body: Title 'Filters' tipografia `typography/heading/h1` (20px ExtraBold Mulish) color `textbox/color/text` (dark). Hero del Bottom Sheet che ribadisce il contesto."
+      },
+      "FilterSection": {
+        "required": true,
+        "description": "Sezione di filtro ripetuta N volte. Composta da TextBox (Title h3 + Paragraph p) per descrivere il gruppo di filtri (es. Title 'Categoria' + Paragraph 'Seleziona le categorie di interesse') + FilterRow sottostante. Una sezione per ogni dimensione di filtraggio (categoria, prezzo, brand, etc.)."
+      },
+      "FilterRow": {
+        "required": true,
+        "description": "Row wrap di N Chip md (chip/size/md/height 40). Gap `filterRow/size/gap` (4) sia orizzontale che verticale tra Chip. Le Chip si toggla tra default (bg bianco border grigio chiaro) e selected (bg `chip/color/bg/selected` verde chiaro + border `chip/color/border/selected` verde brand). Multi-select abilitato — possono essere selezionate più Chip contemporaneamente nella stessa row."
+      },
+      "ButtonGroup": {
+        "required": true,
+        "description": "Button Group sticky in basso al Drawer (variante Orientation=Inline, Size=md, Sticky=True). Container `buttonGroup/color/bg` bianco + border-top 1px `buttonGroup/color/border` + padding 16/16. Due Button: secondary 'Delete filters' (cancella tutta la selezione) a sinistra + primary 'See results (N)' a destra con N = count live dei risultati filtrati."
+      }
+    },
+    "nestedComponents": [
+      "Bottom Sheet",
+      "Heading",
+      "TextBox",
+      "Chip",
+      "Button Group",
+      "Button",
+      "Button Icon"
+    ],
+    "commonPartners": ["Page", "Button Filter", "Chip Navigation"],
+    "parentConstraints": [
+      "Il Filter Bottom Sheet vive a livello Page/Router come modale — non dentro a card o sezioni in-flow. Si apre sopra la pagina di listing/homepage mantenendo il backdrop scuro per contesto.",
+      "Viewport 375 mobile-native. Il Drawer max-height 812 (full viewport meno safe area). Il Body è l'unica area scrollabile; Header e Button Group restano sticky.",
+      "Eredita token da Bottom Sheet, Chip, Button Group, TextBox. Modifiche a quei token impattano direttamente il Filter."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "open-sheet": "Sheet si apre con animazione slide-up dal bottom (Android) o sheet presentation iOS-native (con detente medium/large). Backdrop fade-in contestuale.",
+      "drag-to-resize-or-dismiss": "Drag sul Drag Handle (o swipe down sul body) regola l'altezza del sheet su iOS (detente medium/large). Swipe-down oltre soglia chiude il sheet SENZA applicare i filtri pending.",
+      "tap-backdrop-to-dismiss": "Tap sul backdrop scuro chiude il sheet SENZA applicare i filtri pending. Confermare se è desiderato preservare la selezione pending: tipicamente NO — il close-without-apply scarta le modifiche.",
+      "tap-close-x": "Tap sull'Icon Button X in Header chiude il sheet senza applicare.",
+      "tap-chip": "Tap su una Chip nel FilterRow toggla il suo state default ↔ selected. Multi-select abilitato per sezione. Ad ogni toggle, il count live nel CTA primary si aggiorna ('See results (N)').",
+      "tap-delete-filters": "Tap su Button secondary 'Delete filters' del Button Group resetta TUTTE le Chip a state default (clear-all). Il count nel CTA primary si aggiorna al totale non-filtrato.",
+      "tap-see-results": "Tap su Button primary 'See results (N)' applica la selezione corrente al listing sottostante, chiude il sheet e aggiorna i risultati visibili in pagina.",
+      "remove-single-filter-from-page": "Pattern complementare: nella pagina sotto, l'utente può rimuovere un singolo filtro attivo tappando la X sulla Chip attiva nella row di filtri (interazione fuori dal Bottom Sheet)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "dialog modal — su iOS impostare `accessibilityViewIsModal=true` sul Drawer, focus trap automatico dentro al sheet. Header con `accessibilityTraits = .header`. Button close con label 'Chiudi filtri'. Su Android `Modifier.semantics { isContainer = true; role = Role.Dialog }` sul Drawer.",
+    "screenReader": "All'apertura: 'Filtri, finestra modale aperta. Titolo Filtri'. Lettura sequenziale: Hero title 'Filters' → per ogni sezione: 'Title, intestazione' → 'Paragraph' → 'N filtri selezionabili: Chip1, deselezionato; Chip2, selezionato; ...'. Sticky Button Group letto al focus: 'Cancella filtri, pulsante' / 'Mostra risultati N, pulsante'. Il count live nel CTA primary deve aggiornare l'`accessibilityLabel` ad ogni toggle Chip così che lo screen reader rilegga il count al focus successivo.",
+    "focusManagement": "Focus trap dentro al sheet — l'utente non può tabbare fuori. Focus iniziale sull'Icon Button close (X) dell'Header. Ordine tab: X → Hero title (non focusable, solo annuncio) → Chip della prima sezione → Chip delle sezioni successive → Button 'Delete filters' → Button 'See results (N)'. Alla chiusura, focus torna sul FAB Filter che ha aperto il sheet.",
+    "touchTarget": "Chip md 40h — sotto 44pt iOS / 48dp Android ⚠️. Considerare di estendere hit area oltre i visual bounds o passare a Chip size lg per touch target safe. Icon Button close 32×32 — anche borderline; tipicamente la Bottom Sheet header garantisce hit area estesa via padding container. Button Group md 48h ✅. Drag handle 32×5 — non un actionable singolo (è gesture-based, non tappabile).",
+    "wcag": "AA — bg bianco + testi dark (h1 ExtraBold, h3 ExtraBold, p Regular, pMedium Medium) sono ampiamente AA. Chip selected bg verde chiaro `chip/color/bg/selected` + border verde brand + testo dark = AA. Backdrop scuro 80% opacity garantisce contrast separation tra modale e pagina sotto. Button Group sticky ha contrasti già verificati dal Button atom."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "high",
+    "keywords": ["filter bottom sheet", "filtering modal", "filtra", "filter sheet", "filter dialog", "filtering drawer", "multi-select filter"],
+    "context": "TEMPLATE Bottom Sheet di filtraggio modale — UI completa per la selezione multi-select di Chip su N sezioni di filtri, con CTA conferma che mostra count live dei risultati ('See results (N)') e CTA secondary di clear-all ('Delete filters'). Pattern UX completo: FAB Filter in homepage/listing → tap apre il Filter Bottom Sheet → utente toggla Chip → count live aggiorna nel primary CTA → conferma applica e chiude → in pagina, filtri attivi visibili come Chip removibili (X per singolo, Link 'Cancella' per clear-all alternativo al riapertura del sheet). Composizione: Bottom Sheet (Drawer + Drag Handle + Header sticky 'Filters' + close X) + Body scrollabile (Hero H1 'Filters' + N FilterSection con TextBox h3+p + FilterRow di Chip md multi-select) + Button Group sticky in basso (secondary 'Delete filters' + primary 'See results (N)'). Token namespace `filterRow/*` (gap 4) per il layout della row di Chip. Multi-select per definizione (single-select esclusivo richiede Radio, non Chip). Count live SEMPRE nel CTA primary — niente apply-on-tap (batch selection). Backdrop scuro + drag handle iOS-native + focus trap dialog modal. NIENTE Variant — single-shape template che orchestra Bottom Sheet + Chip + Button Group."
   },
+
   "rationale": {
     "designDecisions": ""
   }

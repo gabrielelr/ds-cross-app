@@ -1,44 +1,127 @@
 {
   "slug": "titles-and-paragraphs",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "5805:89762",
+    "ios": "5805:89762",
+    "title": "5805:89762",
+    "paragraph": "5805:89771"
+  },
+
   "component": {
     "name": "Titles And Paragraphs",
     "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "description": "PRIMITIVE TIPOGRAFICHE del Design System — wrapper Figma del type system in forma di componenti swap-able. NON sono componenti UI da usare direttamente nei layout: sono la rappresentazione visiva canvas-side dei token tipografici, usati come SLOT di Title/Paragraph dentro a tutti gli altri componenti (Text Box, Hero, Banner, Card, Listing Item, Feedback, ecc.). 2 atomi Figma distinti: `Title` (frame 5805:89762) con 5 `Size` heading display per intestazioni (d1/d2 in display, H1/H2/H3 in heading) e `Paragraph` (frame 5805:89771) con 9 `Size` body per testo corrente (p lead, p lead bold, p, p medium, p bold, caption, caption bold, micro caption, micro caption bold). Color unificato `color/text/default` (dark) — il colore semantico è override del consumer (es. testo bianco su Hero, rosso su error state, grigio su disabled). Font family: Mulish per i Title (display + heading), Roboto per i Paragraph (body in tutte le scale). Questi atomi NON hanno use case in pagina come elementi standalone — il loro 'use case' è essere selezionati come variant del proprio slot interno a componenti più grandi.",
+    "type": "display"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "type-system-reference",
+      "title-slot-inside-component",
+      "paragraph-slot-inside-component"
+    ],
+    "requiredProps": ["size"],
+    "commonPatterns": [
+      {
+        "name": "title-display-page-level",
+        "description": "Title `Size=d1` (28px ExtraBold Mulish, lh 32) o `Size=d2` (24px lh 28): per titoli di livello pagina/screen — Page Title, Hero Detail product name. Display d1 è il più grande del DS (richiamo visivo massimo), d2 è uno step sotto.",
+        "composition": "<Title size=\"d2\">Mega Fire Blaze Roulette</Title>  // usato in Hero Detail come product name"
+      },
+      {
+        "name": "title-heading-section-level",
+        "description": "Title `Size=H1` (20px lh 24): titoli di SEZIONE della pagina (es. componente Heading per riga di intestazione 'Le tue partite' con outlet). `Size=H2` (18px lh 20): sottosezione (es. Help Center banner). `Size=H3` (16px lh 18): titolo intra-componente (Card Detail, Card Informative, Listing Item Block, Text Box default, Banner base).",
+        "composition": "H1 → Heading component / Hero homepage  |  H2 → Banner Help Center  |  H3 → Text Box default, Card, Listing Item"
+      },
+      {
+        "name": "paragraph-pLead-body-primary",
+        "description": "Paragraph `Size=p lead` (16px regular Roboto, lh 18): body primario, leggibile a comfort distance. Usato in Hero/Banner Paragraph, Radio Title (sì, il Title del Radio è body/pLead non heading), Listing Item Inline Paragraph, Checkbox Label. `Size=p lead bold` (16px ExtraBold) per emphasis in pattern misti (es. 'Partner: <strong>Playtech</strong>' in Hero Detail).",
+        "composition": "p lead → Hero/Banner Paragraph, Radio Title, Checkbox Label, etc.  |  p lead bold → emphasis inline mid-paragraph"
+      },
+      {
+        "name": "paragraph-p-body-secondary",
+        "description": "Paragraph `Size=p` (14px regular Roboto, lh 18): body secondario, di accompagnamento. Usato in Text Box default Paragraph, Listing Item Block Paragraph (color subtle grigio), Feedback Paragraph, Banner Ruota Bonus Paragraph. `Size=p medium` (14px medium): peso intermedio per Chip Label (regola del Chip: medium, NON bold). `Size=p bold` (14px bold) per emphasis come trailing text in Listing Item/Table.",
+        "composition": "p → Text Box Paragraph, Feedback Paragraph  |  p medium → Chip Label  |  p bold → Listing Item trailing"
+      },
+      {
+        "name": "paragraph-caption-meta",
+        "description": "Paragraph `Size=Caption` (12px regular Roboto, lh 14): meta-info, helper text, additional text. Usato in textField additionalText (helper/error message), tableHeader (captionBold variant), Counter sm digit. `Size=Caption bold` (12px bold): per Badge Default text, Counter sm bold, Quicklink Navigation label sticky-mode.",
+        "composition": "caption → textField additionalText, Counter sm  |  caption bold → Badge Default text, tableHeader"
+      },
+      {
+        "name": "paragraph-micro-caption",
+        "description": "Paragraph `Size=Micro caption` (10px regular, lh 12): la più piccola scala. Usato in Counter lg label (es. 'Giorni' sotto al numero). `Size=Micro caption bold` (10px bold): Counter lg digit numerico, Footer warning '+18'.",
+        "composition": "micro caption → Counter lg label  |  micro caption bold → Counter lg digit, Footer"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-title-paragraph-standalone-in-layout",
+        "reason": "Questi atomi NON sono componenti UI da inserire direttamente in un layout — sono PRIMITIVE TIPOGRAFICHE che vivono come slot interno di componenti più grandi. Mettere un `<Title size=H3>` standalone in una pagina è equivalente a mettere un `<p>` HTML grezzo senza wrapper semantico: visivamente funziona, ma non sfrutta il pattern del DS.",
+        "alternative": "Usare il componente UI appropriato che orchestra Title + Paragraph (Text Box, Card, Hero, Heading, Banner, Listing Item, Feedback, ecc.). Il componente parent applica il Size corretto del Title/Paragraph come variant interna."
+      },
+      {
+        "scenario": "custom-size-or-typography-outside-token",
+        "reason": "Usare un Size custom (es. 22px Mulish bold, che non è nella scala) o cambiare font family (es. Title in Roboto invece di Mulish) rompe la consistenza tipografica del DS. Il sistema tipografico è una scala discreta — non c'è 'fra H1 e H2'.",
+        "alternative": "Sempre uno dei 5 Title Size (d1/d2/H1/H2/H3) e uno dei 9 Paragraph Size disponibili. Se serve uno step intermedio, valutare se è una vera lacuna del DS (richiesta di estensione) o se uno dei size esistenti funziona."
+      },
+      {
+        "scenario": "wrong-font-family-for-content-type",
+        "reason": "I Title (display + heading) usano Mulish ExtraBold — font display caratterizzato. I Paragraph (body) usano Roboto in vari weight — font body neutrale e leggibile a lungo. Usare Mulish per body text lungo o Roboto per heading display rompe la gerarchia visiva e la leggibilità (Mulish ExtraBold per testi lunghi affatica la lettura).",
+        "alternative": "Title → SEMPRE Mulish. Paragraph → SEMPRE Roboto. La separazione font è disegnata in Figma a livello atom — non è una scelta del consumer."
+      },
+      {
+        "scenario": "skipping-heading-levels-semantic-html",
+        "reason": "Il Size visivo del Title (d1/d2/H1/H2/H3) NON è automaticamente la gerarchia semantica heading dell'HTML/accessibilità (h1, h2, h3...). Usare Size=H3 per il titolo di pagina perché 'sta meglio' visivamente, ma marcarlo come `Role.heading` di livello 1 confonde lo screen reader e i tool di assistive tech.",
+        "alternative": "Distinguere Size visivo (typo) da level semantico (HTML/accessibility role). In una pagina il Page Title visivamente è display/d1 ma semanticamente è heading level 1; un Heading di sezione visivamente è H1 e semanticamente è heading level 2. Il level semantico è responsabilità del consumer (parent component)."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
+    "slots": {
+      "Title": {
+        "required": false,
+        "description": "Atom 'Title' (frame Figma 5805:89762). 5 `Size` discreti: `d1` (display/d1, 28px ExtraBold Mulish, line-height 32), `d2` (display/d2, 24px ExtraBold Mulish, lh 28), `H1` (heading/h1, 20px ExtraBold Mulish, lh 24), `H2` (heading/h2, 18px ExtraBold Mulish, lh 20), `H3` (heading/h3, 16px ExtraBold Mulish, lh 18). Color default `color/text/default` (dark) — override consentito al consumer (es. bianco su Hero, rosso su error). Font family Mulish per TUTTI i Size."
+      },
+      "Paragraph": {
+        "required": false,
+        "description": "Atom 'Paragraph' (frame Figma 5805:89771). 9 `Size` discreti: `p lead` (body/pLead, 16px regular Roboto, lh 18), `p lead bold` (body/pLeadBold, 16px ExtraBold Roboto, lh 18), `p` (body/p, 14px regular Roboto, lh 18), `p medium` (body/pMedium, 14px medium Roboto, lh 18), `p bold` (body/pBold, 14px bold Roboto, lh 18), `Caption` (body/caption, 12px regular Roboto, lh 14), `Caption bold` (body/captionBold, 12px bold Roboto, lh 14), `Micro caption` (body/microCaption, 10px regular Roboto, lh 12), `Micro caption bold` (body/microCaptionBold, 10px bold Roboto, lh 12). Color default `color/text/default` (dark) — override consentito. Font family Roboto per TUTTI i Size."
+      }
+    },
     "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Text Box", "Hero", "Hero Detail", "Banner", "Card", "Listing Item", "Feedback", "Heading", "Counter", "Footer", "textField"],
+    "parentConstraints": [
+      "Non hanno parent constraints propri — vivono come slot dentro a praticamente OGNI componente del DS che contiene testo. La scelta del Size avviene a livello parent (è il parent component che decide quale Size del Title/Paragraph usare nel proprio slot).",
+      "Color override: tipicamente i consumer override il color via i propri token semantici (es. `banner/color/text` = bianco, `feedback/color/text/default` = dark, `textField/inputText/input/color/text/error` = rosso). I Title/Paragraph atomi espongono solo il default dark — è un punto di partenza, non un colore obbligato."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "static-display": "Sono primitive di display puro — nessuna interazione, nessuno State, nessun onPress. Le interazioni vivono al livello del parent component (es. Listing Item è tappabile come row, NON è il Title atom a essere tappabile)."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "text (per Paragraph) o heading (per Title, livello semantico determinato dal parent) — su iOS impostare `accessibilityTraits = .header` sul Title quando il parent lo richiede (es. Title di una pagina è header level 1, Title di una sezione è header level 2). Paragraph non ha trait specifico (testo statico). Su Android usare `Modifier.semantics { heading() }` per Title in contesti di intestazione semantica.",
+    "screenReader": "Lo screen reader legge il testo letterale. Per Title in contesti di heading semantico, l'annuncio include 'intestazione' (es. 'Sicurezza, intestazione'). Il color override del consumer NON cambia l'annuncio — il testo è lo stesso indipendentemente dal colore visivo.",
+    "focusManagement": "Non focusable (sono testo statico). Eventuali Link/Button dentro al testo (mid-paragraph link) sono elementi focusable separati gestiti dal componente Link.",
+    "touchTarget": "N/A — non tappabili.",
+    "wcag": "AA — Color default `color/text/default` (dark) su superfici chiare garantisce contrasto AA ampio. Il consumer responsabile di mantenere contrasto AA quando applica color override (es. white su bg scuro è AA se il bg è scuro a sufficienza; grigio su bg chiaro va verificato). Le scale tipografiche minime (Micro caption 10px) sono sotto la soglia di leggibilità WCAG AA per body text (>=12px raccomandato) — usate in contesti dove l'utente NON deve leggere a lungo (es. Footer warning, Counter label) e con contrasto massimo per compensare."
   },
+
   "aiHints": {
-    "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "priority": "low",
+    "keywords": ["typography", "title", "paragraph", "type system", "tipografia", "heading scale", "body scale"],
+    "context": "PRIMITIVE TIPOGRAFICHE — wrapper Figma del type system, non componenti UI da usare nei layout. Title atom: 5 Size (display d1/d2 28/24px Mulish, heading H1/H2/H3 20/18/16px Mulish). Paragraph atom: 9 Size (p lead 16px, p 14px, caption 12px, micro caption 10px — ognuno con variante bold/regular dove disponibile, tutti Roboto). Color default `color/text/default` (dark) — override consentito al consumer. Use case = essere slot di Title/Paragraph dentro a OGNI componente del DS che contiene testo (Text Box, Hero, Banner, Card, Listing Item, Feedback, Heading, Counter, Footer, textField, ecc.). NON usare standalone in layout (equivalente a HTML grezzo senza wrapper semantico). NON inventare size custom (la scala è discreta). NON cambiare font family (Title=Mulish, Paragraph=Roboto). Size visivo ≠ heading level semantico (consumer decide level a11y indipendentemente dal Size visivo)."
   },
+
   "rationale": {
     "designDecisions": ""
   }

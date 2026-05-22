@@ -1,44 +1,96 @@
 {
   "slug": "card-informative",
-  "lastUpdated": "2026-05-14",
-  "status": "scaffold",
-  "platforms": [],
-  "figmaNodeIds": {},
+  "lastUpdated": "2026-05-21",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "6485:3372",
+    "ios": "6485:3372"
+  },
+
   "component": {
     "name": "Card Informative",
-    "category": "atoms",
-    "description": "",
-    "type": "interactive"
+    "category": "molecules",
+    "description": "Card informativa con header testuale + lista verticale di row tappabili. Container bordato bianco (bg `cardInformative/color/bg`, border 1px `cardInformative/color/border`) che riusa i token dimensionali della Card base (`card/size/border/radius` 16, `card/size/padding/horizontal|vertical` 16/16, `card/size/gap` 16, `card/size/border/width` 1). Composizione canonica: (a) HEADER TEXTUALE in alto — Title `typography/heading/h3` (16px ExtraBold Mulish) + Paragraph `typography/body/p` (14px regular Roboto, color dark) per il contesto/descrizione del blocco; (b) LISTA VERTICALE di N row stile Listing Item Variant=Inline (`listingItem/*` tokens) — ogni row ha label pBold + value `body/p` subtle (grigio scuro `listingItem/paragraph/color/text/subtle`) inline + trailing 'Item' pBold + chevron-right; (c) DIVIDER 1px (`divider/size/width`, color `divider/color/bg`) fra ogni row. NIENTE Variant in Figma — single-shape component. Pattern dedicato a esposizione di dati strutturati (cronologici, statistiche, breakdown) dove ogni voce di lista è approfondibile tappando la row. Riusa pesantemente token cross-componente (card, listingItem, divider). Three-way naming: slug `card-informative`, frame Figma 'cardInformative' (camelCase), namespace `cardInformative/*`.",
+    "type": "container"
   },
+
   "usage": {
-    "useCases": [],
-    "requiredProps": [],
-    "commonPatterns": [],
-    "antiPatterns": []
+    "useCases": [
+      "historical-data-summary",
+      "breakdown-with-detail-links",
+      "stats-card-with-rows",
+      "info-block-with-list",
+      "monthly-summary-card"
+    ],
+    "requiredProps": ["title", "rows"],
+    "commonPatterns": [
+      {
+        "name": "detail-page-info-card",
+        "description": "USO ESCLUSIVO in pagina dettaglio prodotto/gioco/iniziativa. Card Informative posizionata nella sezione informativa del dettaglio per esporre dati strutturati relativi al prodotto — header descrittivo (Title + Paragraph) + N row con label + valore inline + chevron drill-down. Tipicamente affiancata a Hero Detail e Card Detail per dare profondità informativa alla pagina (es. 'Payout effettivo' di una slot con breakdown per mese, 'Le tue partite per categoria' nel dettaglio account).",
+        "composition": "<CardInformative title=\"Payout effettivo\" paragraph=\"Nel breve periodo si possono registrare delle variazioni, di seguito i dati degli ultimi mesi:\" rows={months.map(m => ({label: m.name, value: m.year, onPress: () => openMonth(m.id)}))} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "use-outside-detail-page",
+        "reason": "Card Informative è dedicata alla PAGINA DETTAGLIO. Usarla altrove (homepage, listing, settings generici, modali) introduce un pattern visivo (header + drill-down list bordato) che l'utente associa al dettaglio — fuori contesto confonde la gerarchia informativa.",
+        "alternative": "Usare Card Informative SOLO in pagina dettaglio prodotto/gioco/iniziativa. Per blocchi informativi in altre pagine usare Card base, Card Highlight, Feedback, o Banner a seconda del pattern necessario."
+      }
+    ]
   },
+
   "composition": {
-    "slots": {},
-    "nestedComponents": [],
-    "commonPartners": [],
-    "parentConstraints": []
+    "slots": {
+      "Container": {
+        "required": true,
+        "description": "Wrapper della Card Informative. Bg `cardInformative/color/bg` (bianco), border 1px `card/size/border/width` color `cardInformative/color/border` (grigio chiaro), radius `card/size/border/radius` (16), padding `card/size/padding/horizontal|vertical` (16/16), gap verticale `card/size/gap` (16) fra HeaderText e RowsList."
+      },
+      "HeaderText": {
+        "required": true,
+        "description": "Header testuale in alto: Title in `typography/heading/h3` (16px ExtraBold Mulish, line-height 18) + Paragraph in `typography/body/p` (14px regular Roboto, line-height 18). Color text `textbox/color/text` (dark) per entrambi. Gap interno `textbox/size/gap` (8). Pensato per dare CONTESTO alla lista sotto (es. 'Payout effettivo. Nel breve periodo si possono registrare delle variazioni, di seguito i dati degli ultimi mesi:')."
+      },
+      "RowsList": {
+        "required": true,
+        "description": "Lista verticale di N row stile Listing Item Variant=Inline. Ogni row riusa pattern `listingItem/*`: padding-v `listingItem/size/padding/vertical/md` (12), lead label `pBold` (14px) color `listingItem/title/color/text` (dark) + inline value `body/p` (14px) color `listingItem/paragraph/color/text/subtle` (grigio scuro), trailing label 'Item' `pBold` + chevron-right 24×24 (color `listingItem/icon/color`), gap lead/trail `listingItem/{lead|trail}/size/gap/sm` (8). Ogni row è tappabile (`onPress` consumer)."
+      },
+      "Divider": {
+        "required": true,
+        "description": "Linea orizzontale 1px (`divider/size/width`) color `divider/color/bg` (grigio chiaro) fra ogni row della RowsList. Diversamente dalla Listing standard, la Card Informative non nasconde il divider sotto l'ultima row (rimane visibile come bordo inferiore della lista interna)."
+      }
+    },
+    "nestedComponents": ["Listing Item"],
+    "commonPartners": ["Page", "Bottom Sheet"],
+    "parentConstraints": [
+      "Card Informative vive inline dentro a una Page o Bottom Sheet — larghezza tipica 343 (corrispondente a viewport 375 con padding 16). Padding orizzontale verso bordi pagina gestito dal parent.",
+      "Riusa MOLTI token cross-componente: `card/*` (dimensioni base), `listingItem/*` (row pattern Inline), `divider/*`, `textbox/*` (header gap). Eventuali modifiche a questi token impatteranno anche la Card Informative."
+    ]
   },
+
   "behavior": {
     "states": [],
-    "interactions": {},
+    "interactions": {
+      "tap-row": "Tap su una row della RowsList esegue il callback `onPress` della row — tipicamente apre il dettaglio dell'elemento (pagina/modale con info estese del periodo/categoria selezionata). Il chevron-right nel trailing comunica l'affordance.",
+      "no-tap-on-container-or-header": "Il Container e l'HeaderText NON sono tappabili — è display passivo. Le sole affordance interattive sono le row della lista."
+    },
     "responsive": {}
   },
+
   "accessibility": {
-    "role": "",
-    "keyboardSupport": "",
-    "screenReader": "",
-    "focusManagement": "",
-    "wcag": "AA"
+    "role": "container (region) — su iOS impostare `accessibilityElement=false` sul Container; HeaderText è elemento accessibile statico (`accessibilityTraits = .header` sul Title); ogni row della RowsList è elemento accessibile separato con `Role.Button` + `accessibilityLabel` combinato (label + value + 'Item'). Su Android `Modifier.semantics { heading() }` sul Title del header.",
+    "screenReader": "Annuncio sequenziale: Title come header (es. 'Payout effettivo, intestazione') → Paragraph come testo statico → ogni row letta separatamente ('Novembre 2025, Item, pulsante'). Per Card Informative con molte row, considerare di prefissare l'annuncio del Listing con 'Lista di N elementi' (responsabilità del consumer container).",
+    "focusManagement": "Container e HeaderText non focusable. Ogni row della RowsList è focusable separata, ordine verticale top-down.",
+    "touchTarget": "Row Listing Item Variant=Inline ~48h (padding-v 12 + content). Borderline 44pt iOS / 48dp Android — verificare l'hit area effettiva e considerare di estendere padding-v per pattern dense.",
+    "wcag": "AA — Container bianco con Title dark e Paragraph dark garantisce contrasto AA. Le row label pBold dark e value subtle grigio scuro sono entrambe AA su superficie chiara. Divider grigio chiaro è decorativo (non signal-element)."
   },
+
   "aiHints": {
     "priority": "medium",
-    "keywords": [],
-    "context": ""
+    "keywords": ["card informative", "informative card", "info card", "data card", "breakdown card", "card riepilogo"],
+    "context": "Card informativa per esporre dati strutturati (storici, statistiche, breakdown) con header testuale (Title h3 + Paragraph p) + lista verticale di N row tappabili in stile Listing Item Variant=Inline (label pBold + value inline subtle + trailing 'Item >' con chevron). Divider 1px fra ogni row. Single-shape — niente Variant in Figma. Container bordato bianco radius 16 padding 16/16 (riusa token `card/*` base + `listingItem/*` per row + `divider/*`). Token namespace `cardInformative/*` solo per bg/border specifici del componente. Pattern principale: drill-down — ogni row è tappabile per aprire il dettaglio. Mantenere 3-6 row max (oltre diventa una listing standalone). NON usare senza row (sarebbe Card base con solo TextBox). NON mescolare Variant Inline e Block delle row nella stessa card. Per dati tabulari statici (label/valore senza chevron) usare Table invece."
   },
+
   "rationale": {
     "designDecisions": ""
   }
