@@ -1,0 +1,183 @@
+{
+  "$schema": "../SCHEMA-PATTERN.md",
+  "slug": "menu-unico",
+  "name": "Pagina Menu Unico",
+  "status": "draft",
+  "ownedBy": "UX team",
+  "lastUpdated": "2026-05-22",
+  "description": "Menu principale dell'app — single entry point per tutte le azioni account/settings/info. Accessibile da tab bar o hamburger del Header. Pagina dedicata (NON drawer / sheet). Strutturata in sezioni: UserHeader (se logged), QuickActions, Listing bonus (se logged), Sezioni settings, Help card, Footer regolatorio. 7 varianti per stato utente (No Log / Log / Sessione Pending / Autoesclusione GAD / 3 errori).",
+  "useCases": [
+    "main-app-menu",
+    "account-hub",
+    "settings-entry",
+    "logged-out-access-page"
+  ],
+  "categories": ["menu", "hub"],
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "slots": {
+    "statusBar": {
+      "required": true,
+      "component": "Status Bar OS",
+      "type": "navigation"
+    },
+    "header": {
+      "required": true,
+      "components": ["Header"],
+      "variant": "Navigation Level=Menu or Webview",
+      "type": "navigation",
+      "constraints": [
+        "Leading: title 'Menu' inline (NON centrato)",
+        "Trailing: solo Icon Button close X — NIENTE balance, NIENTE Accedi"
+      ]
+    },
+    "authCTAs": {
+      "optional": true,
+      "components": ["Button Group"],
+      "variant": "Orientation=Inline, Size=md, Sticky=False",
+      "type": "interactive",
+      "constraints": [
+        "Solo variante 'No Log' del menu.",
+        "Secondary 'Accedi' + Primary 'Registrati' (1 Primary)"
+      ],
+      "description": "CTA per utenti non autenticati. Compare solo in variante No Log."
+    },
+    "userHeader": {
+      "optional": true,
+      "components": ["TextBox", "Button Group"],
+      "type": "display",
+      "constraints": [
+        "Solo varianti 'Log' + derivate.",
+        "TextBox: 'Ciao [Nome]' (h2/h3) + 'Ultimo accesso: [data]' (body small subtle)",
+        "Riga 'Saldo' + valore + Button Group con Preleva (Secondary) e Ricarica (Primary)",
+        "MAX 1 Primary in tutta la pagina — Ricarica è IL Primary del menu."
+      ]
+    },
+    "quickActions": {
+      "optional": true,
+      "components": ["Square Button Group"],
+      "type": "navigation",
+      "constraints": [
+        "Solo varianti 'Log' + derivate.",
+        "USARE Square Button Group, NON Button Circle Navigation (vedi components/menu-unico/metadata)",
+        "Tipicamente 3 shortcut: Area Riservata, Movimenti Conto, Messaggi"
+      ]
+    },
+    "bonusList": {
+      "optional": true,
+      "components": ["Heading", "Link", "Card Promo"],
+      "type": "container",
+      "constraints": [
+        "Solo variante 'Log' completa (nelle 4 varianti errore questa sezione è sostituita da Feedback/Banner di errore)",
+        "Heading 'I tuoi bonus' + Link 'Vedi tutti' a destra",
+        "Lista verticale di Card Promo (Real Bonus, Fun Bonus, …) con valori"
+      ]
+    },
+    "communityCard": {
+      "optional": true,
+      "components": ["Card Loyalty"],
+      "type": "container",
+      "constraints": [
+        "Solo variante 'Log'",
+        "Sisal Community / WeSisal — l'UNICA card brand-marketing ammessa nel menu (eccezione documentata)"
+      ]
+    },
+    "manageGameSection": {
+      "required": true,
+      "components": ["Heading", "Listing Item"],
+      "type": "container",
+      "description": "Heading 'Gestisci il tuo gioco' + Listing Item drill-down (Impostazioni tavoli Poker, Ricompense Poker, ecc.)"
+    },
+    "utilitySection": {
+      "required": true,
+      "components": ["Heading", "Listing Item"],
+      "type": "container",
+      "description": "Heading 'Utilità' + Listing Item drill-down (Impostazioni, FAQ, Le app Sisal, Gioco responsabile, Punti vendita, ecc.)"
+    },
+    "helpCard": {
+      "required": true,
+      "components": ["Feedback", "Banner / Help Center"],
+      "type": "container",
+      "constraints": [
+        "Card scura 'Hai bisogno di aiuto?' + Button 'Ricevi supporto'",
+        "Button hierarchy DEVE essere Secondary (su bg scuro) — NON Primary (rule maxPrimaryCTA)"
+      ]
+    },
+    "feedbackLink": {
+      "required": true,
+      "components": ["Link"],
+      "type": "interactive",
+      "description": "Riga 'La tua opinione è importante! Lasciaci un feedback'"
+    },
+    "logoutLink": {
+      "optional": true,
+      "components": ["Link"],
+      "type": "interactive",
+      "constraints": ["Solo varianti 'Log' + derivate"],
+      "description": "Link con icon exit + label 'Esci'"
+    },
+    "footer": {
+      "required": true,
+      "components": ["Footer"],
+      "type": "display",
+      "description": "Footer regolatorio: loghi ADM + 18+ + Responsabili Insieme + testo legal Sisal Italia"
+    }
+  },
+  "rules": {
+    "maxPrimaryCTA": 1,
+    "maxCardHighlight": 0,
+    "maxCardEntrypoint": 0,
+    "allowedNudgeCardHierarchy": ["Secondary", "Ghost"],
+    "customRules": [
+      "Single entry point: il contenuto del menu NON va duplicato in drawer/sheet.",
+      "Niente editing inline — ogni voce è un Listing Item che naviga a pagina dedicata.",
+      "Niente CTA marketing (eccezione: Card Loyalty Sisal Community in variante Log).",
+      "Variante GAD (Autoesclusione): Ricarica deve essere disabilitata se compliance richiede.",
+      "QuickActions = Square Button Group (non Button Circle Navigation)."
+    ]
+  },
+  "antiPatterns": [
+    {
+      "scenario": "duplicate-menu-in-drawer-or-sheet",
+      "reason": "Menu Unico è single source — duplicarlo in drawer/sheet confonde la navigazione e raddoppia il costo di manutenzione.",
+      "alternative": "Drawer/sheet può ospitare scorciatoie veloci ma NON l'intero menu."
+    },
+    {
+      "scenario": "in-page-mutation-of-account-data",
+      "reason": "Menu Unico è hub di navigazione, non editor. Modifiche inline rompono la separation of concerns.",
+      "alternative": "Ogni voce è un Listing Item che naviga a pagina di editing dedicata."
+    },
+    {
+      "scenario": "add-marketing-cta-in-menu",
+      "reason": "Menu è contesto utility, non marketing. Card Highlight/Promo CTA rompono il contratto visivo.",
+      "alternative": "Marketing CTA in homepage/listing. Eccezione: Card Loyalty Sisal Community (elemento brand-relazionale)."
+    },
+    {
+      "scenario": "quickactions-with-circle-buttons-instead-of-square",
+      "reason": "Il pattern QuickActions del Menu Unico richiede Square Button Group. Usare Button Circle Navigation è incoerente con la doc del componente.",
+      "alternative": "Square Button Group con 3 shortcut (Area Riservata, Movimenti Conto, Messaggi)."
+    }
+  ],
+  "commonPartners": [
+    "components/header",
+    "components/button-group",
+    "components/square-button-group",
+    "components/listing-item",
+    "components/card-promo",
+    "components/card-loyalty",
+    "components/feedback",
+    "components/banner",
+    "components/link",
+    "components/heading",
+    "components/footer"
+  ],
+  "compositionExamples": [
+    {
+      "name": "Menu Unico - Autoesclusione GAD (esistente in Figma, con violazioni note)",
+      "figmaNodeId": "8763:7618",
+      "figmaUrl": "https://www.figma.com/design/QWM2EhgZmv2KKcqI0315fx/?node-id=8763-7618",
+      "lastVerified": "2026-05-22",
+      "notes": "Reference esistente ma con 3 violazioni note: (1) 2 Primary verdi nel Button Group Saldo (Button + Ricarica entrambi verdi invece di Preleva secondary + Ricarica primary); (2) accordionCardDetail in bonus list (uso fuori dettaglio prodotto); (3) QuickActions usa Button Circle Navigation invece di Square Button Group. Da rifare seguendo questo pattern."
+    }
+  ],
+  "rationale": ""
+}

@@ -1,0 +1,113 @@
+{
+  "$schema": "../SCHEMA-PATTERN.md",
+  "slug": "form-data-collection",
+  "name": "Pagina Form / Raccolta Dati",
+  "status": "draft",
+  "ownedBy": "UX team",
+  "lastUpdated": "2026-05-22",
+  "description": "Pagina di raccolta dati strutturati dall'utente: form di valutazione, signup, modifica profilo, configurazione preferenze. Header con back, sezioni di domande con input appropriati (Radio single-select, Checkbox multi-select, TextField testo libero, TextField multiline per commenti aperti), Button Group sticky con Primary = submit.",
+  "useCases": [
+    "form-valutazione-gioco",
+    "signup-step",
+    "modifica-profilo",
+    "configurazione-preferenze",
+    "form-supporto",
+    "form-feedback"
+  ],
+  "categories": ["form", "data-collection"],
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "slots": {
+    "statusBar": {
+      "required": true,
+      "component": "Status Bar OS",
+      "type": "navigation"
+    },
+    "header": {
+      "required": true,
+      "components": ["Header"],
+      "variant": "Navigation Level=2/3/4+, User logged=True",
+      "type": "navigation",
+      "constraints": [
+        "Title centrato col nome del form (es. 'Valuta il gioco')",
+        "Leading: back-arrow",
+        "Trailing: variabile (balance + menu, oppure close X se il form è modale)"
+      ]
+    },
+    "heroText": {
+      "optional": true,
+      "components": ["TextBox"],
+      "variant": "Orientation=Block, Link=False",
+      "type": "display",
+      "description": "Hero text intro con Title h1 + Paragraph che spiega cosa fa il form (es. 'La tua opinione conta. Rispondi a 3 brevi domande…')."
+    },
+    "questionSections": {
+      "required": true,
+      "components": ["TextBox", "Radio", "Checkbox", "TextField"],
+      "type": "input",
+      "constraints": [
+        "Ogni sezione: TextBox h3 (display) + lista verticale di input (Radio per single-select, Checkbox per multi-select, TextField per testo)",
+        "Radio per scelte mutuamente esclusive",
+        "Checkbox per multi-select",
+        "TextField multiline per commenti aperti (textarea variant)"
+      ],
+      "description": "N sezioni di domande, una per Title h3 + relativi input in lista verticale."
+    },
+    "stickyFooter": {
+      "required": true,
+      "components": ["Button Group"],
+      "variant": "Orientation=Inline, Size=md, Sticky=True",
+      "type": "interactive",
+      "constraints": [
+        "Esattamente UN button Primary = submit ('Invia' / 'Conferma' / 'Salva')",
+        "Opzionale Secondary = 'Annulla' (a sinistra)",
+        "Primary SEMPRE a destra in Inline"
+      ]
+    }
+  },
+  "rules": {
+    "maxPrimaryCTA": 1,
+    "maxCardHighlight": 0,
+    "maxCardEntrypoint": 0,
+    "allowedNudgeCardHierarchy": ["Secondary", "Ghost"],
+    "customRules": [
+      "Ogni Radio/Checkbox group deve essere in lista verticale (vedi components/radio/ + components/checkbox/).",
+      "Validazione lato client non in scope di questa page-type — gestita dal componente input."
+    ]
+  },
+  "antiPatterns": [
+    {
+      "scenario": "header-with-balance-on-modal-form",
+      "reason": "Se il form è modale (es. dismissible con close X), il trailing balance/menu è fuori contesto.",
+      "alternative": "Per form modale usare Header Navigation Level=Menu or Webview (close X only) invece di lvl 2/3/4+."
+    },
+    {
+      "scenario": "radio-for-multi-select",
+      "reason": "Radio è single-select. Usarlo per multi-select viola la semantica del componente.",
+      "alternative": "Per multi-select usa Checkbox. Vedi components/radio/ + components/checkbox/."
+    },
+    {
+      "scenario": "no-submit-feedback",
+      "reason": "Tap su submit deve dare feedback immediato (loader nel Button, disabilitazione, navigazione su successo/errore).",
+      "alternative": "Gestire stati di loading/error del Button submit. Su successo, navigare a una pagina di conferma o mostrare un Feedback success."
+    }
+  ],
+  "commonPartners": [
+    "components/header",
+    "components/textbox",
+    "components/heading",
+    "components/radio",
+    "components/checkbox",
+    "components/text-field",
+    "components/button-group"
+  ],
+  "compositionExamples": [
+    {
+      "name": "Form Valutazione Gioco",
+      "figmaNodeId": "8751:1427",
+      "figmaUrl": "https://www.figma.com/design/QWM2EhgZmv2KKcqI0315fx/?node-id=8751-1427",
+      "lastVerified": "2026-05-22",
+      "notes": "Form 3 domande: 2 Radio single-select + 1 TextField multiline. Header lvl 2/3/4+ iOS Liquid Glass. Button Group sticky: Annulla secondary + Invia primary."
+    }
+  ],
+  "rationale": ""
+}

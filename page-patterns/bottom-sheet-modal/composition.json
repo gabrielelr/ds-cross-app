@@ -1,0 +1,117 @@
+{
+  "$schema": "../SCHEMA-PATTERN.md",
+  "slug": "bottom-sheet-modal",
+  "name": "Bottom Sheet modale",
+  "status": "draft",
+  "ownedBy": "UX team",
+  "lastUpdated": "2026-05-22",
+  "description": "Layer modale che si presenta dal basso sopra una pagina sottostante (mantenuta visibile con backdrop scuro). Usato per filter, dropdown choice, conferma azione, dettagli rapidi. Composto da Backdrop + Drawer con Drag Handle + Header sticky + Body scrollabile + Button Group sticky in basso.",
+  "useCases": [
+    "filter-bottom-sheet",
+    "dropdown-choice",
+    "confirm-action",
+    "quick-detail",
+    "sort-options"
+  ],
+  "categories": ["modal", "overlay"],
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "slots": {
+    "backdrop": {
+      "required": true,
+      "components": ["Backdrop"],
+      "type": "display",
+      "constraints": [
+        "Bg scuro semi-trasparente (opacity ~80%)",
+        "Tap sul backdrop chiude il sheet — convenzione: senza applicare modifiche pending (per filter)"
+      ]
+    },
+    "drawer": {
+      "required": true,
+      "components": ["Bottom Sheet"],
+      "type": "container",
+      "description": "Container ancorato in basso. Bg `bottomSheet/color/body/bg`, radius-top, shadow `shadow/md/*`."
+    },
+    "dragHandle": {
+      "required": true,
+      "components": ["Drag Handle"],
+      "type": "display",
+      "description": "Indicatore di trascinabilità (barra 32×5 centrata top). Su iOS gestisce i detente."
+    },
+    "header": {
+      "required": true,
+      "components": ["Bottom Sheet Header"],
+      "type": "navigation",
+      "constraints": [
+        "Title h3 centrato + Icon Button close X a destra + (opzionale) spacer 40×40 a sinistra per bilanciamento",
+        "NON usare Header Top Navigation — il drawer ha un proprio Header dedicato"
+      ]
+    },
+    "body": {
+      "required": true,
+      "type": "container",
+      "constraints": [
+        "Area scrollabile del sheet, padding 16/16, gap 16 tra elementi",
+        "Componenti variabili in base al caso d'uso (Filter Sections / Radio List / TextBox / ecc.)"
+      ]
+    },
+    "stickyFooter": {
+      "optional": true,
+      "components": ["Button Group"],
+      "variant": "Orientation=Inline, Size=md, Sticky=True",
+      "type": "interactive",
+      "constraints": [
+        "Per filter: Secondary 'Cancella filtri' + Primary 'See results (N)' con count live",
+        "Per conferma: Secondary 'Annulla' + Primary 'Conferma'",
+        "Max 1 Primary"
+      ]
+    }
+  },
+  "rules": {
+    "maxPrimaryCTA": 1,
+    "maxCardHighlight": 0,
+    "maxCardEntrypoint": 0,
+    "allowedNudgeCardHierarchy": ["Secondary", "Ghost"],
+    "customRules": [
+      "Modale: focus trap nel sheet, screen reader dialog modal.",
+      "Per filter: count live nel CTA primary 'See results (N)' (vedi components/filter/).",
+      "Niente apply-on-tap delle Chip — batch selection con conferma finale.",
+      "Backdrop tap chiude SENZA applicare (per filter modale)."
+    ]
+  },
+  "antiPatterns": [
+    {
+      "scenario": "fullscreen-modal-instead-of-bottom-sheet",
+      "reason": "Trasformare il Bottom Sheet in fullscreen page rompe il flow 'sto filtrando QUESTA lista' — l'utente perde contesto.",
+      "alternative": "Mantenere Bottom Sheet con backdrop. Su iOS modal sheet con detente; su Android modal bottom sheet."
+    },
+    {
+      "scenario": "missing-results-count-in-filter-cta",
+      "reason": "Senza count live, l'utente non sa quanti risultati otterrà PRIMA di applicare. UX peggiore (force re-open).",
+      "alternative": "CTA Primary SEMPRE con 'Mostra risultati (N)'. Se N=0, disabilitare o cambiare label."
+    },
+    {
+      "scenario": "header-top-navigation-inside-sheet",
+      "reason": "Il drawer ha già un proprio Header dedicato — aggiungere Header Top Navigation lì dentro duplica il chrome.",
+      "alternative": "Usare solo il Bottom Sheet Header (title h3 + close X)."
+    }
+  ],
+  "commonPartners": [
+    "components/bottom-sheet",
+    "components/backdrop",
+    "components/button-group",
+    "components/chip",
+    "components/radio",
+    "components/checkbox",
+    "components/text-field"
+  ],
+  "compositionExamples": [
+    {
+      "name": "Filter Bottom Sheet (componente DS)",
+      "figmaNodeId": "6061:50191",
+      "figmaUrl": "https://www.figma.com/design/QWM2EhgZmv2KKcqI0315fx/?node-id=6061-50191",
+      "lastVerified": "2026-05-22",
+      "notes": "Reference del Filter Bottom Sheet documentato in components/filter/. Composizione canonica: Backdrop + Drawer + Drag Handle + Header 'Filters' + close X + Body scrollabile con Hero H1 + N FilterSection (TextBox + Chip multi-select) + Button Group sticky (Delete filters secondary + See results primary con count)."
+    }
+  ],
+  "rationale": ""
+}

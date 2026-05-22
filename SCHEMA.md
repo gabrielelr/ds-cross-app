@@ -4,6 +4,8 @@ Questo documento definisce la struttura della documentazione per ogni componente
 
 Tutte le regole qui descritte sono **vincolanti**. Una documentazione che non rispetta lo schema non viene processata correttamente dagli strumenti automatici (pipeline di conversione, generazione `index.json`, modalità di chat e check).
 
+> **Origine dello schema.** Le sezioni base del `metadata.json` (`component`, `usage`, `composition`, `behavior`, `accessibility`, `aiHints`) sono definite dalla skill **`ai-component-metadata`** (in `skills/ai-component-metadata/`). Questo file estende quello schema con campi specifici del progetto (`slug`, `lastUpdated`, `status`, `platforms`, `figmaNodeIds`, `rationale`). Per documentare un componente nuovo, parti dal template della skill (`skills/ai-component-metadata/assets/metadata-template.tsx`) e aggiungi i campi project-specific definiti qui.
+
 ---
 
 ## 1. Struttura cartelle

@@ -1,0 +1,30 @@
+version: 1.0.0
+generated: "2026-05-22T13:16:30.984721+00:00"
+generatedBy: codebase-indexer-skill
+framework: react
+format: toon
+summary:
+  totalComponents: 0
+  componentsWithMetadata: 0
+  utilities: 0
+  schemas: 0
+  styleFiles: 0
+  relationshipsMapped: 0
+sources:
+  componentMetadata:
+    location: "**/*.metadata.{ts,tsx,json}"
+    purpose: "Component API, props, variants, UX patterns"
+    type: manual
+    count: 0
+    formats[3]: ts,tsx,json
+  relationships:
+    location: .ai/relationships/
+    purpose: Component relationships and dependencies
+    type: auto-generated
+    format: toon
+    files[3]: component-usage.toon,dependencies.toon,data-flow.toon
+usage:
+  loadOnce: Read index.toon and relationships/* once at conversation start
+  keepInContext: Maintain loaded data for entire conversation (~4000 tokens)
+  loadMetadataOnDemand: Read component *.metadata.* files only when working with that component
+  tokenEfficiency: TOON format is 30-60% more efficient than JSON

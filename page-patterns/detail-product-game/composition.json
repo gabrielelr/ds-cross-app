@@ -1,0 +1,164 @@
+{
+  "$schema": "../SCHEMA-PATTERN.md",
+  "slug": "detail-product-game",
+  "name": "Pagina Dettaglio Prodotto / Gioco / Iniziativa",
+  "status": "draft",
+  "ownedBy": "UX team",
+  "lastUpdated": "2026-05-22",
+  "description": "Pagina dettaglio immersiva per un singolo prodotto, gioco o iniziativa. Usa Hero Detail come top area visiva piena (no Header), espone caratteristiche del prodotto via Card Detail e Card Informative, supporta nudge a sezioni terziarie via Banner / Feedback con CTA non-primary, e termina con Button Group sticky con UN SOLO Primary che è l'azione principale del prodotto (Gioca / Acquista / Partecipa).",
+  "useCases": [
+    "game-detail",
+    "product-detail",
+    "lottery-ticket-detail",
+    "bonus-detail",
+    "iniziativa-detail",
+    "promo-landing-detail"
+  ],
+  "categories": ["detail"],
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "slots": {
+    "statusBar": {
+      "required": true,
+      "component": "Status Bar OS",
+      "type": "navigation",
+      "description": "Status bar OS-native (52h iOS / equivalente Android). NON un componente DS — è chrome di sistema."
+    },
+    "header": {
+      "forbidden": true,
+      "reason": "Hero Detail occupa la top area immersiva. Un Header bordato compete visivamente col Hero, taglia la sensazione brand-pieno, e crea una doppia top bar che spreca verticale prezioso. Vedi components/header/docs/metadata.json antiPattern 'header-on-detail-page'."
+    },
+    "backArrowOverlay": {
+      "optional": true,
+      "components": ["Button Icon"],
+      "variant": "Size=sm, Hierarchy=Ghost, glass effect su iOS Liquid Glass",
+      "description": "Back-arrow floating overlay sul Hero (top-left con safe-area padding). Permette return-to-parent senza Header chrome.",
+      "type": "interactive"
+    },
+    "hero": {
+      "required": true,
+      "components": ["Hero Detail"],
+      "type": "container",
+      "description": "Top area immersiva con immagine prodotto, nome, partner/provider, chip overlay (Promo / Jackpot / Default), eventuale player button. Occupa typically 384h."
+    },
+    "characteristics": {
+      "required": true,
+      "components": ["Card Detail"],
+      "variant": "caratteristiche di gioco | bonus | custom",
+      "type": "container",
+      "constraints": [
+        "Card Detail variant deve essere coerente col tipo di prodotto: 'caratteristiche di gioco' per giochi/slot/roulette, 'bonus' per pagine bonus, 'custom' per casi ad-hoc."
+      ],
+      "description": "Card Detail con le caratteristiche fondamentali del prodotto (volatilità, RTP, free spin, jackpot, …) + accordion 'Più info'."
+    },
+    "textSections": {
+      "optional": true,
+      "components": ["TextBox"],
+      "variant": "Orientation=Block, Link=False | True",
+      "type": "display",
+      "description": "Sezioni testuali esplicative (descrizione gioco, come si gioca, regole). Una o più TextBox sequenziali. NON sostituire una Card del riferimento con un solo TextBox — se serve un container usa Card + TextBox nested (regola §11)."
+    },
+    "trustBanner": {
+      "optional": true,
+      "components": ["Banner / Gioco certificato", "Banner / Tipologia di giocatore"],
+      "type": "container",
+      "description": "Banner di trust/contesto (gioco certificato ADM, tipologia di giocatore consigliata, ecc.). Non è una CTA marketing — è informativo. Niente Primary button al suo interno."
+    },
+    "metricsBreakdown": {
+      "optional": true,
+      "components": ["Card Informative"],
+      "type": "container",
+      "description": "Card Informative con breakdown di metriche numeriche (es. payout effettivo per mese, statistiche partite). Drill-down per row con chevron-right."
+    },
+    "metricsCertified": {
+      "optional": true,
+      "components": ["Card"],
+      "type": "container",
+      "constraints": [
+        "Usare Card base (container) + TextBox (display) nested. NON usare solo TextBox flat — il riferimento ha un container e va preservato (regola §11 'no flatten container')."
+      ],
+      "description": "Card numerica certificata (es. 'Payout certificato 94,54%'). Card container + TextBox display con title + valore numerico + link 'Scopri di più'."
+    },
+    "nudgeCards": {
+      "optional": true,
+      "components": ["Feedback", "Banner"],
+      "type": "container",
+      "constraints": [
+        "Hierarchy del CTA interno DEVE essere Secondary o Ghost — MAI Primary (collide con il Primary del stickyFooter, vedi rule maxPrimaryCTA)."
+      ],
+      "description": "Nudge card per azioni secondarie / terziarie (es. 'Valuta il gioco', 'Aiutaci a migliorare')."
+    },
+    "stickyFooter": {
+      "required": true,
+      "components": ["Button Group"],
+      "variant": "Orientation=Inline, Size=md, Sticky=True",
+      "type": "interactive",
+      "constraints": [
+        "Esattamente UN button con Hierarchy=Primary = azione principale del prodotto ('Gioca' / 'Acquista' / 'Partecipa').",
+        "Opzionalmente un secondo button Hierarchy=Secondary (es. 'Prova' / 'Demo').",
+        "Primary SEMPRE a destra in Inline orientation."
+      ],
+      "description": "Button Group sticky in basso con l'azione principale del prodotto."
+    }
+  },
+  "rules": {
+    "maxPrimaryCTA": 1,
+    "maxCardHighlight": 0,
+    "maxCardEntrypoint": 0,
+    "allowedNudgeCardHierarchy": ["Secondary", "Ghost"],
+    "customRules": [
+      "Hero Detail occupa la top area, NIENTE Header.",
+      "Tutti i container del riferimento devono essere preservati come container DS (no flatten in display) — vedi CLAUDE.md R8.",
+      "Card Detail e Card Informative possono comparire SOLO in questa page-type (uso esclusivo, vedi components/card-detail/ + components/card-informative/ metadata)."
+    ]
+  },
+  "antiPatterns": [
+    {
+      "scenario": "header-in-detail",
+      "reason": "Aggiungere il componente Header (Top Navigation) sopra il Hero Detail crea doppia top bar, riduce immersività, spreca verticale.",
+      "alternative": "Status Bar OS + Hero Detail. Per il back-navigation usare Button Icon ghost in floating overlay sul Hero (top-left con safe-area padding)."
+    },
+    {
+      "scenario": "multiple-primary-cta-on-detail",
+      "reason": "Avere più di un Button Primary visibile (es. 'Valuta il gioco' Primary inline + 'Gioca' Primary nel sticky) confonde la gerarchia visiva. L'utente non sa qual è L'azione della pagina.",
+      "alternative": "UN solo Primary nello stickyFooter ('Gioca' / 'Acquista' / 'Partecipa'). Altre azioni (Valuta, Condividi, …) come Secondary o Ghost, idealmente in Feedback/Banner nudge."
+    },
+    {
+      "scenario": "card-highlight-in-detail",
+      "reason": "Card Highlight è disegnata per landing/homepage come 'one-per-page nudge'. In una pagina dettaglio compete col Hero Detail (anch'esso visivamente forte) e con il sticky Primary.",
+      "alternative": "Per nudge usare Feedback o Banner. Card Highlight resta in landing/homepage."
+    },
+    {
+      "scenario": "flatten-container-into-display",
+      "reason": "Sostituire una Card (container) del riferimento con un solo TextBox (display) perde la struttura visiva e gerarchica. Vedi CLAUDE.md R8.",
+      "alternative": "Se il riferimento ha una card-payout-certificato (container), usa Card base DS + TextBox nested. Mai flatten."
+    }
+  ],
+  "commonPartners": [
+    "components/hero-detail",
+    "components/card-detail",
+    "components/card-informative",
+    "components/card",
+    "components/textbox",
+    "components/banner",
+    "components/feedback",
+    "components/button-group",
+    "components/button-icon"
+  ],
+  "compositionExamples": [
+    {
+      "name": "Premium Roulette European — recreated v2",
+      "figmaNodeId": "8774:914",
+      "figmaUrl": "https://www.figma.com/design/QWM2EhgZmv2KKcqI0315fx/?node-id=8774-914",
+      "lastVerified": "2026-05-22",
+      "notes": "Reference iOS Liquid Glass implementation. Status Bar + Hero Detail (Mega Fire Blaze placeholder) + Card Detail caratteristiche + TextBox×2 + Banner Gioco certificato + Card Informative payout effettivo + Card+TextBox payout certificato nested + Button Group sticky (Prova secondary + Gioca primary)."
+    },
+    {
+      "name": "Premium Roulette European — legacy reference",
+      "figmaNodeId": "8766:8886",
+      "figmaUrl": "https://www.figma.com/design/QWM2EhgZmv2KKcqI0315fx/?node-id=8766-8886",
+      "lastVerified": "2026-05-22",
+      "notes": "Legacy implementation usando componenti 'ready-to-use/*' della Legacy APP DS — NOT the DS Cross App. Da rifare con i componenti corretti."
+    }
+  ],
+  "rationale": ""
+}

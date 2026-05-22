@@ -56,6 +56,11 @@
     ],
     "antiPatterns": [
       {
+        "scenario": "header-on-detail-page",
+        "reason": "Le pagine dettaglio prodotto/gioco/iniziativa usano Hero Detail come TOP AREA IMMERSIVO (immagine full-bleed, brand-pieno). Un Header chrome bordato compete visivamente col Hero, taglia la sensazione immersiva e crea una doppia top bar (Header + Hero) che spreca verticale prezioso su mobile. Le pagine dettaglio sono il caso d'uso per cui Hero Detail è disegnato.",
+        "alternative": "Niente Header component in detail page. Composizione corretta: Status Bar OS in cima (52h iOS / equivalente Android) + Hero Detail come top area + (eventuale) back-arrow OVERLAY floating sul Hero (Button Icon ghost size sm, posizionato top-left con safe-area padding). La balance e il menu in detail page sono solitamente accessibili via gesture/scroll-up o non sono mostrati (l'utente è in modalità immersiva sul prodotto)."
+      },
+      {
         "scenario": "wrong-os-variant-on-platform",
         "reason": "Usare la variante Android su iOS (o viceversa) viola la consistenza con il sistema operativo host. L'utente percepisce un header 'non nativo' che rompe la fiducia visiva: padding diversi, height diversa, bottoni con border-radius incoerenti con il resto dell'OS.",
         "alternative": "OS rilevato runtime tramite Platform API. Mai forzare la variante a livello design — è sempre platform-driven. Su iOS 17+ con Liquid Glass UI considerare la variante iosLiquidGlass."

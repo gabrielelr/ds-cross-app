@@ -1,0 +1,120 @@
+{
+  "$schema": "../SCHEMA-PATTERN.md",
+  "slug": "homepage",
+  "name": "Homepage",
+  "status": "draft",
+  "ownedBy": "UX team",
+  "lastUpdated": "2026-05-22",
+  "description": "Homepage dell'app — landing principale dopo splash/login. Brand identity, navigazione veloce ai prodotti principali, surface dei contenuti raccomandati/promozionali. Header lvl Homepage con logo brand + Accedi/Balance + menu. Bottom Navbar per tab navigation.",
+  "useCases": [
+    "app-landing",
+    "logged-in-home",
+    "logged-out-home",
+    "brand-entry-point"
+  ],
+  "categories": ["home", "landing"],
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "slots": {
+    "statusBar": {
+      "required": true,
+      "component": "Status Bar OS",
+      "type": "navigation"
+    },
+    "header": {
+      "required": true,
+      "components": ["Header"],
+      "variant": "Navigation Level=Homepage",
+      "type": "navigation",
+      "constraints": [
+        "Logged-out: logo Sisal completo + Button 'Accedi' (Primary sm) + Icon Button menu",
+        "Logged-in: icona Sisal compatta + balance (Saldo + Real Bonus) + Icon Button menu",
+        "NIENTE Title centrato (è la home, il brand è l'identificatore)"
+      ]
+    },
+    "hero": {
+      "optional": true,
+      "components": ["Hero", "Card Highlight"],
+      "type": "container",
+      "constraints": [
+        "Hero standalone OR Card Highlight (max 1 per pagina — vedi rule maxCardHighlight)",
+        "Card Highlight è il pattern di 'nudge to single action principale' (es. 'Gioca a Mega Fire Blaze')"
+      ]
+    },
+    "quicklinkRow": {
+      "optional": true,
+      "components": ["Quicklink Navigation"],
+      "type": "navigation",
+      "description": "Row di scorciatoie ai prodotti principali (Casinò, Scommesse, Bingo, Lotterie, ecc.)"
+    },
+    "cardProductGrid": {
+      "optional": true,
+      "components": ["Card Product Grid Template"],
+      "type": "container",
+      "constraints": [
+        "USARE il Grid Template di contesto (Lotterie / Casinò / Virtual / Bingo / Gratta e vinci / Giochi di carte / Homepage) se esiste, NON Card Product Square S generico (vedi CLAUDE.md R8)"
+      ],
+      "description": "Grid 2-col di Card Product per la categoria highlighted."
+    },
+    "cardPromoCarousel": {
+      "optional": true,
+      "components": ["Card Promo Carousel Template"],
+      "type": "container",
+      "description": "Carosello di Card Promo per bonus / promozioni attive."
+    },
+    "cardEntrypoint": {
+      "optional": true,
+      "components": ["Card Entrypoint"],
+      "type": "container",
+      "constraints": [
+        "Max 1 Card Entrypoint per layout (rule maxCardEntrypoint)",
+        "Per highlight di UN prodotto specifico con immagine grande"
+      ]
+    },
+    "bottomNav": {
+      "required": true,
+      "components": ["Navbar"],
+      "type": "navigation",
+      "description": "Bottom Navbar con tab navigation alle macro-sezioni dell'app (Home, Casinò, Scommesse, …, Account)"
+    }
+  },
+  "rules": {
+    "maxPrimaryCTA": 1,
+    "maxCardHighlight": 1,
+    "maxCardEntrypoint": 1,
+    "allowedNudgeCardHierarchy": ["Primary", "Secondary"],
+    "customRules": [
+      "Hero/Card Highlight è opzionale ma se presente è UNICO sulla pagina.",
+      "Card Product Grid: usare il Template di contesto specifico, non Card Product singoli flat (regola R8 + R10 di CLAUDE.md).",
+      "L'header logged-out ha già 1 Primary (Button 'Accedi'). Considerare la regola maxPrimaryCTA in funzione di questo: se l'Header ha Accedi, NIENTE altra Primary altrove sulla home."
+    ]
+  },
+  "antiPatterns": [
+    {
+      "scenario": "multiple-card-highlight-on-homepage",
+      "reason": "Card Highlight 'one per page'. Più di una dilemma quale prodotto/azione promuovere — perde il focus.",
+      "alternative": "Una sola Card Highlight per la priorità. Le altre promo → Card Promo Carousel."
+    },
+    {
+      "scenario": "card-product-grid-without-context-template",
+      "reason": "Costruire la grid con Card Product Square S generici quando esiste il Grid Template Lotterie/Casinò/Virtual/… perde le metadata e size ottimali per quella vertical.",
+      "alternative": "Usare Card Product Grid Template - <Context> appropriato (vedi CLAUDE.md R8 step 0)."
+    },
+    {
+      "scenario": "missing-bottom-navbar",
+      "reason": "Homepage senza Bottom Navbar isola l'utente — perde l'orientamento alla struttura tab dell'app.",
+      "alternative": "Bottom Navbar SEMPRE presente in homepage."
+    }
+  ],
+  "commonPartners": [
+    "components/header",
+    "components/hero",
+    "components/card-highlight",
+    "components/quicklink-navigation",
+    "components/card-product",
+    "components/card-promo",
+    "components/card-entrypoint",
+    "components/navbar"
+  ],
+  "compositionExamples": [],
+  "rationale": ""
+}
