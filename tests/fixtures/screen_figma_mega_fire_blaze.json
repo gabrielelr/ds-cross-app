@@ -1,0 +1,31 @@
+{
+  "_comment": "Screen reale da Figma CSK-UI-KIT node 1035:78804 (Page=Info, Mega Fire Blaze Roulette). Ricostruito via visual inspection dello screenshot 360x1666.",
+  "_source": "https://www.figma.com/design/BU0Hwrn1JCMbefDh5IsES3/CSK---UI-KIT?node-id=1035-78804",
+  "pageType": "detail-product-game",
+  "slots": {
+    "statusBar": ["Status Bar OS"],
+    "backArrowOverlay": ["Button Icon"],
+    "hero": ["Hero Detail"],
+    "textSections": ["TextBox", "TextBox"],
+    "trustBanner": ["Banner / Gioco certificato"],
+    "metricsBreakdown": ["Card Informative"],
+    "metricsCertified": ["Card"],
+    "crossSelling": ["Card Product", "Card Product", "Card Product"],
+    "stickyFooter": ["Button Group"]
+  },
+  "componentsUsed": [
+    { "slug": "hero-detail",       "props": { "chipOverlay": ["Promo", "Jackpot", "Default"] } },
+    { "slug": "button-icon",       "props": { "hierarchy": "ghost", "position": "overlay-top-right" } },
+    { "slug": "textbox",           "props": { "orientation": "block" } },
+    { "slug": "textbox",           "props": { "orientation": "block" } },
+    { "slug": "banner",            "props": { "template": "gioco-certificato" } },
+    { "slug": "card-informative",  "props": { "title": "Payout effettivo" } },
+    { "slug": "card",              "props": { "title": "Payout certificato 94.54%" } },
+    { "slug": "textbox",           "props": { "orientation": "block", "nested": "card-payout-certificato" } },
+    { "slug": "card-product",      "props": {} },
+    { "slug": "card-product",      "props": {} },
+    { "slug": "card-product",      "props": {} },
+    { "slug": "button-group",      "props": { "orientation": "inline", "sticky": true } },
+    { "slug": "button",            "props": { "hierarchy": "primary", "label": "Gioca" } }
+  ]
+}

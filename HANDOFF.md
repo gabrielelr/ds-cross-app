@@ -211,7 +211,43 @@ Stato oggi: 5 page-pattern creati come `draft` migrando i template che vivevano 
 
 **v1 implementata** in [`scripts/score_screen.py`](scripts/score_screen.py). Prende in input un JSON neutro che descrive la schermata (pageType, slot occupati, componenti usati) e produce un report pass/fail con exit code (0 conforme, 1 violazioni). Standalone Python 3, zero dipendenze.
 
-#### Come usarlo
+#### Come testare una schermata Figma reale (procedura pratica)
+
+Il modo più semplice per testare lo scorer su una schermata Figma è chiedere a un **agente AI** (Claude Code, ChatGPT con Figma MCP, …) di fare il giro completo al posto tuo. Non serve scrivere codice né conoscere il formato JSON dello scorer — l'agente fa tutto se gli dai due cose: il link Figma e il page-pattern di riferimento.
+
+**Cosa ti serve avere pronto:**
+1. Il link Figma del **singolo nodo** che vuoi analizzare (es. una pagina dettaglio specifica), copiato con `Copy link to selection` da Figma — l'URL deve contenere `?node-id=...`. Non un link al file intero.
+2. L'**accesso Figma MCP** configurato nell'agente AI (se l'agente te lo chiede al primo uso, fai il flow OAuth — è una volta sola).
+
+**Cosa chiedere all'agente:**
+
+> "Analizza questa pagina e fammi uno score: `<link Figma>`"
+
+L'agente:
+1. Apre il nodo Figma via MCP, scarica screenshot + metadata
+2. Identifica la page-type (te la chiede se non è ovvia)
+3. Ricostruisce la composizione in formato neutro (quali componenti DS riconosce, in quali slot)
+4. Passa il tutto allo scorer `python3 scripts/score_screen.py`
+5. Ti riporta il risultato in linguaggio naturale
+
+**Cosa aspettarti come output:**
+
+L'agente ti dà un riassunto strutturato così:
+
+- ✅ **Pass** — i controlli automatici superati (slot required presenti, slot forbidden assenti, regole quantitative rispettate come `maxPrimaryCTA: 1/1`)
+- ⚠️ **Warning** — verifiche che lo scorer non sa fare da solo, segnalate come "verifica manuale": gli antiPattern semantici del pattern e le customRules narrative
+- ❌ **Fail** — violazioni concrete (es. "Header presente in una detail page", "2 Card Highlight invece di 0 ammessa")
+- **Verdetto finale** — conforme (0 fail) o non conforme (≥1 fail)
+
+#### Esempio concreto già fatto
+
+Una sessione di analisi reale: la schermata `Page=Info` del file CSK-UI-KIT (un dettaglio del gioco Mega Fire Blaze Roulette) → **risultato: 7 pass / 9 warn / 0 fail → CONFORME al pattern `detail-product-game`**.
+
+L'agente ha riconosciuto: Status Bar OS, Hero Detail con chip Promo/Jackpot, TextBox descrittivi, Banner "Gioco certificato", Card Informative del payout effettivo, Card+TextBox per il payout certificato 94.54%, carosello cross-selling "Suggeriti per te", sticky footer con un solo Primary "Gioca". Niente Header (correttamente sostituito da una X overlay). Nessun antiPattern attivo. La fixture neutra prodotta dall'agente è in [`tests/fixtures/screen_figma_mega_fire_blaze.json`](tests/fixtures/screen_figma_mega_fire_blaze.json) come reference della procedura.
+
+#### Uso diretto da terminale (per chi è già pratico)
+
+Se hai già un JSON neutro pronto puoi saltare l'agente AI e chiamare lo scorer a mano:
 
 ```bash
 # Schermata conforme → exit 0
