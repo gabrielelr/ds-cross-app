@@ -62,7 +62,7 @@ Schema del `composition.json` documentato in [`SCHEMA-PATTERN.md`](SCHEMA-PATTER
 
 | Slug | Status | Ownership | Description |
 |---|---|---|---|
-| [detail-product-game](detail-product-game/) | draft | UX team | Pagina dettaglio prodotto/gioco/iniziativa (Hero immersivo, Card Detail/Informative, Button Group sticky) |
+| [detail-product-game](detail-product-game/) | full | UX team | Pagina dettaglio prodotto/gioco/iniziativa (Hero immersivo, Card Detail/Informative opzionali, cross-selling carousel opzionale, Button Group sticky) |
 | [form-data-collection](form-data-collection/) | draft | UX team | Pagina form di raccolta dati (Header lvl 2/3/4+, sezioni Radio/Checkbox/TextField, Button Group submit) |
 | [menu-unico](menu-unico/) | draft | UX team | Menu Unico (Header Menu/Webview, UserHeader, QuickActions, sezioni listing, Help card, Footer) |
 | [homepage](homepage/) | draft | UX team | Homepage (Header lvl Homepage, Hero/Quicklink, Card Product grid, Card Highlight max 1, Bottom Navbar) |

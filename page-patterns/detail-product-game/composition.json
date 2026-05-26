@@ -2,9 +2,9 @@
   "$schema": "../SCHEMA-PATTERN.md",
   "slug": "detail-product-game",
   "name": "Pagina Dettaglio Prodotto / Gioco / Iniziativa",
-  "status": "draft",
+  "status": "full",
   "ownedBy": "UX team",
-  "lastUpdated": "2026-05-22",
+  "lastUpdated": "2026-05-26",
   "description": "Pagina dettaglio immersiva per un singolo prodotto, gioco o iniziativa. Usa Hero Detail come top area visiva piena (no Header), espone caratteristiche del prodotto via Card Detail e Card Informative, supporta nudge a sezioni terziarie via Banner / Feedback con CTA non-primary, e termina con Button Group sticky con UN SOLO Primary che è l'azione principale del prodotto (Gioca / Acquista / Partecipa).",
   "useCases": [
     "game-detail",
@@ -41,14 +41,14 @@
       "description": "Top area immersiva con immagine prodotto, nome, partner/provider, chip overlay (Promo / Jackpot / Default), eventuale player button. Occupa typically 384h."
     },
     "characteristics": {
-      "required": true,
+      "optional": true,
       "components": ["Card Detail"],
       "variant": "caratteristiche di gioco | bonus | custom",
       "type": "container",
       "constraints": [
         "Card Detail variant deve essere coerente col tipo di prodotto: 'caratteristiche di gioco' per giochi/slot/roulette, 'bonus' per pagine bonus, 'custom' per casi ad-hoc."
       ],
-      "description": "Card Detail con le caratteristiche fondamentali del prodotto (volatilità, RTP, free spin, jackpot, …) + accordion 'Più info'."
+      "description": "Card Detail con le caratteristiche fondamentali del prodotto (volatilità, RTP, free spin, jackpot, …) + accordion 'Più info'. Opzionale: alcuni detail (es. iniziative promozionali, bonus narrativi) non hanno caratteristiche tecniche da esporre — in quel caso lo slot resta vuoto."
     },
     "textSections": {
       "optional": true,
@@ -87,6 +87,18 @@
       ],
       "description": "Nudge card per azioni secondarie / terziarie (es. 'Valuta il gioco', 'Aiutaci a migliorare')."
     },
+    "crossSelling": {
+      "optional": true,
+      "components": ["Card Product"],
+      "type": "container",
+      "constraints": [
+        "Posizionato in fondo, prima dello stickyFooter.",
+        "Card Product portano a un altro detail (non rappresentano l'azione primaria della pagina corrente).",
+        "Se le Card Product contengono un CTA, la Hierarchy deve essere coerente con la rule maxPrimaryCTA — niente Primary che competa con il Primary dello stickyFooter.",
+        "Tipicamente 3-6 Card Product in carosello orizzontale scrollabile."
+      ],
+      "description": "Carosello orizzontale di Card Product per cross-selling (giochi/prodotti correlati, 'altri come questo'). Aiuta la discovery senza diluire il focus della pagina dettaglio."
+    },
     "stickyFooter": {
       "required": true,
       "components": ["Button Group"],
@@ -108,7 +120,9 @@
     "customRules": [
       "Hero Detail occupa la top area, NIENTE Header.",
       "Tutti i container del riferimento devono essere preservati come container DS (no flatten in display) — vedi CLAUDE.md R8.",
-      "Card Detail e Card Informative possono comparire SOLO in questa page-type (uso esclusivo, vedi components/card-detail/ + components/card-informative/ metadata)."
+      "Card Detail e Card Informative possono comparire SOLO in questa page-type (uso esclusivo, vedi components/card-detail/ + components/card-informative/ metadata).",
+      "Lo slot characteristics è opzionale: presente per detail di giochi/prodotti con caratteristiche tecniche misurabili (RTP, volatilità, jackpot), assente per detail di iniziative/bonus narrativi.",
+      "Lo slot crossSelling, se presente, va sempre alla fine della pagina (subito prima dello stickyFooter)."
     ]
   },
   "antiPatterns": [
@@ -142,7 +156,8 @@
     "components/banner",
     "components/feedback",
     "components/button-group",
-    "components/button-icon"
+    "components/button-icon",
+    "components/card-product"
   ],
   "compositionExamples": [
     {

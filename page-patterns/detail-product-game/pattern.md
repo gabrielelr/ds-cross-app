@@ -1,6 +1,6 @@
 # Page Pattern — Pagina Dettaglio Prodotto / Gioco / Iniziativa
 
-> Owner: UX team · Status: `draft` · Last updated: 2026-05-22
+> Owner: UX team · Status: `full` · Last updated: 2026-05-26
 
 Pagina dettaglio immersiva per un singolo prodotto del DS Cross-App: gioco (slot, roulette, blackjack, live), lotteria (estrazione, biglietto), bonus, iniziativa promozionale. È una delle page-type più ricorrenti dell'app — l'utente arriva qui dalla home/listing e decide se procedere all'azione principale (giocare, partecipare, riscattare).
 
@@ -23,13 +23,14 @@ Pagina dettaglio immersiva per un singolo prodotto del DS Cross-App: gioco (slot
 1. **Status Bar OS** (52h iOS / equivalente Android) — chrome di sistema
 2. **(no Header)** — vedi anti-pattern `header-in-detail`. La navigazione back è opzionale come overlay floating sul Hero
 3. **Hero Detail** — immagine prodotto, nome, partner/provider, chip overlay (Promo, Jackpot, Default), eventuale player button
-4. **Card Detail** (variant `caratteristiche di gioco` | `bonus` | `custom`) — caratteristiche fondamentali con accordion "Più info"
+4. **Card Detail** (variant `caratteristiche di gioco` | `bonus` | `custom`) **— opzionale**: presente per detail di prodotti con caratteristiche tecniche misurabili (volatilità, RTP, jackpot), assente per iniziative/bonus narrativi
 5. **TextBox sezioni** (opzionali) — descrizione, come si gioca, regole
 6. **Banner** (opzionale) — Gioco certificato / Tipologia di giocatore (trust, no marketing CTA)
 7. **Card Informative** (opzionale) — payout effettivo per mese, breakdown numerico drill-down
 8. **Card + TextBox nested** (opzionale) — metriche certificate puntuali (es. "Payout certificato 94,54%") — **mai TextBox flat senza container**
 9. **Nudge cards** (opzionale) — Feedback o Banner secondari con CTA `Secondary` o `Ghost` (mai Primary)
-10. **Button Group sticky** (obbligatorio) — UNA sola Primary = azione principale (Gioca/Acquista/Partecipa) + eventuale Secondary
+10. **Cross-selling carousel** (opzionale) — Card Product in carosello orizzontale per discovery di prodotti correlati ("altri come questo"). Va in fondo, prima dello sticky footer
+11. **Button Group sticky** (obbligatorio) — UNA sola Primary = azione principale (Gioca/Acquista/Partecipa) + eventuale Secondary
 
 ## Regole non negoziabili
 
@@ -61,8 +62,8 @@ Vedi [`composition.json`](composition.json) per la versione machine-readable.
 
 ## TODO per UX team
 
-- [ ] Validare l'elenco degli slot e promuovere status a `full`
+- [x] Validare l'elenco degli slot e promuovere status a `full` *(2026-05-26)*
 - [ ] Aggiungere `rationale` con il razionale UX consolidato
 - [ ] Confermare la regola "back-arrow come overlay floating ghost" o documentare il pattern esatto
 - [ ] Verificare se serve uno slot dedicato per chip overlay sul Hero (oggi parte di Hero Detail)
-- [ ] Aggiungere altri esempi canonici (es. dettaglio lotteria, dettaglio bonus) con `figmaNodeId` reali
+- [ ] Aggiungere altri esempi canonici (es. dettaglio lotteria, dettaglio bonus) con `figmaNodeId` reali, includendo un esempio con `crossSelling` e uno senza `characteristics`

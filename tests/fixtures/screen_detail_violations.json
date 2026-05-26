@@ -1,5 +1,5 @@
 {
-  "_comment": "Schermata di esempio con VIOLAZIONI intenzionali del pattern detail-product-game. Atteso: almeno 4 fail.",
+  "_comment": "Schermata di esempio con VIOLAZIONI intenzionali del pattern detail-product-game. Atteso: 3 fail (header presente forbidden, 2 Primary CTA, 2 Card Highlight).",
   "pageType": "detail-product-game",
   "slots": {
     "statusBar": ["Status Bar OS"],

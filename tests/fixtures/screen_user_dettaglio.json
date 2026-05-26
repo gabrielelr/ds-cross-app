@@ -1,0 +1,28 @@
+{
+  "_comment": "Screen utente: pagina dettaglio descritta. NO header, Hero Detail, 1 TextBox, Banner gioco certificato, Card Informative, payout card (Card+TextBox nested), carosello Card Product, sticky footer con Prova (secondary) + Gioca (primary).",
+  "pageType": "detail-product-game",
+  "slots": {
+    "statusBar": ["Status Bar OS"],
+    "hero": ["Hero Detail"],
+    "textSections": ["TextBox"],
+    "trustBanner": ["Banner / Gioco certificato"],
+    "metricsBreakdown": ["Card Informative"],
+    "metricsCertified": ["Card"],
+    "crossSelling": ["Card Product", "Card Product", "Card Product"],
+    "stickyFooter": ["Button Group"]
+  },
+  "componentsUsed": [
+    { "slug": "hero-detail",       "props": {} },
+    { "slug": "textbox",           "props": { "orientation": "block" } },
+    { "slug": "banner",            "props": { "template": "gioco-certificato" } },
+    { "slug": "card-informative",  "props": {} },
+    { "slug": "card",              "props": {} },
+    { "slug": "textbox",           "props": { "orientation": "block" } },
+    { "slug": "card-product",      "props": {} },
+    { "slug": "card-product",      "props": {} },
+    { "slug": "card-product",      "props": {} },
+    { "slug": "button-group",      "props": { "orientation": "inline", "sticky": true } },
+    { "slug": "button",            "props": { "hierarchy": "secondary" } },
+    { "slug": "button",            "props": { "hierarchy": "primary" } }
+  ]
+}
