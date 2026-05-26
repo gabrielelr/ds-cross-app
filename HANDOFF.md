@@ -207,9 +207,60 @@ Stato oggi: 5 page-pattern creati come `draft` migrando i template che vivevano 
 3. **Compilare `rationale`** dove possibile (oggi vuoto, in attesa di razionali UX consolidati)
 4. **Aggiungere `compositionExamples`** Figma reali (oggi alcuni vuoti) — servono come few-shot per AI e come test corpus per lo scorer di review
 
-### 🟡 Scorer automatico per review schermate
+### 🟢 Scorer automatico per review schermate — v1 implementata
 
-Uno script Python che, dato un `fileKey + nodeId` Figma, legge la struttura via API, identifica la page-type, carica il `composition.json` del pattern corrispondente, ed emette pass/fail per ogni regola. **Dipende dal task precedente**: serve che i pattern siano in `status: full` per avere un oracle affidabile.
+**v1 implementata** in [`scripts/score_screen.py`](scripts/score_screen.py). Prende in input un JSON neutro che descrive la schermata (pageType, slot occupati, componenti usati) e produce un report pass/fail con exit code (0 conforme, 1 violazioni). Standalone Python 3, zero dipendenze.
+
+#### Come usarlo
+
+```bash
+# Schermata conforme → exit 0
+python3 scripts/score_screen.py --screen tests/fixtures/screen_detail_ok.json
+
+# Schermata con violazioni intenzionali → exit 1
+python3 scripts/score_screen.py --screen tests/fixtures/screen_detail_violations.json
+
+# Override del pageType (se vuoi testare la stessa screen contro un pattern diverso)
+python3 scripts/score_screen.py --screen mia-screen.json --page-type homepage
+```
+
+#### Cosa controlla oggi (v1)
+
+- **Slot required** → fallisce se mancano nella screen.
+- **Slot forbidden** → fallisce se presenti (es. `header` in `detail-product-game`).
+- **Componenti dello slot** → fallisce se uno slot contiene un componente non ammesso dal `composition.json`.
+- **Regole quantitative**: `maxPrimaryCTA`, `maxCardHighlight`, `maxCardEntrypoint` (conta i `componentsUsed[]` con `slug + props.hierarchy`).
+- **Slot non noti** → warning.
+- **customRules + antiPatterns del composition** → segnalati come warning ("verifica manuale") — non automatizzabili senza semantica più ricca.
+
+Se il pattern è in `status: draft`, lo scorer lo segnala chiaramente come "risultato indicativo" finché l'UX team non promuove a `full`.
+
+#### Input format (JSON neutro)
+
+```json
+{
+  "pageType": "detail-product-game",
+  "slots": {
+    "statusBar": ["Status Bar OS"],
+    "hero": ["Hero Detail"],
+    "characteristics": ["Card Detail"],
+    "stickyFooter": ["Button Group"]
+  },
+  "componentsUsed": [
+    {"slug": "button", "props": {"hierarchy": "primary"}},
+    {"slug": "hero-detail", "props": {}}
+  ]
+}
+```
+
+Due fixture di test in [`tests/fixtures/`](tests/fixtures/) — una conforme, una con violazioni — vivono come golden reference: se modifichi un `composition.json`, rilancia lo scorer su entrambe e verifica che continuino a dare exit 0 / 1 rispettivamente.
+
+#### Cosa manca (estensioni future)
+
+- **Adapter Figma diretto**: oggi il JSON neutro deve essere costruito a mano (o da un agente AI che legge la screen Figma). Una v2 potrebbe accettare `--figma-node "fileKey:nodeId"` + token e fare la conversione internamente via Figma REST API.
+- **Auto-detect pageType**: oggi va dichiarato. Un classifier euristico (basato sui componenti presenti) potrebbe inferirlo.
+- **Check semantici degli antiPattern**: oggi vengono solo elencati come warning. Pattern-by-pattern si possono scrivere check ad-hoc (es. "card-highlight-in-detail" = scorer già lo cattura via `maxCardHighlight: 0`, ma altri richiedono logica custom).
+- **Promozione dei pattern a `full`** (dipendenza dal task UX): finché i 5 pattern sono `draft` il risultato dello scorer è indicativo.
 
 ### 🟡 POC test (10 brief, di cui 5 adversarial)
 

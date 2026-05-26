@@ -1,0 +1,21 @@
+{
+  "_comment": "Schermata di esempio con VIOLAZIONI intenzionali del pattern detail-product-game. Atteso: almeno 4 fail.",
+  "pageType": "detail-product-game",
+  "slots": {
+    "statusBar": ["Status Bar OS"],
+    "header": ["Header"],
+    "hero": ["Hero Detail"],
+    "stickyFooter": ["Button Group"],
+    "carosello": ["Card Promo"]
+  },
+  "componentsUsed": [
+    { "slug": "header",         "props": {} },
+    { "slug": "hero-detail",    "props": {} },
+    { "slug": "card-highlight", "props": {} },
+    { "slug": "card-highlight", "props": {} },
+    { "slug": "button-group",   "props": { "orientation": "inline", "sticky": true } },
+    { "slug": "button",         "props": { "hierarchy": "primary" } },
+    { "slug": "button",         "props": { "hierarchy": "primary" } },
+    { "slug": "card-promo",     "props": {} }
+  ]
+}

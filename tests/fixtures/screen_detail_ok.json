@@ -1,0 +1,28 @@
+{
+  "_comment": "Schermata di esempio CONFORME al pattern detail-product-game. Dovrebbe dare 0 fail.",
+  "pageType": "detail-product-game",
+  "slots": {
+    "statusBar": ["Status Bar OS"],
+    "backArrowOverlay": ["Button Icon"],
+    "hero": ["Hero Detail"],
+    "characteristics": ["Card Detail"],
+    "textSections": ["TextBox", "TextBox"],
+    "trustBanner": ["Banner / Gioco certificato"],
+    "metricsBreakdown": ["Card Informative"],
+    "metricsCertified": ["Card"],
+    "stickyFooter": ["Button Group"]
+  },
+  "componentsUsed": [
+    { "slug": "hero-detail",       "props": {} },
+    { "slug": "button-icon",       "props": { "hierarchy": "ghost" } },
+    { "slug": "card-detail",       "props": { "variant": "caratteristiche di gioco" } },
+    { "slug": "textbox",           "props": { "orientation": "block" } },
+    { "slug": "textbox",           "props": { "orientation": "block" } },
+    { "slug": "banner",            "props": { "template": "gioco-certificato" } },
+    { "slug": "card-informative",  "props": {} },
+    { "slug": "card",              "props": {} },
+    { "slug": "button-group",      "props": { "orientation": "inline", "sticky": true } },
+    { "slug": "button",            "props": { "hierarchy": "primary" } },
+    { "slug": "button",            "props": { "hierarchy": "secondary" } }
+  ]
+}
