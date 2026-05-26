@@ -92,6 +92,43 @@ Senza questo contesto narrative, l'LLM ti darà schermate "tecnicamente conformi
 
 ---
 
+## ⚙️ Setup GitHub Actions (una tantum, importante)
+
+Due workflow attivi nella repo:
+
+- **`.github/workflows/generate-index.yml`** — rigenera `index.toon` ad ogni push su `components/**/metadata.json` e lo committa automaticamente.
+- **`.github/workflows/weekly-report.yml`** — venerdì mattina alle 9:00 CET aggrega tutti i changelog modificati nella settimana e li manda su Slack come report + post per componente.
+
+### Permessi al GITHUB_TOKEN (entrambi i workflow)
+
+GitHub di default può creare repo con il `GITHUB_TOKEN` in **read-only**, e in quel caso entrambi i workflow falliscono allo step di `git push` con un **403**. Il `permissions: contents: write` nel YAML è necessario ma non sufficiente — serve anche l'opt-in a livello repo.
+
+**Da fare una volta:**
+
+`Settings → Actions → General → Workflow permissions → "Read and write permissions" → Save`
+
+Sintomi se non è settato: vedi il workflow rosso in Actions, e nello step "Commit / Push" appare `remote: Permission to ... denied to github-actions[bot]` o `error: 403`.
+
+### Secrets per il weekly report
+
+`generate-index.yml` non richiede secret. Il `weekly-report.yml` richiede invece due Repository secrets in `Settings → Secrets and variables → Actions → New repository secret`:
+
+| Secret | Valore | Dove prenderlo |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | API key Anthropic | console.anthropic.com → API Keys |
+| `SLACK_WEBHOOK_URL` | Incoming webhook URL | api.slack.com/apps → la tua app → Incoming Webhooks |
+
+Senza questi due, il workflow parte ma fallisce subito a `os.environ["ANTHROPIC_API_KEY"]`.
+
+### Verifica veloce
+
+Dopo aver settato permessi + secret, lancia manualmente:
+
+- `Actions → Generate index → Run workflow` → deve completare verde e (se ci sono cambi non riflessi) committare un `chore: rigenera index.toon`.
+- `Actions → Weekly DS Report → Run workflow` → deve completare verde e mandare 1 messaggio Block Kit + N post su Slack (se ci sono changelog modificati dall'ultimo tag `report-*`).
+
+---
+
 ## Task comuni con esempi
 
 ### 🟢 Voglio documentare un componente nuovo
