@@ -1,2 +1,5 @@
 # macOS
 .DS_Store
+
+# PDF derivati da MD (rigenerati on-demand)
+*.pdf

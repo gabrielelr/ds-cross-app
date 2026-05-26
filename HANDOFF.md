@@ -170,10 +170,6 @@ Stato oggi: 5 page-pattern creati come `draft` migrando i template che vivevano 
 3. **Compilare `rationale`** dove possibile (oggi vuoto, in attesa di razionali UX consolidati)
 4. **Aggiungere `compositionExamples`** Figma reali (oggi alcuni vuoti) — servono come few-shot per AI e come test corpus per lo scorer di review
 
-### 🟡 Index aggregato di tutti i metadata
-
-Oggi un LLM che apre la repo deve leggere 60 metadata.json individualmente (~200k+ token) per avere il quadro. Serve uno script che li aggrega in un singolo `INDEX.toon` (~5–10k token): lista componenti, anti-pattern aggregati, dependency graph, useCases.
-
 ### 🟡 Scorer automatico per review schermate
 
 Uno script Python che, dato un `fileKey + nodeId` Figma, legge la struttura via API, identifica la page-type, carica il `composition.json` del pattern corrispondente, ed emette pass/fail per ogni regola. **Dipende dal task precedente**: serve che i pattern siano in `status: full` per avere un oracle affidabile.
@@ -193,7 +189,7 @@ Aggiungere nei `metadata.json` un campo opzionale `codeConnectKey` o `codeRepoPa
 
 ### 🟢 CI/CD
 
-GitHub Action: validation + rigenerazione INDEX.toon ad ogni push. Fail PR se invalid.
+GitHub Action di validation: estendere [`.github/workflows/generate-index.yml`](.github/workflows/generate-index.yml) (oggi solo build) con uno step di validazione che fa fail della PR se uno dei `metadata.json` è invalido (JSON parse, hex literals, type ∉ enum). La rigenerazione di `index.toon` è già auto-committata.
 
 ---
 

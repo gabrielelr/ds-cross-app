@@ -1,0 +1,402 @@
+meta:
+  generatedAt: "2026-05-26T14:54:42Z"
+  totalComponents: 65
+  full: 60
+  scaffold: 5
+components[65]{slug,name,category,type,status,lastUpdated}:
+  accordion,Accordion,molecules,interactive,full,2026-05-14
+  alert,Alert,molecules,display,full,2026-05-20
+  avatar,Avatar,atoms,display,full,2026-05-20
+  back-to-top-navigation,Back To Top Navigation,atoms,interactive,full,2026-05-20
+  backdrop,Backdrop,atoms,display,full,2026-05-20
+  badge-default,Badge Default,atoms,display,full,2026-05-20
+  badge-notification,Badge Notification,atoms,display,full,2026-05-20
+  badge-ribbon,Badge Ribbon,atoms,display,full,2026-05-20
+  badge-special,Badge Special,atoms,display,full,2026-05-20
+  badge-status,Badge Status,atoms,display,full,2026-05-20
+  bottom-sheet,Bottom Sheet,molecules,container,full,2026-05-21
+  button,Button,atoms,interactive,full,2026-05-14
+  button-circle-navigation,Button Circle Navigation,atoms,interactive,full,2026-05-20
+  button-filter,Button Filter,atoms,interactive,full,2026-05-20
+  button-group,Button Group,atoms,interactive,full,2026-05-22
+  button-icon,Button Icon,atoms,interactive,full,2026-05-20
+  button-quicklink,Button Quicklink,atoms,interactive,full,2026-05-20
+  button-square,Button Square,atoms,interactive,full,2026-05-20
+  card,Card,atoms,container,full,2026-05-21
+  card-detail,Card Detail,molecules,container,full,2026-05-21
+  card-entrypoint,Card Entrypoint,molecules,interactive,full,2026-05-21
+  card-highlight,Card Highlight,molecules,interactive,full,2026-05-21
+  card-informative,Card Informative,molecules,container,full,2026-05-21
+  card-loyalty,Card Loyalty,molecules,interactive,full,2026-05-21
+  card-product,Card Product,molecules,interactive,full,2026-05-21
+  card-promo,Card Promo,molecules,interactive,full,2026-05-21
+  card-tutorial,Card Tutorial,atoms,interactive,scaffold,2026-05-14
+  checkbox,Checkbox,atoms,input,full,2026-05-20
+  chip,Chip,atoms,interactive,full,2026-05-20
+  chip-navigation,Chip Navigation,molecules,navigation,full,2026-05-20
+  circle-button-group,Circle Button Group,atoms,interactive,scaffold,2026-05-14
+  counter,Counter,atoms,display,full,2026-05-20
+  divider,Divider,atoms,display,full,2026-05-20
+  dropdown,Dropdown,atoms,input,full,2026-05-20
+  faq,FAQ,atoms,interactive,scaffold,2026-05-14
+  feedback,Feedback,atoms,display,full,2026-05-20
+  filter,Filter,organisms,interactive,full,2026-05-22
+  footer,Footer,atoms,display,full,2026-05-20
+  header,Header,molecules,navigation,full,2026-05-22
+  heading,Heading,atoms,display,full,2026-05-20
+  hero,Hero,molecules,display,full,2026-05-20
+  hero-detail,Hero Detail,molecules,display,full,2026-05-20
+  link,Link,atoms,interactive,full,2026-05-20
+  listing,Listing,molecules,navigation,full,2026-05-20
+  listing-item,Listing Item,atoms,interactive,full,2026-05-20
+  loader,Loader,atoms,display,full,2026-05-21
+  menu-unico,Menu Unico,organisms,navigation,full,2026-05-22
+  modal-feedback,Modal Feedback,atoms,interactive,scaffold,2026-05-14
+  navbar,Navbar,molecules,navigation,full,2026-05-21
+  page-control,Page Control,atoms,display,full,2026-05-20
+  page-navigation,Page Navigation,molecules,navigation,full,2026-05-20
+  quicklink,Quicklink,atoms,interactive,full,2026-05-21
+  quicklink-navigation,Quicklink Navigation,molecules,navigation,full,2026-05-20
+  radio,Radio,atoms,input,full,2026-05-21
+  search-bar,Search Bar,atoms,input,full,2026-05-21
+  search-results-listing,Search Results Listing,atoms,interactive,scaffold,2026-05-14
+  segmented-control,Segmented Control,molecules,interactive,full,2026-05-20
+  splash-screen,Splash Screen,molecules,display,full,2026-05-21
+  square-button-group,Square Button Group,atoms,navigation,full,2026-05-22
+  tab-navigation,Tab Navigation,molecules,navigation,full,2026-05-20
+  table,Table,molecules,display,full,2026-05-21
+  text-field,Text Field,atoms,input,full,2026-05-21
+  textbox,Text Box,atoms,display,full,2026-05-21
+  titles-and-paragraphs,Titles And Paragraphs,atoms,display,full,2026-05-21
+  toggle,Toggle,atoms,input,full,2026-05-21
+antiPatternsGlobal[261]{scenario,components,count}:
+  add-marketing-cta-in-menu,menu-unico,1
+  all-open-by-default,accordion,1
+  always-visible,back-to-top-navigation,1
+  auto-apply-on-chip-tap,filter,1
+  avatar-as-generic-image,avatar,1
+  back-and-close-together,header,1
+  backdrop-without-overlay,backdrop,1
+  badge-without-icon-host,badge-notification,1
+  balance-on-non-homepage,header,1
+  block-variant-without-subtitle,table,1
+  block-with-long-paragraph,listing-item,1
+  bottom-sheet-for-navigation,bottom-sheet,1
+  button-square-as-one-way-navigation,button-square,1
+  button-square-as-primary-cta,button-square,1
+  card-detail-as-button,card-detail,1
+  card-detail-outside-detail-page,card-detail,1
+  card-entrypoint-in-grid-or-cluster,card-entrypoint,1
+  card-loyalty-as-generic-info-card,card-loyalty,1
+  card-product-as-single-callout,card-product,1
+  carousel-with-mixed-states,card-promo,1
+  checkbox-as-toggle-switch,checkbox,1
+  checkbox-for-single-choice,checkbox,1
+  chip-as-primary-cta,chip,1
+  chip-for-binary-toggle-without-clear-state,chip,1
+  chip-navigation-as-top-level,chip-navigation,1
+  chip-navigation-for-primary-actions,chip-navigation,1
+  chip-without-cluster-or-context,chip,1
+  circle-when-count-is-known,badge-notification,1
+  compact-with-title-or-sticky-compact-with-action,alert,1
+  counter-as-interactive,counter,1
+  custom-loyalty-level-not-in-figma,card-loyalty,1
+  custom-size-or-typography-outside-token,titles-and-paragraphs,1
+  danger-for-non-destructive-action,button,1
+  deep-nesting-card-in-card,card,1
+  deeply-nested-bottom-sheets,bottom-sheet,1
+  default-color-on-dark-surface,divider,1
+  destructive-toggle-without-confirmation,toggle,1
+  disabled-without-explanation,text-field,1
+  dismiss-outlet-on-default-or-pressed,chip,1
+  divider-as-decoration,divider,1
+  divider-every-item-in-tight-list,divider,1
+  divider-with-heavy-background-difference,divider,1
+  double-backdrop,backdrop,1
+  dropdown-as-navigation-menu,dropdown,1
+  dropdown-for-multi-select,dropdown,1
+  dropdown-with-2-options,dropdown,1
+  duplicate-menu-in-drawer-or-sheet,menu-unico,1
+  edit-legal-text-from-code,footer,1
+  error-for-non-error,alert,1
+  error-without-additional-text,text-field,1
+  error-without-message,checkbox,1
+  essential-content-hidden,accordion,1
+  expandable-footer-without-content-to-expand,card-detail,1
+  feedback-as-inline-error,feedback,1
+  feedback-with-multiple-actions-inside,feedback,1
+  feedback-without-paragraph,feedback,1
+  filter-button-inline-in-content,button-filter,1
+  filter-button-without-bottom-sheet,button-filter,1
+  footer-as-navigation,footer,1
+  force-same-layout-cross-os,search-bar,1
+  forcing-color-via-style-override,text-field,1
+  ghost-as-primary,button,1
+  ghost-on-low-contrast-background,button-icon,1
+  header-on-detail-page,header,1
+  heading-as-cta-row,heading,1
+  heading-instead-of-h1-h2-h3,heading,1
+  heading-without-content-below,heading,1
+  hero-detail-on-homepage,hero-detail,1
+  hero-detail-without-close-x,hero-detail,1
+  hero-in-mid-page-or-secondary-pages,hero,1
+  hero-without-image,hero,1
+  hide-or-omit-footer,footer,1
+  hiding-navbar-randomly-in-pages,navbar,1
+  icon-button-when-label-would-help,button-icon,1
+  icon-true-when-sticky,quicklink-navigation,1
+  image-variant-with-border-in-search-list,quicklink,1
+  image-variant-with-divider,listing-item,1
+  image-variant-without-image,listing-item,1
+  in-page-mutation-of-account-data,menu-unico,1
+  info-for-blocking-error,alert,1
+  inline-for-async-completion,alert,1
+  inline-variant-with-icon-and-long-title,listing-item,1
+  inline-with-long-title-or-paragraph,textbox,1
+  inside-modal-or-bottom-sheet,back-to-top-navigation,1
+  inverse-on-light-background,button,1
+  isolated-single-button,button-circle-navigation,1
+  isolated-single-chip,chip-navigation,1
+  jackpot-for-non-jackpot,badge-default,1
+  label-multi-word,square-button-group,1
+  lg-in-dense-list,avatar,1
+  lg-third-counter-without-need,counter,1
+  lg-without-promo-context,counter,1
+  link-as-cta-for-action,textbox,1
+  link-as-decorative,heading,1
+  link-as-primary-cta,link,1
+  link-for-action-cancel-save-submit,link,1
+  link-with-icon-as-button-alternative,link,1
+  link-without-underline-or-styled-differently,link,1
+  listing-as-horizontal-scroll,listing,1
+  listing-for-action-buttons,listing,1
+  listing-item-as-standalone,listing-item,1
+  listing-with-image-variant,listing,1
+  loader-for-determinate-progress,loader,1
+  loader-for-fast-operations,loader,1
+  loader-without-context-or-blocking-without-cancel,loader,1
+  long-caption-overflow,card-product,1
+  long-label-on-ribbon,badge-ribbon,1
+  long-label-wrap,button-circle-navigation,1
+  long-multiline-content,text-field,1
+  long-multiline-link,link,1
+  long-multiline-title,"heading,quicklink,radio",3
+  long-multiword-label,"badge-default,badge-special,badge-status,button-quicklink,button-square,chip",6
+  long-multiword-labels,"chip-navigation,segmented-control,tab-navigation",3
+  long-page-without-sticky,quicklink-navigation,1
+  long-paragraph-block-orientation,textbox,1
+  long-paragraph-overflow,hero-detail,1
+  long-paragraph-overlapping-image,hero,1
+  long-paragraph-text,feedback,1
+  long-scrollable-content-without-sticky-actions,bottom-sheet,1
+  long-textlabel-on-md,counter,1
+  long-title-or-paragraph,card-entrypoint,1
+  long-title-or-trailing-text,table,1
+  md-as-numeric-countdown,counter,1
+  missing-back-arrow-or-cancel,search-bar,1
+  missing-close-affordance-on-ios,bottom-sheet,1
+  missing-countdown-on-default-when-relevant,card-promo,1
+  missing-icons-on-mixed-set,page-navigation,1
+  missing-image-or-low-quality,card-entrypoint,1
+  missing-label,toggle,1
+  missing-label-only-placeholder,text-field,1
+  missing-label-or-only-icon,checkbox,1
+  missing-platform-aware-variant,segmented-control,1
+  missing-results-count-in-cta,filter,1
+  mixed-block-and-inline-items,listing,1
+  mixed-inline-and-block-rows,table,1
+  mixed-sizes-in-same-grid,card-product,1
+  mixing-many-appearances-on-same-screen,button-icon,1
+  more-than-2-buttons,card-highlight,1
+  more-than-two-buttons,button-group,1
+  multiple-card-highlight-per-page,card-highlight,1
+  multiple-dots-active-simultaneously,page-control,1
+  multiple-filter-buttons-on-page,button-filter,1
+  multiple-primary-on-screen,button,1
+  multiple-ribbons-on-same-card,badge-ribbon,1
+  multiple-selected-items,"page-navigation,tab-navigation",2
+  navbar-with-custom-items-by-user,navbar,1
+  navbar-with-mixed-os-variants,navbar,1
+  navbar-with-too-many-items,navbar,1
+  navbar-with-zero-selected-or-multiple-selected,navbar,1
+  nested-accordions,accordion,1
+  no-accessibility-label,button-icon,1
+  no-content-slot-no-textbox-no-actions,card,1
+  no-default-selection-in-required-group,radio,1
+  no-header,table,1
+  no-header-or-no-handle,bottom-sheet,1
+  no-icon-low-discoverability,button-quicklink,1
+  no-label,button-circle-navigation,1
+  no-partner-info,hero-detail,1
+  no-selected-chip-in-single-choice,chip-navigation,1
+  no-selected-item,"page-navigation,tab-navigation",2
+  no-supporting-text-when-ambiguous,radio,1
+  non-dismiss-backdrop-on-non-blocking-overlay,backdrop,1
+  non-exclusive-segments,segmented-control,1
+  non-standard-padding-or-radius,card,1
+  notification-badge-with-zero-count,button-quicklink,1
+  number-with-3-digit-count,badge-notification,1
+  page-control-with-1-dot,page-control,1
+  page-control-with-many-dots,page-control,1
+  page-control-without-paginated-content,page-control,1
+  page-navigation-for-content-switching-within-section,page-navigation,1
+  primary-action-cta,button-circle-navigation,1
+  primary-on-left-in-inline,button-group,1
+  promo-border-without-actual-promo,card-entrypoint,1
+  promo-outline-without-actual-promo,card-product,1
+  quicklink-as-primary-cta,button-quicklink,1
+  quicklink-instead-of-listing-item-in-list,quicklink,1
+  quicklink-navigation-for-actions,quicklink-navigation,1
+  quicklink-navigation-with-selected-item,quicklink-navigation,1
+  radio-for-multi-select,radio,1
+  recent-game-with-text-label,quicklink,1
+  registration-state-for-existing-members,card-loyalty,1
+  reusing-special-color-across-unrelated-initiatives,badge-special,1
+  ribbon-not-in-top-left,badge-ribbon,1
+  ribbon-on-non-card,badge-ribbon,1
+  scroll-overflow-false-with-many-items,"page-navigation,quicklink-navigation,tab-navigation",3
+  scroll-with-1-hero,hero,1
+  search-bar-disabled-state,search-bar,1
+  search-bar-without-listing-below,search-bar,1
+  search-for-action-trigger,search-bar,1
+  secondary-for-primary-action,button,1
+  segmented-control-as-primary-navigation,segmented-control,1
+  selected-state-as-active-value,dropdown,1
+  selected-state-without-clear-toggle-affordance,button-square,1
+  short-page,back-to-top-navigation,1
+  show-badge-with-zero-count,badge-notification,1
+  show-error-without-recovery-context,card-promo,1
+  single-isolated-radio,radio,1
+  single-select-only-filters,filter,1
+  skipping-heading-levels-semantic-html,titles-and-paragraphs,1
+  sm-with-internal-info-pills,card-product,1
+  small-not-in-empty-state,quicklink,1
+  special-for-generic-info,badge-special,1
+  static-non-animated-loader,loader,1
+  status-badge-for-marketing-info,badge-status,1
+  sticky-for-non-blocking-info,alert,1
+  success-for-warning,alert,1
+  tab-navigation-as-top-level,tab-navigation,1
+  table-for-navigable-items,table,1
+  table-with-many-columns,table,1
+  tap-on-caption-or-decorative-icon,card-entrypoint,1
+  tap-to-jump-without-clear-affordance,page-control,1
+  textbox-standalone-in-page-without-context,textbox,1
+  tiny-hit-area-only-on-switch,checkbox,1
+  title-on-homepage,header,1
+  toggle-for-deferred-choice,toggle,1
+  toggles-in-horizontal-row,toggle,1
+  too-many-badges,hero-detail,1
+  too-many-badges-clutter,hero,1
+  too-many-badges-on-one-card,badge-default,1
+  too-many-hero-in-carousel,hero,1
+  too-many-segments,segmented-control,1
+  trail-icon-without-tap-action,listing-item,1
+  two-line-button-label,button-group,1
+  two-primary-buttons,button-group,1
+  use-as-cta-button,card-product,1
+  use-as-fullscreen-page,filter,1
+  use-as-primary-page-cta,quicklink,1
+  use-as-tab-switcher,square-button-group,1
+  use-as-toast-or-quick-notification,bottom-sheet,1
+  use-base-card-when-specialized-exists,card,1
+  use-card-as-button,card,1
+  use-in-grids-or-listings,card-highlight,1
+  use-jackpot-info-without-numeric-value,card-highlight,1
+  use-landscape-in-grid,card-promo,1
+  use-non-standard-variant,card-detail,1
+  use-outside-detail-page,card-informative,1
+  use-outside-menu,square-button-group,1
+  use-title-paragraph-standalone-in-layout,titles-and-paragraphs,1
+  use-with-only-secondary-button-no-primary,card-loyalty,1
+  use-without-image,card-highlight,1
+  use-without-jackpot-or-numeric-callout,card-entrypoint,1
+  used-on-ios,back-to-top-navigation,1
+  using-ghost-on-liquid-glass,button-icon,1
+  very-long-listing-without-grouping,listing,1
+  very-long-option-labels,dropdown,1
+  wrong-brand-content,footer,1
+  wrong-brand-logo-in-build,splash-screen,1
+  wrong-button-variant,card-highlight,1
+  wrong-font-family-for-content-type,titles-and-paragraphs,1
+  wrong-keyboard-type,text-field,1
+  wrong-level-for-user,card-loyalty,1
+  wrong-os-variant-cross-platform,loader,1
+  wrong-os-variant-in-cross-platform-build,toggle,1
+  wrong-os-variant-on-platform,header,1
+  wrong-semantic-color,badge-default,1
+  wrong-semantic-state,badge-status,1
+  wrong-state-for-bonus-lifecycle,card-promo,1
+  wrong-state-for-meaning,feedback,1
+  wrong-typography-override,textbox,1
+  xs-on-primary-listing,button-filter,1
+  xsm-when-readability-matters,badge-status,1
+dependencyGraph[34]:
+  - parent: accordion
+    nests: "['Text Box', 'Icon Chevron', 'Divider']"
+  - parent: alert
+    nests: "['Icon', 'Link', 'Icon Button']"
+  - parent: back-to-top-navigation
+    nests: "['Icon']"
+  - parent: badge-notification
+    nests: "['Icon']"
+  - parent: bottom-sheet
+    nests: "['Button', 'Button Group']"
+  - parent: button
+    nests: "['Icon Placeholder']"
+  - parent: button-circle-navigation
+    nests: "['Icon']"
+  - parent: button-filter
+    nests: "['Icon']"
+  - parent: button-group
+    nests: "['Button']"
+  - parent: button-icon
+    nests: "['Icon']"
+  - parent: button-quicklink
+    nests: "['Badge Notification']"
+  - parent: button-square
+    nests: "['Icon']"
+  - parent: card
+    nests: "['TextBox', 'Button Group', 'Button']"
+  - parent: card-entrypoint
+    nests: "['Badge Ribbon']"
+  - parent: card-highlight
+    nests: "['Counter', 'Badge Ribbon', 'Button', 'Button Group']"
+  - parent: card-informative
+    nests: "['Listing Item']"
+  - parent: card-loyalty
+    nests: "['Button', 'Button Group']"
+  - parent: card-product
+    nests: "['Counter', 'Badge Ribbon']"
+  - parent: card-promo
+    nests: "['Counter', 'Badge Ribbon', 'Button']"
+  - parent: chip-navigation
+    nests: "['Chip']"
+  - parent: filter
+    nests: "['Bottom Sheet', 'Heading', 'TextBox', 'Chip', 'Button Group', 'Button', 'Button Icon']"
+  - parent: header
+    nests: "['Button', 'Button Icon', 'Heading']"
+  - parent: hero
+    nests: "['Badge Default', 'Button']"
+  - parent: hero-detail
+    nests: "['Badge Default', 'Button Icon', 'Page Control']"
+  - parent: listing
+    nests: "['Listing Item']"
+  - parent: listing-item
+    nests: "['Badge Default']"
+  - parent: menu-unico
+    nests: "['Header', 'Button Group', 'Square Button Group', 'Listing Item', 'Card Promo', 'Card Loyalty', 'Feedback', 'Link', 'Heading', 'Footer']"
+  - parent: page-navigation
+    nests: "['Button Square']"
+  - parent: quicklink-navigation
+    nests: "['Button Quicklink', 'Badge Notification']"
+  - parent: search-bar
+    nests: "['Button Icon', 'Link']"
+  - parent: splash-screen
+    nests: "['Loader']"
+  - parent: square-button-group
+    nests: "['Button Square']"
+  - parent: table
+    nests: "['Divider']"
+  - parent: textbox
+    nests: "['Link']"

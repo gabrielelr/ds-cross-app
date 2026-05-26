@@ -21,13 +21,14 @@ Knowledge base del **Design System Cross-App** dei brand Sisal / Snai / Pokersta
 Quando avvii una sessione su questa repo, **leggi i file in questo ordine** prima di fare qualsiasi cosa:
 
 1. **Questo file (`CLAUDE.md`)** — regole e processo (lo stai leggendo)
-2. **`SCHEMA.md`** — schema del `metadata.json` dei componenti
-3. **`page-patterns/SCHEMA-PATTERN.md`** — schema del `composition.json` dei page-pattern
-4. **`page-patterns/README.md`** — indice di tutti i page-pattern disponibili
-5. **Il `pattern.md` + `composition.json` del page-pattern coinvolto** — SOLO quando devi comporre/recensire una schermata di una specifica tipologia
-6. **I `metadata.json` dei singoli componenti coinvolti** — SOLO quando devi entrare nei dettagli di uno specifico componente
+2. **`index.toon`** — overview di tutti i componenti in ~4k token (slug, name, type, status, useCases, antiPattern aggregati, dependency graph). **Per la maggior parte delle domande sul DS questo basta.** Aprilo come secondo file, sempre.
+3. **`SCHEMA.md`** — schema del `metadata.json` dei componenti (solo se devi creare/modificare un componente)
+4. **`page-patterns/SCHEMA-PATTERN.md`** — schema del `composition.json` dei page-pattern
+5. **`page-patterns/README.md`** — indice di tutti i page-pattern disponibili
+6. **Il `pattern.md` + `composition.json` del page-pattern coinvolto** — SOLO quando devi comporre/recensire una schermata di una specifica tipologia
+7. **I `metadata.json` dei singoli componenti coinvolti** — SOLO se hai bisogno di dettagli che `index.toon` non contiene (composition completa, behavior states, accessibility, rationale)
 
-Non leggere tutti i 60 metadata in apertura — è spreco di context. Leggi on-demand.
+**Regola di efficienza.** `index.toon` è generato automaticamente da `scripts/build_index.py` ad ogni push e aggrega i campi essenziali di tutti i `metadata.json`. Non leggere i metadata individualmente per rispondere a domande di overview ("esiste il componente X?", "quali sono gli antiPattern di Y?", "quali componenti compongono Z?") — `index.toon` ha già quelle risposte. Apri il `metadata.json` del singolo solo per dettagli profondi.
 
 ---
 
@@ -76,15 +77,11 @@ Se la page-type richiesta **non ha ancora un pattern documentato**, fermati e pr
 
 Quando crei o aggiorni un page-pattern, scrivi **prima** il `pattern.md` (narrative), **poi** il `composition.json` (struttura). Mai il contrario.
 
-### R7 — Max 1 Button Primary per schermata
 
-Una sola `Hierarchy=Primary` visibile per viewport. Le azioni concorrenti vanno `Secondary` o `Ghost`. La regola è di **schermata intera**, non di Button Group locale. *Source:* `components/button/docs/metadata.json` antiPattern `multiple-primary-on-screen`.
-
-### R8 — Container del riferimento → Container del DS
+### R7 — Container del riferimento → Container del DS
 
 Quando ricomponi una schermata di riferimento, **preserva la container hierarchy**: se il riferimento ha una card (container) che wrappa contenuto, usa una Card del DS (container) + display nested, MAI sostituire la card con il solo display flat. *Why:* il container porta semantica visiva (bordo, padding, raggruppamento) — sostituirlo con un display perde la struttura.
-
-### R9 — `type` guida la scelta del componente
+8 — `type` guida la scelta del componente
 
 Ogni componente DS ha un `component.type` nel metadata: `container`, `display`, `interactive`, `input`, `navigation`. **Prima decidi il type che serve in ogni slot, poi scegli il componente concreto.** Mai usare un `display` dove serve un `container` o viceversa. Vedi tabella sotto.
 
@@ -96,7 +93,7 @@ Ogni componente DS ha un `component.type` nel metadata: `container`, `display`, 
 | `input` | raccolta dati | TextField, Radio, Checkbox, Dropdown, Search Bar, Segmented Control |
 | `navigation` | chrome di pagina / sistema di navigazione | Header, Navbar, Tab Navigation, Page Navigation, Chip Navigation, Quicklink Navigation, Square Button Group |
 
-### R10 — Cerca Grid / Page / Carousel Template **prima** di comporre da atomi
+### R9 — Cerca Grid / Page / Carousel Template **prima** di comporre da atomi
 
 Se esiste un template ready-to-use specifico per il contesto (es. `Card Product Grid Template - Lotterie` per un listing lotterie), **usalo come base** invece di costruire la grid da Card Product singoli. *Why:* i template di contesto incorporano già metadata, size, palette e gerarchia ottimali per quella vertical — comporre da atomi produce un mismatch sottile ma significativo.
 

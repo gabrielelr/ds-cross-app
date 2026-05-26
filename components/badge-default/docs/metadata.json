@@ -87,6 +87,7 @@
     "commonPartners": ["Hero", "Hero Detail"],
     "parentConstraints": [
       "Posizionato come overlay sull'immagine Hero"
+    ]
   },
 
   "behavior": {
