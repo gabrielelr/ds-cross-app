@@ -1,5 +1,7 @@
 # Handoff — `ds-cross-app`
 
+*Autore: Gabriele La Rosa — Team DS*
+
 > Sei nuovo? **Inizia da qui.**
 > Se sei un LLM, leggi anche [`CLAUDE.md`](CLAUDE.md) (viene caricato automaticamente all'apertura della repo e contiene tutte le regole vincolanti).
 
