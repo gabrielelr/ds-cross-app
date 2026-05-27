@@ -166,6 +166,34 @@ Capita spesso che i designer documentino un nuovo componente o un nuovo page-pat
    - Ti mostra il JSON proposto per **review prima di scrivere su disco**
 5. **Tu valida e committi.** L'agente deve sempre fermarsi a mostrare il risultato prima di salvare — se vede paragrafi che non sa mappare (campi non previsti dallo schema, contenuti ambigui), te li segnala invece di inventare un campo nuovo.
 
+**Mapping di riferimento** — i designer Cross-App usano due template ricorrenti, `Purpose & Usage` e `Behavior`. L'agente può fidarsi di questa tabella:
+
+| Frame template designer | Sezione | Campo target nel `metadata.json` |
+|---|---|---|
+| **Purpose & Usage** | Header *"Component name / variant"* | `component.name` + slug della cartella |
+| **Purpose & Usage** | **1.1 How and when to use it (Do ✅)** — descrizione 2-3 frasi | `usage.commonPatterns[].when` |
+| **Purpose & Usage** | 1.1 — "In which component / template / flow is it used?" | `usage.commonPatterns[].composition` (o `composition.commonPartners[]` se sono solo nomi di altri componenti) |
+| **Purpose & Usage** | 1.1 — screenshot Do | riferimento `figmaNodeIds` (link al frame esemplificativo) |
+| **Purpose & Usage** | **1.2 Anti-pattern (Don't ❌)** — *Rule* | `usage.antiPatterns[].scenario` |
+| **Purpose & Usage** | 1.2 — *Why it's wrong* | `usage.antiPatterns[].reason` |
+| **Purpose & Usage** | 1.2 — *Use instead* | `usage.antiPatterns[].alternative` |
+| **Purpose & Usage** | 1.2 — screenshot Don't | riferimento `figmaNodeIds` o note |
+| **Behavior** | Interactive elements (cosa è tappabile e cosa succede) | `behavior.interactions` |
+| **Behavior** | Position (dove appare nel layout) | `composition.parentConstraints[]` |
+| **Behavior** | Animation (tipo + durata) | `behavior.interactions` (nota descrittiva) |
+| **Behavior** | Size (min/max + touch target) | `behavior.responsive` (per dimensioni adattive) o `parentConstraints` (touch target) |
+| **Behavior** | Conditional logic | `behavior.interactions` (chiavi tipo `if:formInvalid → button.disabled`) |
+| **Behavior** | **Copy & truncation** | `content` (`maxLines` / `characterLimits` / `overflow` / `rules`) |
+| **Behavior** | Do / Don't / Note locali (Mobile / Desktop) | confluiscono in `usage.commonPatterns[]` / `usage.antiPatterns[]` / `rationale.designDecisions` |
+
+L'intera sezione **1.1** del Purpose tipicamente diventa **una entry** in `usage.commonPatterns[]`. Se i designer ne aggiungono più (1.1.A, 1.1.B), una entry per ciascuna. Stesso per **1.2** in `usage.antiPatterns[]`.
+
+**Punti d'attenzione che l'agente deve ricordare:**
+
+- **Sezione "Desktop" nel Behavior** — il DS Cross-App ha `platforms: ["android", "ios", "ios-liquid-glass"]`. Se i designer compilano Desktop, l'agente flagga *scope mismatch* (regola R4 di `CLAUDE.md`) invece di mappare quei contenuti.
+- **Tag "FOR DEVELOPER / FOR DESIGNER"** in cima ai frame — è semantica del workflow Figma, non va nel JSON.
+- **Screenshot Do/Don't vuoti** (solo etichetta, niente immagine) = template non compilato → l'agente si ferma e segnala, non inventa contenuto per riempire.
+
 **Convenzioni utili da concordare coi designer** (rendono il processo molto più affidabile):
 
 - Sezioni nominate in modo coerente con lo schema, dove possibile: `Use cases` / `When to use` / `When NOT to use` / `Slot` / `Anti-pattern` / `Stati e interazioni` / `Accessibilità` / `Razionale UX`.
