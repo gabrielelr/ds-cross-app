@@ -181,16 +181,24 @@ Capita spesso che i designer documentino un nuovo componente o un nuovo page-pat
 | **Behavior** | Interactive elements (cosa è tappabile e cosa succede) | `behavior.interactions` |
 | **Behavior** | Position (dove appare nel layout) | `composition.parentConstraints[]` |
 | **Behavior** | Animation (tipo + durata) | `behavior.interactions` (nota descrittiva) |
-| **Behavior** | Size (min/max + touch target) | `behavior.responsive` (per dimensioni adattive) o `parentConstraints` (touch target) |
+| **Behavior** | Size (min/max + touch target) | `behavior.responsive.{android, ios, ios-liquid-glass}` (vedi sotto la nota su Mobile/Desktop → 3 platforms) o `parentConstraints` (touch target) |
 | **Behavior** | Conditional logic | `behavior.interactions` (chiavi tipo `if:formInvalid → button.disabled`) |
 | **Behavior** | **Copy & truncation** | `content` (`maxLines` / `characterLimits` / `overflow` / `rules`) |
 | **Behavior** | Do / Don't / Note locali (Mobile / Desktop) | confluiscono in `usage.commonPatterns[]` / `usage.antiPatterns[]` / `rationale.designDecisions` |
 
 L'intera sezione **1.1** del Purpose tipicamente diventa **una entry** in `usage.commonPatterns[]`. Se i designer ne aggiungono più (1.1.A, 1.1.B), una entry per ciascuna. Stesso per **1.2** in `usage.antiPatterns[]`.
 
-**Punti d'attenzione che l'agente deve ricordare:**
+**Trattamento `Mobile` / `Desktop` del template → 3 piattaforme del DS Cross-App.** Il template Behavior dei designer divide i contenuti in due colonne `Mobile` e `Desktop`. Il DS Cross-App ha però **tre piattaforme mobile-native** dichiarate (`android`, `ios`, `ios-liquid-glass`) e **nessuna desktop**. L'agente deve riconciliare così:
 
-- **Sezione "Desktop" nel Behavior** — il DS Cross-App ha `platforms: ["android", "ios", "ios-liquid-glass"]`. Se i designer compilano Desktop, l'agente flagga *scope mismatch* (regola R4 di `CLAUDE.md`) invece di mappare quei contenuti.
+- **Sezione `Mobile`** → il contenuto viene **distribuito sulle 3 chiavi** del DS in `behavior.responsive`. Due casi:
+  - *I designer non distinguono fra OS* (testo unico per Mobile, es. "min height 44px") → l'agente replica lo stesso valore su `responsive.android`, `responsive.ios`, `responsive.ios-liquid-glass`.
+  - *I designer specificano differenze OS-aware nel testo* (es. "Header 64h Android, 48h iOS, 48h pill iOS Liquid Glass") → l'agente assegna ogni differenza alla chiave corretta. Se la spec menziona solo 2 dei 3 OS, lascia vuota la terza chiave e segnala il gap (non inventa).
+- **Sezione `Desktop`** → *scope mismatch* per R4 di [`CLAUDE.md`](CLAUDE.md). L'agente **non** mappa quei contenuti e segnala che il DS non li supporta. Se i designer hanno scritto regole Desktop importanti, è una conversazione da aprire con loro, non un mapping silenzioso.
+
+> Suggerimento all'UX team: in una futura iterazione del template Figma, sostituire le due colonne `Mobile / Desktop` con **tre colonne `iOS / Android / iOS Liquid Glass`** allineate alle `platforms` reali del DS. Risolve l'ambiguità alla radice e il mapping diventa 1:1 (chiave Figma = chiave JSON).
+
+**Altri punti d'attenzione:**
+
 - **Tag "FOR DEVELOPER / FOR DESIGNER"** in cima ai frame — è semantica del workflow Figma, non va nel JSON.
 - **Screenshot Do/Don't vuoti** (solo etichetta, niente immagine) = template non compilato → l'agente si ferma e segnala, non inventa contenuto per riempire.
 
