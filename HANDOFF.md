@@ -181,21 +181,19 @@ Capita spesso che i designer documentino un nuovo componente o un nuovo page-pat
 | **Behavior** | Interactive elements (cosa è tappabile e cosa succede) | `behavior.interactions` |
 | **Behavior** | Position (dove appare nel layout) | `composition.parentConstraints[]` |
 | **Behavior** | Animation (tipo + durata) | `behavior.interactions` (nota descrittiva) |
-| **Behavior** | Size (min/max + touch target) | `behavior.responsive.{android, ios, ios-liquid-glass}` (vedi sotto la nota su Mobile/Desktop → 3 platforms) o `parentConstraints` (touch target) |
+| **Behavior** | Size (min/max + touch target) | `behavior.responsive.*` — chiavi `ios/android/ios-liquid-glass` per componenti app, `mobile/desktop` per componenti web (vedi sotto) — o `parentConstraints` (touch target) |
 | **Behavior** | Conditional logic | `behavior.interactions` (chiavi tipo `if:formInvalid → button.disabled`) |
 | **Behavior** | **Copy & truncation** | `content` (`maxLines` / `characterLimits` / `overflow` / `rules`) |
 | **Behavior** | Do / Don't / Note locali (Mobile / Desktop) | confluiscono in `usage.commonPatterns[]` / `usage.antiPatterns[]` / `rationale.designDecisions` |
 
 L'intera sezione **1.1** del Purpose tipicamente diventa **una entry** in `usage.commonPatterns[]`. Se i designer ne aggiungono più (1.1.A, 1.1.B), una entry per ciascuna. Stesso per **1.2** in `usage.antiPatterns[]`.
 
-**Trattamento `Mobile` / `Desktop` del template → 3 piattaforme del DS Cross-App.** Il template Behavior dei designer divide i contenuti in due colonne `Mobile` e `Desktop`. Il DS Cross-App ha però **tre piattaforme mobile-native** dichiarate (`android`, `ios`, `ios-liquid-glass`) e **nessuna desktop**. L'agente deve riconciliare così:
+**Il template Behavior è multi-DS: riconoscere `app` vs `web` prima di mappare.** Lo stesso template Figma viene usato dai designer per documentare componenti di due Design System diversi, e cambia le colonne in base al contesto:
 
-- **Sezione `Mobile`** → il contenuto viene **distribuito sulle 3 chiavi** del DS in `behavior.responsive`. Due casi:
-  - *I designer non distinguono fra OS* (testo unico per Mobile, es. "min height 44px") → l'agente replica lo stesso valore su `responsive.android`, `responsive.ios`, `responsive.ios-liquid-glass`.
-  - *I designer specificano differenze OS-aware nel testo* (es. "Header 64h Android, 48h iOS, 48h pill iOS Liquid Glass") → l'agente assegna ogni differenza alla chiave corretta. Se la spec menziona solo 2 dei 3 OS, lascia vuota la terza chiave e segnala il gap (non inventa).
-- **Sezione `Desktop`** → *scope mismatch* per R4 di [`CLAUDE.md`](CLAUDE.md). L'agente **non** mappa quei contenuti e segnala che il DS non li supporta. Se i designer hanno scritto regole Desktop importanti, è una conversazione da aprire con loro, non un mapping silenzioso.
+- **Componente del DS Cross-App (mobile-native)** → il template ha **tre colonne `iOS` / `Android` / `iOS Liquid Glass`** allineate alle `platforms` del DS. Mapping 1:1: ogni colonna va sulla chiave omonima di `behavior.responsive` (`responsive.ios`, `responsive.android`, `responsive.ios-liquid-glass`). Se una colonna è vuota, l'agente lascia la chiave vuota e segnala il gap (non inventa).
+- **Componente del DS Web** → il template ha **due colonne `Mobile` / `Desktop`** (responsive web). Mapping 1:1 su `responsive.mobile` / `responsive.desktop`.
 
-> Suggerimento all'UX team: in una futura iterazione del template Figma, sostituire le due colonne `Mobile / Desktop` con **tre colonne `iOS / Android / iOS Liquid Glass`** allineate alle `platforms` reali del DS. Risolve l'ambiguità alla radice e il mapping diventa 1:1 (chiave Figma = chiave JSON).
+L'agente identifica il contesto dalle intestazioni di colonna **prima** di mappare. Se vede `iOS / Android / iOS Liquid Glass` → componente app, va in questa repo. Se vede `Mobile / Desktop` → componente web, **non** va in questa repo (il DS Web è una repo separata) e l'agente lo segnala come scope mismatch a livello di repo, non a livello di campo.
 
 **Altri punti d'attenzione:**
 
