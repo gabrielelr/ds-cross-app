@@ -4,7 +4,7 @@ Questo documento definisce la struttura della documentazione per ogni componente
 
 Tutte le regole qui descritte sono **vincolanti**. Una documentazione che non rispetta lo schema non viene processata correttamente dagli strumenti automatici (pipeline di conversione, generazione `index.json`, modalità di chat e check).
 
-> **Origine dello schema.** Le sezioni base del `metadata.json` (`component`, `usage`, `composition`, `behavior`, `accessibility`, `aiHints`) sono definite dalla skill **`ai-component-metadata`** (in `skills/ai-component-metadata/`). Questo file estende quello schema con campi specifici del progetto (`slug`, `lastUpdated`, `status`, `platforms`, `figmaNodeIds`, `rationale`). Per documentare un componente nuovo, parti dal template della skill (`skills/ai-component-metadata/assets/metadata-template.tsx`) e aggiungi i campi project-specific definiti qui.
+> **Origine dello schema.** Le sezioni base del `metadata.json` (`component`, `usage`, `composition`, `behavior`, `accessibility`, `aiHints`) sono definite dalla skill **`ai-component-metadata`** (in `skills/ai-component-metadata/`). Questo file estende quello schema con campi specifici del progetto (`slug`, `lastUpdated`, `status`, `platforms`, `figmaNodeIds`, `content`, `rationale`). Per documentare un componente nuovo, parti dal template della skill (`skills/ai-component-metadata/assets/metadata-template.tsx`) e aggiungi i campi project-specific definiti qui.
 
 ---
 
@@ -241,6 +241,16 @@ Lo schema del `metadata.json` segue il formato della skill **AI Component Metada
     }
   },
 
+  "content": {
+    "maxLines": { "label": 1 },
+    "characterLimits": { "label": 20 },
+    "overflow": "ellipsis",
+    "rules": [
+      "Button label: max 20 characters, always 1 line",
+      "If label exceeds 20 chars, truncate with ellipsis instead of wrapping"
+    ]
+  },
+
   "accessibility": {
     "role": "button",
     "keyboardSupport": "Full keyboard navigation with Space/Enter activation",
@@ -330,6 +340,10 @@ Quando un componente esiste su tutte e tre, va elencato in tutte e tre le chiavi
 | `behavior.states[]`              | array di string | No           | Stati interattivi supportati                                         |
 | `behavior.interactions`          | object          | No           | Chiave → descrizione comportamento (click, hover, focus, space…)    |
 | `behavior.responsive`            | object          | No           | Chiavi: `mobile`, `tablet`, `desktop`. Valore: stringa descrittiva  |
+| `content.maxLines`               | object          | No           | Mappa elemento-testo → max linee (es. `{"title": 2, "label": 1}`)   |
+| `content.characterLimits`        | object          | No           | Mappa elemento-testo → max caratteri (es. `{"label": 20}`)          |
+| `content.overflow`               | string          | No           | `ellipsis` / `clamp` / `scroll` / `none` / `mixed`                  |
+| `content.rules`                  | array di string | No           | Regole free-text non esprimibili con i campi sopra                  |
 | `accessibility.role`             | string          | No           | Ruolo ARIA                                                           |
 | `accessibility.keyboardSupport`  | string          | No           | Descrizione del supporto keyboard                                    |
 | `accessibility.screenReader`     | string          | No           | Comportamento con screen reader                                      |
