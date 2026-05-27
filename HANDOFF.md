@@ -142,6 +142,43 @@ Dopo aver settato permessi + secret, lancia manualmente:
 
 Vedi `CLAUDE.md` → "Processo: documentare un nuovo componente" per la versione formale.
 
+### 🟢 I designer mi hanno consegnato un frame Figma con la spec scritta — come la trasformo in JSON?
+
+Capita spesso che i designer documentino un nuovo componente o un nuovo page-pattern direttamente su un frame Figma, con sezioni testuali pre-divise (es. "Quando usarlo", "Anti-pattern", "Slot", "Razionale UX", "Stati"). In questo caso non bisogna riscrivere niente a mano — basta dare il frame in pasto all'agente AI e lasciare che mappi i paragrafi sui campi giusti dello schema.
+
+**Procedura:**
+
+1. **Verifica che il frame abbia il `node-id` nell'URL**. In Figma: tasto destro sul frame → `Copy/Paste as` → `Copy link to selection`. Se l'URL non contiene `?node-id=...`, l'agente non può aprire il singolo frame.
+2. **Decidi cosa stai documentando.** Le due opzioni sono mutuamente esclusive:
+   - **Un componente** → l'output finirà in `components/<slug>/docs/metadata.json`, lo schema è in [`SCHEMA.md`](SCHEMA.md)
+   - **Un page-pattern** → l'output finirà in `page-patterns/<slug>/composition.json` + `pattern.md`, lo schema è in [`page-patterns/SCHEMA-PATTERN.md`](page-patterns/SCHEMA-PATTERN.md)
+3. **Dai all'agente AI un prompt completo**, qualcosa tipo:
+
+   > "Apri questo frame Figma e estrai la spec testuale per popolare il `metadata.json` del componente `<slug>` — segui lo schema in `SCHEMA.md`: `<link Figma con node-id>`"
+   >
+   > oppure:
+   >
+   > "Apri questo frame Figma e estrai la spec per popolare il `composition.json` + `pattern.md` del page-pattern `<slug>` — segui lo schema in `page-patterns/SCHEMA-PATTERN.md`: `<link Figma con node-id>`"
+
+4. **L'agente fa il giro:**
+   - Apre il frame via Figma MCP, legge screenshot + testo dei paragrafi
+   - Mappa ogni sezione del frame al campo corrispondente dello schema (es. "Quando usarlo" → `usage.useCases`; "Anti-pattern" → `usage.antiPatterns[]` con `scenario`/`reason`/`alternative`; "Razionale" → `rationale.designDecisions`)
+   - Ti mostra il JSON proposto per **review prima di scrivere su disco**
+5. **Tu valida e committi.** L'agente deve sempre fermarsi a mostrare il risultato prima di salvare — se vede paragrafi che non sa mappare (campi non previsti dallo schema, contenuti ambigui), te li segnala invece di inventare un campo nuovo.
+
+**Convenzioni utili da concordare coi designer** (rendono il processo molto più affidabile):
+
+- Sezioni nominate in modo coerente con lo schema, dove possibile: `Use cases` / `When to use` / `When NOT to use` / `Slot` / `Anti-pattern` / `Stati e interazioni` / `Accessibilità` / `Razionale UX`.
+- Per gli anti-pattern, una struttura ricorrente *Scenario → Perché è sbagliato → Alternativa* — è ciò che lo schema si aspetta come triplo `scenario` / `reason` / `alternative`.
+- Per i page-pattern, indicare per ogni slot se è `required` / `forbidden` / `optional` e quali componenti sono ammessi.
+- Se la spec elenca esempi canonici, includere il link Figma di ognuno → l'agente li mappa in `figmaNodeIds` (per i componenti) o `compositionExamples[]` (per i pattern).
+
+**Cosa NON va fatto automaticamente:**
+
+- L'agente **non promuove status da `scaffold`/`draft` a `full`** solo perché ha estratto la spec. La promozione resta una decisione esplicita dell'UX team (vedi sopra le regole di status).
+- Se la spec è frammentata o incompleta, lasciare i campi non coperti **vuoti** invece di completarli per inferenza — questo è coerente con la regola R3 di `CLAUDE.md` (non inventare `designDecisions`, qui esteso a tutti i campi non documentati esplicitamente nel frame).
+- Se i designer scrivono hex literals (`#5fa747`), l'agente deve **chiedere il nome del token** invece di accettarli — regola R2.
+
 ### 🟢 Voglio comporre una schermata nuova
 
 1. **Identifica la page-type** (dettaglio gioco? form di valutazione? menu? listing?)
