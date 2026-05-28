@@ -7,6 +7,71 @@
 
 ---
 
+## Come funziona in breve
+
+Questa repo è la **knowledge base machine-readable** del Design System Cross-App. Non c'è codice runtime — ci sono solo file `.json` e `.md` che descrivono *cosa è* un componente, *quando usarlo*, *come si compone una pagina*. Lo scopo è permettere a **un LLM o a un agente AI** di rispondere a domande, comporre schermate e recensire design senza inventare nulla che non sia nel DS reale.
+
+La documentazione è strutturata su **due livelli**:
+
+- **Componenti** (in `components/<slug>/`) — un `metadata.json` per ogni componente del DS (Button, Card, Hero, …) che descrive scopo, varianti, useCases, antiPatterns, accessibilità, comportamento, regole di composizione.
+- **Page-pattern** (in `page-patterns/<slug>/`) — un `composition.json` + `pattern.md` per ogni tipologia di pagina (homepage, detail, form, menu, …) che dichiara quali slot sono obbligatori/proibiti, quali componenti sono ammessi in ciascuno, e quali regole quantitative valgono (es. `maxPrimaryCTA: 1`).
+
+Sopra a questi due strati gira **un'automazione minima ma decisiva**: ad ogni `push` su `main`, una GitHub Action esegue [`scripts/build_index.py`](scripts/build_index.py) che aggrega tutti i 65 `metadata.json` in un singolo file **`index.toon`** in root. Questo file pesa ~4 000 token (contro i ~200 000 che servirebbero a leggere tutti i metadata uno per uno) ed è il **primo file che l'agente AI apre dopo `CLAUDE.md`**: gli dà l'overview completa del DS in un singolo prompt, senza farlo girare per 65 cartelle.
+
+C'è poi uno **scorer automatico** ([`scripts/score_screen.py`](scripts/score_screen.py)) che, data una schermata descritta come JSON neutro (pageType + slot + componenti usati), la confronta deterministicamente contro il `composition.json` del page-pattern di riferimento e produce un report **pass / fail** con exit code 0 (conforme) o 1 (violazioni). È pensato per essere chiamato sia da un agente AI dopo aver letto un nodo Figma, sia da un futuro CI di review automatica.
+
+Infine, un secondo workflow ([`weekly-report.yml`](.github/workflows/weekly-report.yml)) ogni venerdì mattina aggrega i `changelog.md` modificati nella settimana e pubblica un report strutturato + post per componente su Slack.
+
+### Schema del flusso
+
+```
+   ┌─────────────────────────────────────────────────┐
+   │  Designer / UX team                              │
+   │  documentano componenti e pattern su Figma       │
+   └────────────────────────┬────────────────────────┘
+                            │
+                            ▼   (estrazione da spec Figma via agente AI)
+   ┌─────────────────────────────────────────────────┐
+   │  Repo  ds-cross-app                              │
+   │                                                  │
+   │  components/<slug>/docs/                         │
+   │    └─ metadata.json   ← un file per componente   │
+   │                                                  │
+   │  page-patterns/<slug>/                           │
+   │    ├─ composition.json ← slot/regole strutturati │
+   │    └─ pattern.md       ← narrative UX            │
+   └────────────────────────┬────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              │                            │
+              ▼   (CI ad ogni push)        ▼   (on-demand)
+   ┌────────────────────┐      ┌──────────────────────────┐
+   │ build_index.py     │      │ score_screen.py          │
+   │ → index.toon       │      │ → report pass/fail       │
+   │   ~4k token,       │      │   exit 0 conforme,       │
+   │   tutto il DS      │      │   exit 1 violazioni      │
+   └─────────┬──────────┘      └──────────┬───────────────┘
+             │                             │
+             ▼                             ▼
+   ┌─────────────────────────────────────────────────┐
+   │  Agente AI (Claude Code, ChatGPT, …)             │
+   │  apre la repo, legge CLAUDE.md + index.toon,    │
+   │  poi compone schermate, fa review, risponde a Q │
+   └─────────────────────────────────────────────────┘
+```
+
+### Cosa fa il consumer pratico
+
+| Chi | Cosa fa | Cosa legge |
+|---|---|---|
+| **Designer** | Documenta nuovi componenti/pattern su Figma seguendo i template `Purpose & Usage` + `Behavior` | `SCHEMA.md` §5 per sapere cosa scrivere e dove |
+| **Team DS** | Mantiene la repo, valida le promozioni a `status: full`, decide regole cross-component | `CLAUDE.md` + `HANDOFF.md` (questo doc) |
+| **Agente AI compositore** | Compone schermate rispettando pattern + regole | `CLAUDE.md` → `index.toon` → (on-demand) il `composition.json` della page-type |
+| **Agente AI reviewer** | Recensisce schermate, identifica antipattern, propone fix | `index.toon` + scorer + `composition.json` |
+| **Sviluppatore** | Usa il DS come riferimento per implementare in codice | `metadata.json` del componente + `figmaNodeIds` |
+
+---
+
 ## Articoli su cui si basa questo approccio
 
 Questo setup (metadata strutturati per componenti + page-pattern + agente AI-driven + governance encoded) è ispirato a una serie di articoli del *Design Systems Collective*. Letti in ordine, danno il quadro completo del perché la repo è strutturata così:
