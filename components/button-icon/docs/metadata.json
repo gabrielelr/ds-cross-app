@@ -34,11 +34,6 @@
         "composition": "<ButtonIcon appearance=\"Neutral\" hierarchy=\"Ghost\" size=\"md\" icon={<IconClose />} accessibilityLabel=\"Chiudi\" onPress={dismiss} />"
       },
       {
-        "name": "destructive-action-icon",
-        "description": "Icon Button per azione distruttiva (elimina, blocca, annulla iscrizione). `Appearance=Danger` in `Hierarchy=Secondary` (fill chiaro + icona rossa) per essere riconoscibile come distruttivo senza essere troppo aggressivo, oppure `Primary` se l'azione è la principale del contesto.",
-        "composition": "<ButtonIcon appearance=\"Danger\" hierarchy=\"Secondary\" size=\"sm\" icon={<IconTrash />} accessibilityLabel=\"Elimina elemento\" onPress={deleteItem} />"
-      },
-      {
         "name": "inverse-on-dark-background",
         "description": "`Appearance=Inverse` per quando il bottone vive sopra contenuto scuro/immagine (es. Icon Button sopra a un Hero con foto a tutto schermo). Esiste solo nella versione standard, non in Liquid Glass.",
         "composition": "<ButtonIcon appearance=\"Inverse\" hierarchy=\"Secondary\" size=\"md\" icon={<IconShare />} accessibilityLabel=\"Condividi\" />"
@@ -50,11 +45,6 @@
       }
     ],
     "antiPatterns": [
-      {
-        "scenario": "no-accessibility-label",
-        "reason": "Senza label visibile, l'unica informazione semantica del bottone è l'icona — che lo screen reader non legge come testo. Senza `accessibilityLabel` valorizzato, l'utente non vedente sente solo 'pulsante' senza sapere cosa fa.",
-        "alternative": "`accessibilityLabel` è SEMPRE obbligatorio (vedi requiredProps). Deve descrivere l'azione, non l'icona (es. 'Chiudi' non 'X'; 'Elimina ordine' non 'cestino')."
-      },
       {
         "scenario": "icon-button-when-label-would-help",
         "reason": "Per azioni non rappresentabili in modo ovvio da un'icona (es. 'Aggiungi ai preferiti' vs 'Aggiungi al carrello' — entrambi potrebbero essere un cuore o un più), l'icona da sola produce ambiguità. Gli utenti devono leggere il contesto per capire cosa fa, e non sempre ci riescono.",

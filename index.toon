@@ -1,5 +1,5 @@
 meta:
-  generatedAt: "2026-05-27T12:46:45Z"
+  generatedAt: "2026-06-09T10:21:24Z"
   totalComponents: 65
   full: 60
   scaffold: 5
@@ -15,9 +15,8 @@ components[65]{slug,name,category,type,status,lastUpdated}:
   badge-special,Badge Special,atoms,display,full,2026-05-20
   badge-status,Badge Status,atoms,display,full,2026-05-20
   bottom-sheet,Bottom Sheet,molecules,container,full,2026-05-21
-  button,Button,atoms,interactive,full,2026-05-14
+  button,Button,atoms,interactive,full,2026-06-09
   button-circle-navigation,Button Circle Navigation,atoms,interactive,full,2026-05-20
-  button-filter,Button Filter,atoms,interactive,full,2026-05-20
   button-group,Button Group,atoms,interactive,full,2026-05-22
   button-icon,Button Icon,atoms,interactive,full,2026-05-20
   button-quicklink,Button Quicklink,atoms,interactive,full,2026-05-20
@@ -38,6 +37,7 @@ components[65]{slug,name,category,type,status,lastUpdated}:
   counter,Counter,atoms,display,full,2026-05-20
   divider,Divider,atoms,display,full,2026-05-20
   dropdown,Dropdown,atoms,input,full,2026-05-20
+  fab,FAB,atoms,interactive,full,2026-06-09
   faq,FAQ,atoms,interactive,scaffold,2026-05-14
   feedback,Feedback,atoms,display,full,2026-05-20
   filter,Filter,organisms,interactive,full,2026-05-22
@@ -123,11 +123,12 @@ antiPatternsGlobal[261]{scenario,components,count}:
   error-without-message,checkbox,1
   essential-content-hidden,accordion,1
   expandable-footer-without-content-to-expand,card-detail,1
+  fab-covers-critical-content,fab,1
+  fab-inline-in-content,fab,1
+  fab-on-short-page,fab,1
   feedback-as-inline-error,feedback,1
   feedback-with-multiple-actions-inside,feedback,1
   feedback-without-paragraph,feedback,1
-  filter-button-inline-in-content,button-filter,1
-  filter-button-without-bottom-sheet,button-filter,1
   footer-as-navigation,footer,1
   force-same-layout-cross-os,search-bar,1
   forcing-color-via-style-override,text-field,1
@@ -211,7 +212,7 @@ antiPatternsGlobal[261]{scenario,components,count}:
   more-than-two-buttons,button-group,1
   multiple-card-highlight-per-page,card-highlight,1
   multiple-dots-active-simultaneously,page-control,1
-  multiple-filter-buttons-on-page,button-filter,1
+  multiple-fabs-on-page,fab,1
   multiple-primary-on-screen,button,1
   multiple-ribbons-on-same-card,badge-ribbon,1
   multiple-selected-items,"page-navigation,tab-navigation",2
@@ -220,7 +221,6 @@ antiPatternsGlobal[261]{scenario,components,count}:
   navbar-with-too-many-items,navbar,1
   navbar-with-zero-selected-or-multiple-selected,navbar,1
   nested-accordions,accordion,1
-  no-accessibility-label,button-icon,1
   no-content-slot-no-textbox-no-actions,card,1
   no-default-selection-in-required-group,radio,1
   no-header,table,1
@@ -324,12 +324,12 @@ antiPatternsGlobal[261]{scenario,components,count}:
   wrong-os-variant-cross-platform,loader,1
   wrong-os-variant-in-cross-platform-build,toggle,1
   wrong-os-variant-on-platform,header,1
+  wrong-platform-variant,fab,1
   wrong-semantic-color,badge-default,1
   wrong-semantic-state,badge-status,1
   wrong-state-for-bonus-lifecycle,card-promo,1
   wrong-state-for-meaning,feedback,1
   wrong-typography-override,textbox,1
-  xs-on-primary-listing,button-filter,1
   xsm-when-readability-matters,badge-status,1
 dependencyGraph[34]:
   - parent: accordion
@@ -345,8 +345,6 @@ dependencyGraph[34]:
   - parent: button
     nests: "['Icon Placeholder']"
   - parent: button-circle-navigation
-    nests: "['Icon']"
-  - parent: button-filter
     nests: "['Icon']"
   - parent: button-group
     nests: "['Button']"
@@ -372,6 +370,8 @@ dependencyGraph[34]:
     nests: "['Counter', 'Badge Ribbon', 'Button']"
   - parent: chip-navigation
     nests: "['Chip']"
+  - parent: fab
+    nests: "['Button', 'Badge Notification']"
   - parent: filter
     nests: "['Bottom Sheet', 'Heading', 'TextBox', 'Chip', 'Button Group', 'Button', 'Button Icon']"
   - parent: header

@@ -1,0 +1,98 @@
+{
+  "slug": "banner-wesisal",
+  "lastUpdated": "2026-06-05",
+  "status": "scaffold",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "8607:97326",
+    "ios": "8607:97326"
+  },
+
+  "component": {
+    "name": "Banner WeSisal",
+    "category": "molecules",
+    "description": "Template di Banner per il programma loyalty WeSisal. Layout orizzontale compatto (343×124) con brand mark WeSisal a sinistra, Title (saldo Sisal Points correnti dell'utente) + Paragraph (dettaglio sui punti in scadenza con data) al centro, e 2 Button outline a destra (azioni rapide: tipicamente riscatta / vedi dettagli). Background brand verde con testo bianco (`banner/color/text`). Variante strutturale del pattern Banner perché ha un brand mark dedicato come elemento di sinistra e un layout text-centre + buttons-right diverso dai 3 `Text Type` del Banner base.",
+    "type": "display"
+  },
+
+  "usage": {
+    "useCases": [
+      "wesisal-loyalty-balance-callout",
+      "expiring-points-reminder",
+      "loyalty-program-entry-point"
+    ],
+    "requiredProps": ["pointsBalance"],
+    "commonPatterns": [
+      {
+        "name": "loyalty-balance-with-expiry",
+        "description": "Banner WeSisal mostrato all'utente loggato per comunicare il saldo Sisal Points correnti e segnalare punti in scadenza con data. 2 Button outline per azioni rapide (riscatta / dettagli).",
+        "composition": "<BannerWeSisal pointsBalance={user.sisalPoints} expiringPoints={user.expiringPoints} expiryDate={user.expiryDate} primaryAction={{ label: 'Riscatta', onPress: ... }} secondaryAction={{ label: 'Dettagli', onPress: ... }} />"
+      }
+    ],
+    "antiPatterns": []
+  },
+
+  "composition": {
+    "slots": {
+      "BrandMark": {
+        "required": true,
+        "description": "Logo / brand mark WeSisal a sinistra, asset dedicato (illustration con stelle decorative + lettering 'WeSisal' in giallo/bianco). Non sostituibile da altri logo — è il riconoscimento di brand del programma loyalty."
+      },
+      "TextBox": {
+        "required": true,
+        "description": "Stack verticale di Title + Paragraph. Title (heading bianco) con il saldo Sisal Points dell'utente (es. 'Hai 1.764 Sisal Point'). Paragraph (body bianco) con il dettaglio sui punti in scadenza e la data (es. '1.024 scadono il 30/09/2024'). Allineamento left."
+      },
+      "ButtonGroup": {
+        "required": true,
+        "description": "Group di 2 Button affiancati a destra, variante `inverse/secondary` (outline bianco). Azioni tipiche: riscatta punti, vedi dettagli del programma. Vincolo: max 2 Button, niente Primary solid (non è il punto del banner — è informativo con scelta rapida)."
+      }
+    },
+    "nestedComponents": ["Button", "Button Group"],
+    "commonPartners": ["Page"],
+    "parentConstraints": [
+      "Pensato per essere inline dentro a una Page. Larghezza tipica 343 (su 343 viewport content).",
+      "L'intero Banner può essere tappabile come unità di navigazione verso la pagina dettaglio WeSisal, ANCHE se ha già i 2 Button: il consumer decide se il tap-on-card è una CTA aggiuntiva o se sono i Button le uniche CTA."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap-banner": "Tap sull'intero Banner (al di fuori dei Button) esegue `onPress` del consumer — tipicamente apre la pagina dettaglio WeSisal.",
+      "tap-button": "Tap su uno dei 2 Button del ButtonGroup esegue il callback associato (`onPrimaryAction` / `onSecondaryAction`) — azioni distinte dal tap-banner. Quando entrambi sono presenti, i tap sui Button devono fare stopPropagation per evitare il double-firing."
+    },
+    "responsive": {}
+  },
+
+  "content": {
+    "maxLines": {
+      "title": 1,
+      "paragraph": 1
+    },
+    "characterLimits": {},
+    "overflow": "ellipsis",
+    "rules": [
+      "Title (saldo punti) tipicamente 1 riga con numero punti (es. 'Hai 1.764 Sisal Point').",
+      "Paragraph (dettaglio scadenza) 1 riga con numero + data (es. '1.024 scadono il 30/09/2024')."
+    ]
+  },
+
+  "accessibility": {
+    "role": "Se Banner è tappabile (onPress sul container): `Role.Button` con `accessibilityLabel` combinato (Title + Paragraph). I Button interni sono elementi accessibili separati con propria label.",
+    "screenReader": "Annuncio combinato: 'Hai [N] Sisal Point, [M] scadono il [data]' al mount del Banner. Se il container è tappabile, aggiungere 'pulsante' alla fine. I Button interni vengono letti come elementi successivi nell'ordine di lettura. Il brand mark WeSisal è decorativo — NON va annunciato (`accessibilityElementsHidden=true`).",
+    "focusManagement": "Se tutto il Banner è tappabile: 1 elemento focusable + 2 Button focusable. Se i Button sono le sole CTA: il Banner è non-focusable e i Button sono 2 elementi focusable nell'ordine sinistra → destra.",
+    "touchTarget": "Banner intero 343×124: abbondantemente sopra-soglia se tappabile. Button interni: verificare 44pt iOS / 48dp Android — se sotto, il consumer estende l'hit-area.",
+    "wcag": "AA — testo bianco su background verde brand. Verificare che il contrasto risultante (white su `brand/primary/...`) sia AA. Il brand mark a sinistra (giallo/bianco) è decorativo e fuori dal contrasto-check del testo."
+  },
+
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["banner", "wesisal", "we sisal", "loyalty", "sisal point", "punti", "fidelity", "rewards"],
+    "context": "Usa Banner WeSisal per comunicare all'utente loggato il proprio saldo Sisal Points e segnalare punti in scadenza, con CTA rapide (riscatta / dettagli). NON usarlo per utenti non loggati (il saldo non esiste). NON usarlo per altre iniziative loyalty non-WeSisal: il brand mark è specifico."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

@@ -12,7 +12,7 @@
   "component": {
     "name": "Banner",
     "category": "molecules",
-    "description": "Card promozionale/informativa a tutta larghezza con background image, radius 12, testo bianco in overlay e CTA opzionali. Pensato per evidenziare contenuto promozionale o informativo (es. welcome bonus, aggiornamento app, novità, cookie consent). 3 `Text Type` strutturali: `Title + Paragraph` (Title heading/h3 max 2 righe + Paragraph pLead max 3 righe, left-aligned, con 2 Button sotto — 179h); `Centered Text` (stessi Title + Paragraph ma centrati orizzontalmente, NIENTE Button — 179h); `Title Only` (solo Title max 2 righe + 2 Button — 118h compatto). Container: padding 16/16 (`banner/size/padding/horizontal|vertical`), gap 8 (`banner/size/gap`), radius 12 (`banner/size/border/radius`). I template specifici (welcome bonus, app update, cookie consent, ecc.) sono istanze di Banner — il componente DS è UNO solo, le varianti di contenuto/copy/immagine vivono come pattern/template separati dal DS.",
+    "description": "Card promozionale/informativa a tutta larghezza con background image, radius 12, testo bianco in overlay e CTA opzionali. Pensato per evidenziare contenuto promozionale o informativo. Tre `Text Type` strutturali coprono i casi d'uso comuni: `Title + Paragraph` (messaggio articolato con scelta utente — Title heading/h3 max 2 righe + Paragraph pLead max 3 righe, left-aligned, con 2 Button sotto, 179h); `Title Only` (callout compatto auto-esplicativo — solo Title max 2 righe + 2 Button, 118h); `Centered Text` (momento celebrativo / comunicativo — testo centrato, NIENTE Button, 179h). Container: padding 16/16 (`banner/size/padding/horizontal|vertical`), gap 8 (`banner/size/gap`), radius 12 (`banner/size/border/radius`).\n\nLa famiglia Banner distingue due tipologie di varianti:\n- **Content instances** (welcome bonus, app update, cookie consent, ...): stesso componente Banner base, solo copy/immagine/CTA diverse. NON sono componenti separati nel DS — vivono come pattern d'uso (vedi `commonPatterns`).\n- **Structural variants** (banner-community, banner-gioco-certificato, banner-help-center, banner-race, banner-ruota-bonus, banner-tipologia-giocatore, banner-wesisal): componenti dedicati con layout, altezze e regole diverse dai 3 Text Type del Banner base (es. side-by-side text+image, single Button, Link al posto del Button, brand mark dedicato). Vivono come cartelle separate in `components/banner/banner-*/`.",
     "type": "display"
   },
 
@@ -75,9 +75,9 @@
         "alternative": "Massimo 2 azioni: primaria (inverse/primary, solid bianco) + secondaria (inverse/secondary, outline). Per più opzioni usare una Drawer/modale raggiungibile dalla CTA primaria ('Scopri opzioni')."
       },
       {
-        "scenario": "documenting-each-template-as-component",
-        "reason": "Welcome Bonus Banner, App Update Banner, Cookie Banner, ecc. sono ISTANZE dello stesso Banner — differiscono solo per contenuto (testo, immagine, target azione). Documentare ogni template come componente separato in `components/` duplica struttura, slot e token; quando il Banner base cambia, tutti i template vanno aggiornati a mano.",
-        "alternative": "Mantenere UN solo componente Banner nel DS. I template specifici vivono come pattern d'uso (commonPatterns qui o file separato `BANNER_TEMPLATES.md`/`templates.md`) — sono content/marketing decisions, non DS decisions."
+        "scenario": "documenting-content-instance-as-component",
+        "reason": "Welcome Bonus Banner, App Update Banner, Cookie Banner, ecc. sono CONTENT INSTANCES del Banner base — differiscono solo per copy, immagine e target azione, NON per layout o struttura. Documentare ogni content instance come componente separato in `components/` duplica struttura, slot e token; quando il Banner base cambia, tutti i template vanno aggiornati a mano.",
+        "alternative": "I content instances (stesso layout, copy diverso) vivono come pattern d'uso (`commonPatterns` qui o file separato `BANNER_TEMPLATES.md`). I componenti dedicati in `components/banner/banner-*/` sono riservati agli **structural variants**: layout differenti dai 3 Text Type del Banner base (side-by-side text+image, brand mark dedicato, single Button, Link invece di Button, altezza diversa)."
       }
     ]
   },

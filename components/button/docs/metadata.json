@@ -1,6 +1,6 @@
 {
   "slug": "button",
-  "lastUpdated": "2026-05-14",
+  "lastUpdated": "2026-06-09",
   "status": "full",
 
   "platforms": ["android", "ios", "ios-liquid-glass"],
@@ -102,8 +102,10 @@
       }
     },
     "nestedComponents": ["Icon Placeholder"],
-    "commonPartners": [],
-    "parentConstraints": []
+    "commonPartners": ["Button Group", "Modal Feedback", "Bottom Sheet", "Page"],
+    "parentConstraints": [
+      "Tre contesti tipici di Button nel DS Cross-App: (1) form submission e confirmation flows (Confirm, Submit, Continue), tipicamente Primary + Secondary affiancati nel piè di un form; (2) inside Button Group (vedi components/button-group), dove più Button stanno affiancati come azioni di pari livello — il Button Group gestisce orientation, gap, sticky behavior; (3) action row di Modal Feedback / Bottom Sheet, tipicamente Primary + Secondary."
+    ]
   },
 
   "behavior": {
@@ -118,7 +120,7 @@
     "role": "UIAccessibilityTraitButton (iOS) / role=\"button\" (Android). Lo stato disabled aggiunge UIAccessibilityTraitNotEnabled (iOS) / setEnabled(false) (Android).",
     "screenReader": "VoiceOver e TalkBack annunciano il label del button seguito dal trait button. Quando disabled, viene aggiunto l'annuncio 'disattivato' / 'dimmed'.",
     "focusManagement": "Il button è raggiungibile via swipe (VoiceOver) / swipe + Tab (TalkBack); il focus accessibility resta sul button dopo l'attivazione finché non avviene una transizione di schermata o un cambio di stato esplicito.",
-    "touchTarget": "Size md ha altezza 48px (sopra Material 48dp / iOS HIG 44pt); size sm ha altezza 32px e va usato solo quando il button è inline con altri elementi compatti e l'hit area reale (incluso padding del contenitore) raggiunge comunque 44pt/48dp.",
+    "touchTarget": "Size md ha altezza 44px (conforme iOS HIG 44pt; per Material 48dp l'hit area effettiva deve essere estesa di 4dp totali via padding del contenitore). Size sm ha altezza 32px e va usato solo quando il button è inline con altri elementi compatti e l'hit area reale (incluso padding del contenitore) raggiunge comunque 44pt/48dp.",
     "dynamicType": "Il label scala con Dynamic Type (iOS) e Font Scale (Android). Su scale font molto grandi, il label può andare a capo se il contenitore lo permette; altrimenti il button mantiene min-width 96px e l'eccesso va in overflow.",
     "wcag": "AA"
   },

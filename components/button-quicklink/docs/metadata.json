@@ -59,8 +59,8 @@
       },
       {
         "scenario": "no-icon-low-discoverability",
-        "reason": "`showIcon=false` lascia solo la Label dentro al box: il quicklink perde la sua firma visiva (icona + label verticali) e diventa visivamente simile a un Button Square o a una chip. La densità informativa cala e la discoverability anche.",
-        "alternative": "Tenere `showIcon=true` come default. Se davvero non c'è un'icona sensata da abbinare alla destinazione, riconsiderare se Button Quicklink è il componente giusto (forse Button Square o Chip)."
+        "reason": "`showIcon=false` lascia solo la Label dentro al box in modalità estesa: il quicklink perde la sua firma visiva (icona + label verticali) e diventa visivamente simile a un Button Square o a una chip. La densità informativa cala e la discoverability anche.",
+        "alternative": "Tenere `showIcon=true` come default. Se davvero non c'è un'icona sensata da abbinare alla destinazione, riconsiderare se Button Quicklink è il componente giusto."
       }
     ]
   },

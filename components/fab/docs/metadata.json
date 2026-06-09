@@ -1,0 +1,131 @@
+{
+  "slug": "fab",
+  "lastUpdated": "2026-06-09",
+  "status": "full",
+
+  "platforms": ["android", "ios", "ios-liquid-glass"],
+  "figmaNodeIds": {
+    "android": "9440:489",
+    "ios": "9440:489",
+    "ios-liquid-glass": "9402:397",
+    "propertyTable": "9408:101516"
+  },
+
+  "component": {
+    "name": "FAB",
+    "category": "atoms",
+    "description": "Floating Action Button: bottone floating ancorato in basso sopra il contenuto scrollabile, usato per **azioni importanti che devono restare sempre accessibili** durante lo scroll della pagina. Una sola istanza per pagina. Material 3-aligned. Il FAB è implementato come **istanza del componente Button**: tutte le opzioni di styling (Appearance, State, Pressed/Disabled feedback) sono delegate al Button sottostante. Il FAB espone due property proprie: `os` (android, ios) e `Label` (yes, no — il FAB può essere icon+label oppure solo-icona). Lo slot icona del Button ospita un **Badge Notification opzionale**, usato specificamente nel pattern filter entry point per segnalare la presenza di filtri attivi (count). Disponibile in due versioni di piattaforma: standard (Android/iOS, node 9440:489) e Liquid Glass (iOS, node 9402:397). Use case tipici nel DS Cross-App: entry point al pannello filtri della homepage (sliders + label 'Filtri' con badge quando filtri applicati) e scroll-to-top di una pagina o lista lunga (arrow-up, tipicamente Label=no).",
+    "type": "interactive"
+  },
+
+  "usage": {
+    "useCases": [
+      "homepage-filter-entry-point",
+      "scroll-to-top-of-long-page",
+      "scroll-to-top-of-long-list"
+    ],
+    "requiredProps": ["os", "onPress"],
+    "commonPatterns": [
+      {
+        "name": "homepage-filter-entry-point",
+        "description": "FAB nella homepage ancorato in basso (overlay floating) sopra la navbar. Tap apre la bottom sheet dei filtri. Configurazione: icona sliders + label 'Filtri'. Quando uno o più filtri sono applicati, l'icona del Button ospita un Badge Notification col count dei filtri attivi (è la SOLA configurazione del FAB che usa il badge). Pattern principale di filtraggio della homepage, presente per tutta la durata dello scroll.",
+        "composition": "<FAB os=\"ios\" label icon={<IconSliders badge={appliedFilters > 0 ? appliedFilters : undefined} />} text=\"Filtri\" onPress={openFilterDrawer} />"
+      },
+      {
+        "name": "scroll-to-top",
+        "description": "FAB con icona arrow-up, ancorato in basso (tipicamente bottom-right con safe-area). Compare con fade-in/slide-up oltre una soglia di scroll (>1 viewport) e scompare vicino alla testata. Tap esegue scroll-to-top animato del container scrollabile. Tipicamente configurato con Label=no (solo icona). Per la configurazione specifica Android-only esiste anche un componente dedicato: `components/back-to-top-navigation/`.",
+        "composition": "<FAB os=\"android\" icon={<IconArrowUp />} accessibilityLabel=\"Torna in cima\" visible={scrollY > viewportHeight} onPress={scrollToTop} />"
+      },
+      {
+        "name": "liquid-glass-primary-action",
+        "description": "Su iOS con Liquid Glass attivo, il FAB usa la famiglia separata `fabLiquidGlass/*` (node 9402:397) con Hierarchy (Primary, Secondary) invece di Appearance. Niente Pressed dedicato: lo stato interattivo è gestito dal sistema Glass (depth/blur dinamici).",
+        "composition": "<FAB platform=\"ios-liquid-glass\" hierarchy=\"Primary\" icon={<IconAdd />} text=\"Aggiungi\" />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "multiple-fabs-on-page",
+        "reason": "Material 3 indica una sola FAB visibile per pagina. Più FAB sulla stessa pagina (es. filtri + back-to-top + nuovo contenuto) competono visivamente, l'utente non sa quale è 'l'azione principale' e perde la metafora della singola azione sempre disponibile.",
+        "alternative": "Una sola FAB per pagina. Se servono più azioni persistenti, valutare quale è davvero 'sempre disponibile' e tenere quella; per le altre usare componenti inline (Button, Button Icon nell'header, Quicklink)."
+      },
+      {
+        "scenario": "fab-inline-in-content",
+        "reason": "Il FAB è progettato per stare in overlay floating ancorato in basso, sopra lo scroll. Inserirlo inline nel contenuto (dentro una card, in mezzo a una listing) lo fa sembrare un'azione su un singolo item e fa perdere la sua presenza durante lo scroll.",
+        "alternative": "Per azioni su un singolo item o sezione usare Button (inline), Button Icon o Quicklink. Riservare il FAB ad azioni di pagina che devono restare sempre accessibili."
+      },
+      {
+        "scenario": "fab-on-short-page",
+        "reason": "Su pagine che entrano in 1-2 schermate il FAB occupa spazio senza dare valore aggiunto: tutto è già visibile, non serve un'azione 'sempre accessibile'. L'utente lo percepisce come rumore visivo che copre contenuto.",
+        "alternative": "Mostrare il FAB solo su pagine effettivamente scrollabili (oltre 1 viewport). Su pagine corte l'azione primaria può vivere inline nel contenuto o nel sticky footer."
+      },
+      {
+        "scenario": "fab-covers-critical-content",
+        "reason": "Il FAB posizionato in modo da coprire permanentemente contenuto critico (es. ultimo item di una listing, CTA inline di un banner, info importante nel piede pagina) lascia l'utente con contenuto invisibile o non raggiungibile.",
+        "alternative": "Aggiungere padding-bottom al contenuto scrollabile uguale all'altezza del FAB + safe-area, in modo che lo scroll esponga tutto il contenuto sopra al FAB. Considerare anche il FAB scroll-aware che si nasconde quando l'utente arriva a fine pagina."
+      },
+      {
+        "scenario": "wrong-platform-variant",
+        "reason": "La versione standard (Android/iOS, node 9440:489) e la versione Liquid Glass (node 9402:397) sono due famiglie di componenti separate. La standard ha 4 combinazioni (os × Label) e delega lo styling al Button. La Liquid Glass ha 8 combinazioni (Hierarchy × State × hasBadge) e usa il proprio namespace `fabLiquidGlass/*`. Mescolare le varianti su una build sbagliata rompe la coerenza visiva di piattaforma.",
+        "alternative": "Per `platforms: [android, ios]` usare la famiglia standard. Per `platforms: [ios-liquid-glass]` usare la famiglia Liquid Glass. Il consumer/builder seleziona il set in base al target di build."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Button": {
+        "required": true,
+        "description": "Il FAB è implementato come istanza del componente Button. Tutto lo styling (Appearance, padding, border-radius, State variants Default/Pressed/Disabled, behavior del tap) è delegato al Button sottostante. Le property proprie del FAB sono `os` (android/ios) e `Label` (yes/no): la combinazione determina il preset dimensionale dell'istanza Button (44h, width 99 per Android Label=yes, 106 per iOS Label=yes, 44 quadrato per Label=no). Vedi documentazione del componente Button per varianti, token, state."
+      },
+      "Icon": {
+        "required": true,
+        "description": "Icona 24×24 dell'istanza Button. Riconoscibile per l'azione del FAB: sliders per i filtri, arrow-up per il back-to-top, plus per 'aggiungi', edit per 'componi'. È parte della firma visiva del componente."
+      },
+      "Text": {
+        "required": false,
+        "description": "Label opzionale del Button sottostante, controllata dal property `Label` del FAB (yes/no). Quando presente, single-line `whitespace-nowrap`, label corta (es. 'Filtri', 'Nuovo'). Quando assente (Label=no), il FAB è quadrato solo-icona (44×44)."
+      },
+      "NotificationBadgeIcon": {
+        "required": false,
+        "description": "Badge Notification overlay sull'icona del Button, usato ESCLUSIVAMENTE nel pattern filter entry point per segnalare la presenza di filtri attivi (count). Riusa il componente Badge Notification con i suoi Type (number, 99+). Non si usa il badge in altri pattern del FAB (vedi anti-pattern `badge-outside-filter-pattern`)."
+      }
+    },
+    "nestedComponents": ["Button", "Badge Notification"],
+    "commonPartners": ["Drawer", "Filter", "Back To Top Navigation", "Listing", "Search Results Listing", "Page"],
+    "parentConstraints": [
+      "Posizionato come overlay floating ancorato al bordo bottom della viewport (con safe-area), bottom-right o bottom-center. Non sta nel flusso del contenuto: resta visibile durante lo scroll della pagina sotto.",
+      "Una sola istanza di FAB per pagina (Material 3 single-FAB pattern).",
+      "Il contenuto scrollabile sotto deve avere padding-bottom sufficiente a non lasciare contenuto critico permanentemente coperto dal FAB."
+    ]
+  },
+
+  "behavior": {
+    "states": ["default", "pressed", "disabled"],
+    "interactions": {
+      "tap": "Tap esegue l'azione associata (apre la bottom sheet dei filtri, scroll-to-top, apre un compose, ecc.). Il comportamento di Pressed/Disabled e il feedback visivo durante il touch sono delegati al Button sottostante.",
+      "scroll-aware-visibility": "Pattern opzionale (es. scroll-to-top): il FAB compare con fade/slide oltre una soglia di scroll e scompare al rientro vicino alla testata. Quando nascosto, deve essere rimosso dall'accessibility tree, non solo nascosto visivamente, per non essere navigabile a vuoto.",
+      "badge-update": "Nel pattern filter entry point, il Badge Notification sull'icona aggiorna il count dei filtri applicati in tempo reale. Quando il count torna a 0, il badge viene rimosso (non mostrato a count=0).",
+      "liquid-glass-states": "Nella versione `ios-liquid-glass` (famiglia separata) non esiste un State=Pressed dedicato: il feedback durante il touch è gestito dal sistema Liquid Glass via depth/blur dinamici."
+    },
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "button — è un'azione che apre una superficie o esegue un comando. Il ruolo e i traits sono delegati al Button sottostante. Quando il FAB è in configurazione filter con badge, l'accessibilityLabel deve includere il count (es. 'Filtri, 3 applicati, pulsante. Apre il pannello dei filtri').",
+    "screenReader": "Lo screen reader legge 'Label, [N applicati,] pulsante' nel pattern filter. L'icona va marcata come decorativa. Il badge di notifica entra nella label combinata, non viene letto come elemento separato. Per `State=Disabled` aggiunge 'non disponibile' (iOS) o 'disabilitato' (Android). Dopo il tap, spostare l'accessibility focus sulla destinazione conseguente.",
+    "focusManagement": "Focusable in Default e Pressed, non in Disabled. Quando il FAB scompare per scroll-aware visibility, va rimosso dall'accessibility tree. Quando l'azione apre un overlay, il focus va sulla nuova superficie e il contenuto sotto diventa inerte per screen reader.",
+    "touchTarget": "Il FAB ha altezza 44 (sopra-soglia iOS HIG 44pt; per Material 48dp l'hit area effettiva va estesa di 4dp totali via padding del contenitore, come per il Button sottostante). La configurazione Label=no è quadrata 44×44, sopra-soglia con la stessa cautela del Button per Material.",
+    "wcag": "AA"
+  },
+
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["fab", "floating action button", "floating button", "filter button", "filtri", "back to top", "scroll to top", "sticky action"],
+    "context": "Usa il FAB SOLO per azioni importanti che devono restare sempre accessibili durante lo scroll della pagina. Nel DS Cross-App i due scenari concreti sono: entry point ai filtri della homepage (sliders + label 'Filtri', con Badge Notification sull'icona quando ci sono filtri applicati) e scroll-to-top di una pagina o lista lunga (arrow-up, tipicamente Label=no). Posizionalo come overlay floating ancorato in basso (con safe-area), bottom-right o bottom-center, mai inline nel contenuto. Una sola istanza per pagina. Il FAB è un'istanza del Button, quindi tutto lo styling segue le regole del Button; le property proprie sono `os` (android/ios) e `Label` (yes/no). Il Badge Notification sull'icona è riservato al pattern filter entry point — non usarlo per altri pattern. Versione Liquid Glass (ios-liquid-glass): famiglia separata `fabLiquidGlass/*` con Hierarchy invece di Appearance. Aggiungi padding-bottom al contenuto scrollabile per non coprire permanentemente contenuto critico.",
+    "platformDifferences": "Versione standard (Android/iOS, node 9440:489): 4 combinazioni totali = os (android, ios) × Label (yes, no). Lo styling è delegato al Button sottostante (Appearance, State, padding). Versione Liquid Glass (ios-liquid-glass, node 9402:397): famiglia separata con 8 combinazioni = Hierarchy (Primary, Secondary) × State (Default, Disabled) × hasBadge (yes, no), single size, niente Pressed, namespace `fabLiquidGlass/*`."
+  },
+
+  "rationale": {
+    "designDecisions": "- **Refactor 2026-06-09: FAB come istanza del Button.** La versione standard del FAB è stata semplificata in un'istanza del componente Button. Le property proprie del FAB sono ora solo due: `os` (android/ios, per il preset dimensionale di piattaforma) e `Label` (yes/no). Tutto il resto dello styling (Appearance, State variants Default/Pressed/Disabled, padding, border, behavior del tap) è delegato al Button sottostante. Beneficio: nessuna duplicazione di token o di state visivi tra Button e FAB; manutenzione centrale nel Button. La property tabella originale (node 9408:101516) e le precedenti varianti Material 3 piene (3 Appearance × 4 State × 2 Size × hasBadge) restano come reference storico ma non sono più la fonte di verità del componente standard.\n- **Badge sull'icona, riservato al pattern filter.** Il Badge Notification overlay sull'icona del Button è una convenzione visiva specifica del filter entry point: segnala 'N filtri attualmente applicati'. Non si usa per altri pattern del FAB (compose, scroll-to-top, primary action generica). Vedi anti-pattern `badge-outside-filter-pattern`.\n- **Liquid Glass è una famiglia separata.** La versione `ios-liquid-glass` (node 9402:397) non è una variant del FAB standard ma una famiglia di componenti separata (namespace `fabLiquidGlass/*`) con Hierarchy (Primary, Secondary) invece di Appearance, niente Pressed (gestito dal sistema Glass), single size. Il refactor del FAB standard come istanza del Button non si applica alla famiglia Liquid Glass, che mantiene il proprio set di varianti."
+  }
+}
