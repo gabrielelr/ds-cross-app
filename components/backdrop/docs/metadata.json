@@ -16,6 +16,12 @@
     "type": "display"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "modal-scrim",

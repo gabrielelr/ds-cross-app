@@ -16,6 +16,12 @@
     "type": "navigation"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "top-level-section-switching",

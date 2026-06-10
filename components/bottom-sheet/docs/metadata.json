@@ -17,6 +17,12 @@
     "type": "container"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "filter-panel",

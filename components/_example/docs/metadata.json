@@ -10,6 +10,13 @@
     "description": "",
     "type": "interactive"
   },
+
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [],
     "requiredProps": [],

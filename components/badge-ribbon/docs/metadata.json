@@ -16,6 +16,12 @@
     "type": "display"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "product-promo-tag-corner",

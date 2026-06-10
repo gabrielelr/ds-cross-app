@@ -19,6 +19,12 @@
     "type": "navigation"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "app-bottom-navigation",

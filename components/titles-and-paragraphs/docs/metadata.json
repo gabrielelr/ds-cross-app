@@ -18,6 +18,12 @@
     "type": "display"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "type-system-reference",

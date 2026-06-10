@@ -16,6 +16,12 @@
     "type": "interactive"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "homepage-shortcut",

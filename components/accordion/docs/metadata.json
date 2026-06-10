@@ -10,6 +10,13 @@
     "description": "Sezione collassabile composta da un header con titolo numerato e icona chevron, che rivela un contenuto secondario quando attivata.",
     "type": "interactive"
   },
+
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "faq",

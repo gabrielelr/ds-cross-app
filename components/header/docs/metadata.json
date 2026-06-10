@@ -17,6 +17,12 @@
     "type": "navigation"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "homepage-top-bar",

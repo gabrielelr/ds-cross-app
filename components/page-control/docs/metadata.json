@@ -17,6 +17,12 @@
     "type": "display"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "carousel-pagination-indicator",

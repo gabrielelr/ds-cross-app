@@ -15,6 +15,12 @@
     "type": "interactive"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "long-list-scroll-to-top",

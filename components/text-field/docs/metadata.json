@@ -18,6 +18,12 @@
     "type": "input"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "form-text-input",

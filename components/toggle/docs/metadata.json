@@ -17,6 +17,12 @@
     "type": "input"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "system-on-off-setting",

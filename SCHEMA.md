@@ -177,6 +177,26 @@ Lo schema del `metadata.json` segue il formato della skill **AI Component Metada
     "type": "interactive"
   },
 
+  "variants": {
+    "Appearance": { "values": ["Neutral", "Inverse", "Brand", "Accent", "Danger"], "default": "Neutral" },
+    "Hierarchy":  { "values": ["Primary", "Secondary", "Ghost"], "default": "Primary" },
+    "Size":       { "values": ["md", "sm"], "default": "md" },
+    "State":      { "values": ["Default", "Pressed", "Disabled"], "default": "Default" }
+  },
+
+  "sizing": {
+    "md": { "height": 44, "minWidth": 96, "paddingX": 16, "gap": 8, "iconSize": 24 },
+    "sm": { "height": 32, "minWidth": 64, "paddingX": 12, "gap": 6, "iconSize": 20 }
+  },
+
+  "tokens": {
+    "Brand/Primary": {
+      "default":  { "bg": "button/color/brand/primary/bg/default",  "text": "button/color/brand/primary/text/default",  "border": null },
+      "pressed":  { "bg": "button/color/brand/primary/bg/pressed",  "text": "button/color/brand/primary/text/pressed",  "border": null },
+      "disabled": { "bg": "button/color/brand/primary/bg/disabled", "text": "button/color/brand/primary/text/disabled", "border": null }
+    }
+  },
+
   "usage": {
     "useCases": [
       "primary-actions",
@@ -344,14 +364,60 @@ Quando un componente esiste su tutte e tre, va elencato in tutte e tre le chiavi
 | `content.characterLimits`        | object          | No           | Mappa elemento-testo → max caratteri (es. `{"label": 20}`)          |
 | `content.overflow`               | string          | No           | `ellipsis` / `clamp` / `scroll` / `none` / `mixed`                  |
 | `content.rules`                  | array di string | No           | Regole free-text non esprimibili con i campi sopra                  |
-| `accessibility.role`             | string          | No           | Ruolo ARIA                                                           |
+| `accessibility.role`             | string          | No           | Ruolo ARIA / trait piattaforma (`UIAccessibilityTraitButton`, `role="button"`) |
 | `accessibility.keyboardSupport`  | string          | No           | Descrizione del supporto keyboard                                    |
-| `accessibility.screenReader`     | string          | No           | Comportamento con screen reader                                      |
+| `accessibility.screenReader`     | string          | No           | Comportamento con screen reader (cosa annunciano VoiceOver/TalkBack) |
 | `accessibility.focusManagement`  | string          | No           | Strategia di gestione del focus                                      |
+| `accessibility.touchTarget`      | string          | No           | **Claim di conformità** (es. "Conforme iOS HIG 44pt / Material 48dp via padding contenitore"). **Non ripetere le dimensioni**: quelle vivono in `sizing`. Qui solo la valutazione semantica e gli eventuali workaround (es. "Size sm sotto soglia, valida solo se il padding del parent estende l'hit area a 44pt"). |
+| `accessibility.dynamicType`      | string          | No           | Comportamento del testo sotto Dynamic Type (iOS) / Font Scale (Android). Descrizione qualitativa (es. "il label scala, va a capo se il contenitore lo permette, altrimenti overflow"). Niente dimensioni risolte. |
 | `accessibility.wcag`             | string          | No           | Livello WCAG (`AA`, `AAA`)                                           |
 | `aiHints.priority`               | enum            | No           | `high`, `medium`, `low`                                              |
 | `aiHints.keywords[]`             | array di string | No           | Keyword che triggerano l'uso di questo componente                    |
 | `aiHints.context`                | string          | No           | Quando l'AI deve scegliere questo componente                         |
+
+**Campi fisici per la composizione** (`variants`, `sizing`, `tokens`).
+
+Questi tre blocchi descrivono **la forma fisica** del componente, in modo che un agente AI possa comporre una schermata anche senza chiamare Figma MCP a runtime. Sono posizionati subito dopo `component` perché rappresentano "com'è fatto", logicamente prima di "quando si usa".
+
+| Campo       | Tipo   | Obbligatorio | Note |
+|-------------|--------|--------------|------|
+| `variants`  | object | **Sì**       | Mappa **Figma component-property name → `{ values: [], default: "" }`**. Le chiavi devono combaciare esattamente con i nomi delle property in Figma (case-sensitive: `Appearance`, non `appearance`). Componenti senza property (es. Divider): `{}`. Per scaffold: `{}`. |
+| `sizing`    | object | **Sì**       | Mappa **size variant → dimensioni geometriche**. Chiavi tipiche: `md`, `sm`, `lg`. Valori interni liberi (`height`, `minWidth`, `paddingX`, `paddingY`, `gap`, `iconSize`, `radius`) in pixel/dp. Componenti single-size: una sola chiave (es. `default`). Per scaffold: `{}`. |
+| `tokens`    | object | **Sì**       | Mappa **combinazione di variant → stato → superfici**. Chiavi al primo livello semantiche (es. `Brand/Primary`, `Neutral/Secondary`) che raggruppano combinazioni di variant; al secondo livello stato (`default`, `pressed`, `disabled`); al terzo livello superfici (`bg`, `text`, `border`, `icon`) con valore = **token name** (mai hex, R2). Usare `null` per superfici assenti (es. button senza border). Per scaffold: `{}`. |
+
+**Regole comuni ai tre campi.**
+
+- Tutti e tre sono **obbligatori** per ogni componente. Per `scaffold` il valore può essere `{}` (presente ma vuoto), come già fatto per `figmaNodeIds`/`platforms`. Per `full` devono essere popolati.
+- I valori sono **dichiarativi**, non discorsivi: niente prose, solo dati strutturati.
+- I token name in `tokens` seguono la naming convention del Figma Variable Definition del componente. Mai hex.
+- Quando una combinazione di variant non esiste in Figma (es. Button Liquid Glass non ha Ghost), non inventarla: lasciare la chiave fuori da `variants[*].values` e da `tokens`.
+- **Non duplicare in `accessibility`**: le dimensioni vivono qui (in `sizing`). I campi `accessibility.touchTarget` e `accessibility.dynamicType` portano solo la **claim di conformità** (es. "Size md soddisfa iOS HIG 44pt"), non le altezze risolte. Vedi tabella `accessibility` sopra.
+
+**Esempio compatto** (Button con due appearance × due hierarchy, riduzione del case completo a scopo illustrativo).
+
+```json
+"variants": {
+  "Appearance": { "values": ["Brand", "Neutral"], "default": "Brand" },
+  "Hierarchy":  { "values": ["Primary", "Secondary"], "default": "Primary" },
+  "Size":       { "values": ["md"], "default": "md" },
+  "State":      { "values": ["Default", "Pressed", "Disabled"], "default": "Default" }
+},
+"sizing": {
+  "md": { "height": 44, "minWidth": 96, "paddingX": 16, "gap": 8, "iconSize": 24 }
+},
+"tokens": {
+  "Brand/Primary": {
+    "default":  { "bg": "button/color/brand/primary/bg/default",  "text": "button/color/brand/primary/text/default",  "border": null },
+    "pressed":  { "bg": "button/color/brand/primary/bg/pressed",  "text": "button/color/brand/primary/text/pressed",  "border": null },
+    "disabled": { "bg": "button/color/brand/primary/bg/disabled", "text": "button/color/brand/primary/text/disabled", "border": null }
+  },
+  "Neutral/Secondary": {
+    "default":  { "bg": "button/color/neutral/secondary/bg/default",  "text": "button/color/neutral/secondary/text/default",  "border": "button/color/neutral/secondary/border/default" },
+    "pressed":  { "bg": "button/color/neutral/secondary/bg/pressed",  "text": "button/color/neutral/secondary/text/pressed",  "border": "button/color/neutral/secondary/border/pressed" },
+    "disabled": { "bg": "button/color/neutral/secondary/bg/disabled", "text": "button/color/neutral/secondary/text/disabled", "border": "button/color/neutral/secondary/border/disabled" }
+  }
+}
+```
 
 ---
 
@@ -378,6 +444,9 @@ I designer documentano spesso un componente su due frame Figma ricorrenti: **`Pu
 | **Behavior** | Conditional logic | `behavior.interactions` (chiavi tipo `if:formInvalid → button.disabled`) |
 | **Behavior** | Copy & truncation | `content` (`maxLines` / `characterLimits` / `overflow` / `rules`) |
 | **Behavior** | Do / Don't / Note locali (per OS o responsive) | confluiscono in `usage.commonPatterns[]` / `usage.antiPatterns[]` / `rationale.designDecisions` |
+| **Behavior** | Component property table (axes Figma: Appearance, Hierarchy, Size, State…) | `variants` (chiavi = property name, valori = `values[]` + `default`) |
+| **Behavior** | Spec dimensionali per size (height, min-width, padding, gap, icon size) | `sizing` (chiavi = size variant, valori = oggetto di dimensioni) |
+| **Behavior** | Token Figma Variables associati a ciascuna combinazione di variant × state | `tokens` (nested: combinazione variant → stato → superfici bg/text/border/icon) |
 
 L'intera sezione **1.1** del Purpose tipicamente diventa **una entry** in `usage.commonPatterns[]`. Se i designer ne aggiungono più (1.1.A, 1.1.B), una entry per ciascuna. Stesso per **1.2** in `usage.antiPatterns[]`.
 
@@ -513,12 +582,14 @@ Questo schema può evolvere. Quando viene modificato in modo non retrocompatibil
 La versione corrente dello schema è documentata qui:
 
 ```
-SCHEMA_VERSION: 3.2
+SCHEMA_VERSION: 3.3
 ```
 
 In caso di modifiche, aggiornare la versione e aggiungere una nota nel `CHANGELOG.md` della repo template.
 
 ---
+
+*SCHEMA v3.3 — Aggiunti tre campi **obbligatori** per la composizione fisica dei componenti: `variants{}` (mappa Figma component-property → `values[]` + `default`), `sizing{}` (mappa size variant → dimensioni geometriche), `tokens{}` (mappa combinazione variant → stato → superfici bg/text/border/icon, valori = token name). Posizionati subito dopo `component` nello schema. Per `scaffold` valore ammesso `{}`, per `full` devono essere popolati. Documentati formalmente anche `accessibility.touchTarget` e `accessibility.dynamicType`, con regola esplicita: **non duplicare** le dimensioni di `sizing`, qui solo la claim di conformità (HIG/Material/WCAG). Retrocompatibile con v3.2 a patto di aggiungere `variants: {}`, `sizing: {}`, `tokens: {}` agli scaffold esistenti e di backfillarli sui `full`.*
 
 *SCHEMA v3.2 — Aggiunto campo opzionale `figmaLayouts{}` per componenti con più frame Figma di layout/placement (es. Alert sticky vs inline). Aggiunto campo opzionale `layout` dentro ogni `usage.commonPatterns[]`, che referenzia una chiave di `figmaLayouts`. Retrocompatibile con v3.1: i componenti senza layout multipli omettono `figmaLayouts`.*
 

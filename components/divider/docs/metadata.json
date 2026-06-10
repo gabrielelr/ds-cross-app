@@ -16,6 +16,12 @@
     "type": "display"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "list-item-separator",

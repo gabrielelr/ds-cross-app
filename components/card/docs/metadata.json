@@ -16,6 +16,12 @@
     "type": "container"
   },
 
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
   "usage": {
     "useCases": [
       "card-shell-template",
