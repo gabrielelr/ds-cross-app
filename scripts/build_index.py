@@ -4,9 +4,14 @@ Build `index.toon` — single token-efficient aggregator dei metadata componenti
 
 Output: 4 sezioni
   - meta (totali, generatedAt)
-  - components (tabular)
+  - components (tabular: slug, name, category, type, status, lastUpdated, keywords)
   - antiPatternsGlobal (tabular: scenario, components, count)
   - dependencyGraph (list: parent -> [nested components])
+
+Il campo `keywords` aggrega `aiHints.keywords[]` del metadata come stringa
+comma-separated. Ospita sia gli intent semantici ("cta", "submit", ...) sia
+i sinonimi nominali ("Bottone", "CTA Button", ...). Serve all'AI per il
+match termine→slug senza dover aprire i singoli metadata.
 
 Escludes cartelle che iniziano con `_` (es. `_example`).
 
@@ -60,6 +65,7 @@ def build_index() -> dict:
         elif status == "scaffold":
             scaffold_count += 1
 
+        keywords = (meta.get("aiHints") or {}).get("keywords") or []
         components_rows.append({
             "slug": meta.get("slug") or slug,
             "name": comp.get("name") or slug,
@@ -67,6 +73,7 @@ def build_index() -> dict:
             "type": comp.get("type") or "",
             "status": status,
             "lastUpdated": meta.get("lastUpdated") or "",
+            "keywords": ",".join(keywords),
         })
 
         for ap in (meta.get("usage") or {}).get("antiPatterns") or []:

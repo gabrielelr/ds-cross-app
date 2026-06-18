@@ -1,6 +1,6 @@
 {
   "slug": "badge-default",
-  "lastUpdated": "2026-05-20",
+  "lastUpdated": "2026-06-18",
   "status": "full",
 
   "platforms": ["android", "ios"],
@@ -12,7 +12,7 @@
   "component": {
     "name": "Badge Default",
     "category": "atoms",
-    "description": "Tag pill che comunica un'informazione breve attraverso un code color e una label corta. Disponibile in 5 versioni (Default, Promo, Highlight, Jackpot, Live) × 2 Size (md, sm) = 10 combinazioni. Forma sempre pill (border-radius 128px), un solo slot Text con tipografia bold. Usato principalmente su Card Product, Hero homepage e Hero Detail per evidenziare proprietà del prodotto (promozione, jackpot, evento live) o stati marketing.",
+    "description": "Badge pill che comunica un'informazione breve attraverso un code color e una label corta. Disponibile in 7 versioni (Default, Inverse, Promo, Highlight, Jackpot, New, Special) × 2 Size (md, sm) = 14 combinazioni. Forma sempre pill (border-radius 128px), un solo slot Text con tipografia bold. Usato principalmente su Card Product, Hero homepage e Hero Detail per evidenziare proprietà del prodotto (promozione, jackpot) o stati marketing; in parti di UI come le tab per segnalare novità (badge new); e su iniziative brandizzate che richiedono il proprio trattamento cromatico (badge Special, caso canonico 'Cashout').",
     "type": "display"
   },
 
@@ -27,8 +27,9 @@
       "product-promo-tag",
       "product-highlight-tag",
       "jackpot-amount",
-      "live-event-flag",
-      "low-emphasis-marker"
+      "section-new-flag",
+      "low-emphasis-marker",
+      "branded-initiative-tag"
     ],
     "requiredProps": ["label"],
     "commonPatterns": [
@@ -48,26 +49,31 @@
         "composition": "<BadgeDefault marketing=\"Jackpot\" size=\"md\" jackpotLabel=\"€ 50.000\" />"
       },
       {
-        "name": "live-event-flag",
-        "description": "Badge `Marketing=Live` per evidenziare un evento in corso. Token: bg=`badge/color/live/bg`, border=`badge/color/live/border`, text=`badge/color/live/text`. Unica variante invertita (fill chiaro, border colorato e text colorato): la differenza strutturale serve a distinguerla a colpo d'occhio dai badge a riempimento.",
-        "composition": "<BadgeDefault marketing=\"Live\" size=\"sm\" liveLabel=\"Live\" />"
-      },
-      {
         "name": "low-emphasis-default",
         "description": "Badge `Marketing=Default` per informazioni a bassa enfasi che non rientrano nelle altre categorie (es. tag 'Exclusive' in homepage). Token: bg=`badge/color/default/bg`, border=`badge/color/default/border`, text=`badge/color/default/text`. Una delle due varianti con border (insieme a Live): qui il border serve a mantenere la riconoscibilità della pill anche con fill a bassa enfasi. Non deve competere con Promo/Highlight/Jackpot — è apposta l'opzione 'silenziosa'.",
         "composition": "<BadgeDefault marketing=\"Default\" size=\"sm\" defaultLabel=\"Exclusive\" />"
+      },
+      {
+        "name": "new on-tab",
+        "description": "Badge `Marketing=New` per evidenziare contenuti nuovi o aggiornamenti recenti su una sezione specifica (es. tab 'Nuovi giochi'). Token: bg=`badge/color/new/bg`, border=`badge/color/new/border`, text=`badge/color/new/text`. Variante a fill pieno senza border, ad alta enfasi. Pensato per attirare l'attenzione su novità: usare in modo selettivo, altrimenti si svaluta.",
+        "composition": "<BadgeDefault marketing=\"New\" size=\"sm\" newLabel=\"New\" />"
+      },
+      {
+        "name": "special-branded-initiative",
+        "description": "Badge `Marketing=Special` per un'iniziativa brandizzata con il proprio trattamento cromatico dedicato (caso canonico: il tag 'Cashout'). A differenza degli altri Marketing, Special NON ha un colore pre-definito: lo shell è identico (forma pill, tipografia, due sizes), ma bg + text vengono sovrascritti dai token-overrides dell'iniziativa. Usare SOLO quando nessuna delle altre Marketing copre il significato. Casistiche particolari per ogni iniziativa (posizionamento specifico, contesto dedicato) vengono tracciate caso per caso; le size invece restano fisse del DS (md, sm), non sono mai un parametro per-iniziativa.",
+        "composition": "<BadgeDefault marketing=\"Special\" size=\"md\" specialLabel=\"Cashout\" />"
       }
     ],
     "antiPatterns": [
       {
         "scenario": "wrong-semantic-color",
-        "reason": "Ogni Marketing è semanticamente vincolato a un significato fisso: Promo = promozione, Highlight = nuovo/marketing event, Jackpot = jackpot di gioco, Live = evento in corso, Default = informazione neutra. Scegliere il colore solo 'perché sta bene con la card' (es. Jackpot verde per indicare 'vincita') rompe il code-color che l'utente impara a leggere a colpo d'occhio nelle liste prodotti.",
-        "alternative": "Scegliere il Marketing in base al SIGNIFICATO della label, non al gusto cromatico. Se il significato non rientra in nessuna delle 5 categorie definite, usare `Marketing=Default` (è il fallback esplicito per casi non categorizzati)."
+        "reason": "Ogni Marketing è semanticamente vincolato a un significato fisso: Promo = promozione, Highlight = contenuto marketing brandizzato da spingere, Jackpot = jackpot di gioco, New = novità su una sezione, Default = informazione neutra a bassa enfasi, Inverse = alternativa di styling per superfici dove Default sarebbe inaccessibile per contrasto, Special = iniziativa brandizzata con trattamento cromatico dedicato (caso canonico: Cashout). Scegliere il colore solo 'perché sta bene con la card' (es. Jackpot verde per indicare 'vincita') rompe il code-color che l'utente impara a leggere a colpo d'occhio nelle liste prodotti.",
+        "alternative": "Scegliere il Marketing in base al SIGNIFICATO della label, non al gusto cromatico. Se il significato non rientra in nessuna delle categorie definite, usare `Marketing=Default` (è il fallback esplicito per casi non categorizzati)."
       },
       {
         "scenario": "too-many-badges-on-one-card",
-        "reason": "Mettere più badge ad alta enfasi sulla stessa card (es. Promo + Highlight + Jackpot insieme) produce rumore visivo, confonde la gerarchia (qual è il messaggio principale?) e fa sembrare ogni card 'in offerta speciale', riducendo l'attenzione complessiva. Default è pensato proprio per coesistere senza competere; gli altri tre Marketing sono pensati per essere il colpo d'occhio principale della card.",
-        "alternative": "Massimo 1 badge ad alta enfasi (Promo/Highlight/Jackpot/Live) per card + opzionalmente 1 Default per info di contorno. Se più informazioni convivono, scegliere la più importante e demote le altre nella description della card."
+        "reason": "Mettere più badge ad alta enfasi sulla stessa card (es. Promo + Highlight + Jackpot insieme) produce rumore visivo, confonde la gerarchia (qual è il messaggio principale?) e fa sembrare ogni card 'in offerta speciale', riducendo l'attenzione complessiva. Default e Inverse sono pensati per coesistere senza competere; gli altri Marketing sono pensati per essere il colpo d'occhio principale della card.",
+        "alternative": "Massimo 1 badge ad alta enfasi (Promo/Highlight/Jackpot/New) per card + opzionalmente 1 Default o Inverse per info di contorno. Se più informazioni convivono, scegliere la più importante e demote le altre nella description della card."
       },
       {
         "scenario": "jackpot-for-non-jackpot",
@@ -77,7 +83,7 @@
       {
         "scenario": "long-multiword-label",
         "reason": "Il badge è pill `whitespace-nowrap` con padding orizzontale fisso (8px md / 4px sm) e tipografia molto piccola (12px md / 10px sm in bold). Label lunghe (>1 parola breve) escono dal contenitore o forzano un crop visivo, e a 10px su Size=sm diventano illeggibili.",
-        "alternative": "Mantenere la label a 1 parola o un valore numerico breve (es. 'Promo', 'New', 'Live', '€ 50.000'). Per informazioni più articolate usare un Chip o un testo descrittivo nella card."
+        "alternative": "Mantenere la label a 1 parola o un valore numerico breve (es. 'Promo', 'New', 'Cashout', '€ 50.000'). Per informazioni più articolate usare un Chip o un testo descrittivo nella card."
       }
     ]
   },
@@ -90,9 +96,10 @@
       }
     },
     "nestedComponents": [],
-    "commonPartners": ["Hero", "Hero Detail"],
+    "commonPartners": ["Card Product", "Hero", "Hero Detail", "Tab Navigation"],
     "parentConstraints": [
-      "Posizionato come overlay sull'immagine Hero"
+      "Posizionato come overlay sull'image area di Card Product / Hero / Hero Detail (tipicamente top-left con safe-area inset), o inline accanto al label su Tab Navigation.",
+      "Per `Marketing=Special` ogni iniziativa può avere casistiche particolari (posizionamento specifico, contesto dedicato): vengono tracciate caso per caso a seconda dell'iniziativa. Le size invece restano fisse del DS (md, sm), non sono mai un parametro che l'iniziativa può ridefinire."
     ]
   },
 
@@ -104,7 +111,7 @@
 
   "accessibility": {
     "role": "image/text decorativo — Badge è un atomo display, non interattivo. Su iOS impostare `accessibilityTraits = .staticText` con `accessibilityLabel` uguale alla label visibile; su Android usare `TextView` con `contentDescription` esplicito quando la label da sola non è autoesplicativa (es. '€ 50.000' su un Jackpot va letto come 'Jackpot 50.000 euro').",
-    "screenReader": "La label è già il contenuto: lo screen reader la legge naturalmente. Per badge semanticamente carichi (Jackpot, Live, Promo) anteporre la categoria al valore in `accessibilityLabel` se la label è solo numerica/abbreviata (es. label visibile 'LIVE' → annuncio 'Evento Live'). Per Default non aggiungere prefissi: è informazione neutra.",
+    "screenReader": "La label è già il contenuto: lo screen reader la legge naturalmente. Per badge semanticamente carichi (Jackpot, Promo, New) anteporre la categoria al valore in `accessibilityLabel` se la label è solo numerica/abbreviata (es. label visibile '€ 50.000' su un Jackpot → annuncio 'Jackpot 50.000 euro'). Per Default e Inverse non aggiungere prefissi: sono informazione neutra.",
     "focusManagement": "Badge non è focusable. Se è dentro una Card Product tappabile, il focus va sulla card; il badge è parte del contenuto della card e viene letto in sequenza con titolo/prezzo.",
     "touchTarget": "Non applicabile: badge non è un target tap. Quando è sopra a una card cliccabile, l'hit area è della card.",
     "wcag": "AA"
@@ -112,8 +119,8 @@
 
   "aiHints": {
     "priority": "medium",
-    "keywords": ["badge", "tag", "label", "promo", "jackpot", "live", "highlight", "marketing badge", "etichetta prodotto"],
-    "context": "Usa Badge Default per attaccare a una Card Product / Hero / Hero Detail un'etichetta breve con significato marketing. Scegli il Marketing in base alla SEMANTICA della label: `Promo` = prodotto in promozione (fill pieno, alta enfasi); `Highlight` = novità o evento marketing che vuole catturare attenzione (fill pieno, alta enfasi); `Jackpot` = SOLO jackpot di gioco, tipicamente slot (fill pieno); `Live` = evento in corso (variante invertita: fill chiaro + border + text colorati); `Default` = info neutra a bassa enfasi, es. 'Exclusive' (fill chiaro + border) che non deve competere con gli altri marketing. Scegli la Size in base al contesto: `md` (24px) per card grandi/hero, `sm` (16px) per card in liste dense. Mantieni la label corta (1 parola o un valore numerico breve) — è pill `whitespace-nowrap` e non va a capo. Massimo 1 badge ad alta enfasi (Promo/Highlight/Jackpot/Live) per card."
+    "keywords": ["badge", "tag", "label", "promo", "jackpot", "new", "highlight", "special", "cashout", "branded tag", "initiative tag", "marketing badge", "etichetta prodotto"],
+    "context": "Usa Badge Default per attaccare a una Card Product / Hero / Hero Detail / Tab un'etichetta breve con significato marketing. Scegli il Marketing in base alla SEMANTICA della label: `Promo` = prodotto in promozione (fill pieno, alta enfasi); `Highlight` = contenuto marketing brandizzato da spingere, es. quote maggiorate, breaking bets, editoriali (fill pieno, alta enfasi); `Jackpot` = SOLO jackpot di gioco, tipicamente slot (fill pieno); `New` = sezione/feature/gioco appena rilasciato, tipicamente su Tab (fill pieno, alta enfasi); `Default` = info neutra a bassa enfasi, es. 'Exclusive' (fill chiaro) che non deve competere con gli altri marketing; `Inverse` = alternativa di styling (fill scuro + text bianco) per superfici dove Default sarebbe inaccessibile per contrasto; `Special` = iniziativa brandizzata con il proprio trattamento cromatico (caso canonico: 'Cashout'), shell identico agli altri ma bg/text vengono dai token-overrides dell'iniziativa — usare SOLO quando nessun altro Marketing copre il significato. Scegli la Size in base al contesto: `md` (24px) per card grandi/hero, `sm` (16px) per card in liste dense. Mantieni la label corta (1 parola o un valore numerico breve), è pill `whitespace-nowrap` e non va a capo. Massimo 1 badge ad alta enfasi (Promo/Highlight/Jackpot/New) per card; Special è separato perché l'enfasi dipende dalla palette dell'iniziativa."
   },
 
   "rationale": {

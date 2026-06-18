@@ -1,0 +1,125 @@
+{
+  "slug": "notification",
+  "lastUpdated": "2026-06-18",
+  "status": "full",
+
+  "platforms": ["android", "ios"],
+  "figmaNodeIds": {
+    "android": "8206:695184",
+    "ios": "8206:695184"
+  },
+
+  "component": {
+    "name": "Notification",
+    "category": "atoms",
+    "description": "Marker visivo che si sovrappone in alto a destra di un host element per segnalare contenuti non letti o azioni in attesa. Segue le convenzioni native di iOS Human Interface Guidelines e Material Design 3: pallino o pill compatta che attira l'attenzione SOLO quando c'è qualcosa da fare. Disponibile in 2 `Type` (`number`, `circle`) × 4 `Appearance` (`Alert`, `Neutral`, `Brand`, `Inverse`) = 8 combinazioni. `Type` sceglie la SHAPE (pill numerica vs dot senza testo); `Appearance` sceglie il COLORE in base alla criticità del messaggio e al contesto della superficie ospite. Può essere applicato a host diversi (icone in Header / Navbar / Tab / Menu, FAB, Banner Community, e in generale qualsiasi element che ospiti un overflow visivo in corner top-right).",
+    "type": "display"
+  },
+
+  "variants": {},
+
+  "sizing": {},
+
+  "tokens": {},
+
+  "usage": {
+    "useCases": [
+      "unread-count",
+      "pending-action-indicator",
+      "new-content-indicator"
+    ],
+    "requiredProps": [],
+    "commonPatterns": [
+      {
+        "name": "alert-unread-count",
+        "description": "Icona di un tab bar / bottom nav (messaggi, notifiche) con `Type=number, Appearance=Alert` per il numero di non lette. Pattern di default per il count: rosso brand su white text, è la convenzione iOS HIG / Material 3 che gli utenti riconoscono immediatamente come 'cosa da leggere'. Per count > 99 cappare client-side a 99 e mostrare '99' o lasciare al consumer la scelta di mostrare un valore breve.",
+        "composition": "<Notification type=\"number\" appearance=\"Alert\" host={<IconMessage />} count={10} />"
+      },
+      {
+        "name": "alert-presence-dot",
+        "description": "`Type=circle, Appearance=Alert` per indicare 'c'è qualcosa di nuovo' senza specificare il numero. Pallino rosso ancorato al corner top-right. Adatto quando il count non è rilevante o non disponibile (es. nuovo contenuto disponibile, profilo da aggiornare).",
+        "composition": "<Notification type=\"circle\" appearance=\"Alert\" host={<IconProfile />} />"
+      },
+      {
+        "name": "neutral-low-emphasis",
+        "description": "`Appearance=Neutral` (bg dark + white text) per segnalazioni a bassa enfasi che non devono competere col rosso Alert (es. background sync in corso, status update non urgente). Combinabile con `Type=number` o `circle`. Usare selettivamente: se sovraesposto, dilui la differenza con Alert.",
+        "composition": "<Notification type=\"circle\" appearance=\"Neutral\" host={<IconSync />} />"
+      },
+      {
+        "name": "brand-aligned-notification",
+        "description": "`Appearance=Brand` (bg con brand token + text brand) per notifiche brand-aligned in contesti dove il rosso Alert sarebbe stonato (es. sezione promo brandizzata, entry-point con palette dedicata). Il colore si adatta alla build (Sisal / Snai / Pokerstars) tramite token-overrides.",
+        "composition": "<Notification type=\"number\" appearance=\"Brand\" host={<IconPromo />} count={3} />"
+      },
+      {
+        "name": "inverse-on-dark-surface",
+        "description": "`Appearance=Inverse` (bg bianco + text scuro) per host su superfici dark dove le altre Appearance perderebbero contrasto. Usare SOLO quando le altre tre non passano AA contro lo sfondo, mai come scelta stilistica.",
+        "composition": "<Notification type=\"circle\" appearance=\"Inverse\" host={<IconNotificationOnDark />} />"
+      }
+    ],
+    "antiPatterns": [
+      {
+        "scenario": "notification-without-host",
+        "reason": "Notification è progettato come overlay nel corner top-right di un host (icona, FAB, banner, list row): non è un componente standalone. Senza l'host sotto, il marker fluttua nel layout senza ancoraggio semantico e perde l'associazione con il contenuto che dovrebbe segnalare.",
+        "alternative": "Usare sempre con un host valorizzato. Per tag / label testuali standalone non legati a un host usare Badge Default."
+      },
+      {
+        "scenario": "show-badge-with-zero-count",
+        "reason": "Mostrare il marker con `0` notifiche segnala visivamente la presenza di qualcosa senza che ci sia: l'utente tap apre la sezione e non trova nulla, perdendo fiducia nell'indicatore.",
+        "alternative": "Nascondere completamente il marker quando il count è 0 (`showNotificationBadge = false`). Mostrare solo quando ha senso premere per scoprire qualcosa."
+      },
+      {
+        "scenario": "circle-when-count-is-meaningful",
+        "reason": "`Type=circle` non comunica il volume: usarlo quando il count è disponibile e informativo (es. 47 messaggi non letti) priva l'utente di informazione utile a prioritizzare l'azione.",
+        "alternative": "Quando il count è significativo usare `Type=number`. Riservare `Type=circle` ai casi in cui il numero esatto non è utile o non disponibile (es. 'nuova versione disponibile', 'profilo da completare')."
+      },
+      {
+        "scenario": "wrong-appearance-for-context",
+        "reason": "Le 4 Appearance hanno significato semantico: `Alert` (rosso) per contenuto da leggere o azione urgente, `Neutral` (dark) per low-emphasis non urgenti, `Brand` per notifiche brand-aligned in contesti dedicati, `Inverse` (bianco) per host su superfici scure dove le altre perdono contrasto. Usare Brand per un'urgent unread o Inverse su un host chiaro 'perché sta bene' rompe il code-color e confonde l'utente sulla priorità del messaggio.",
+        "alternative": "Scegliere l'Appearance in base alla CRITICITÀ (Alert = urgente da leggere, Neutral = bassa enfasi, Brand = brand context) e al CONTRASTO con la surface dell'host (Inverse SOLO quando le altre non passano AA). Mai per gusto cromatico."
+      }
+    ]
+  },
+
+  "composition": {
+    "slots": {
+      "Icon": {
+        "required": false,
+        "description": "Icona ospite, 24×24, sostituibile via prop `icon`. Default: placeholder icon. Il colore dell'icona è auto-derivato dal `Type` tramite token `badgeNotification/color/{type}/icon` (es. `badgeNotification/color/number/icon`)."
+      },
+      "Badge": {
+        "required": true,
+        "description": "Overlay nel corner top-right dell'host, controllato dalla prop `showNotificationBadge` (default true). La shape dipende dal `Type`: pill compatta con numero (`number`), o cerchio piccolo senza testo (`circle`). Il colore (bg + text) dipende dall'`Appearance` tramite i token `notification/color/{appearance}/bg` e `notification/color/{appearance}/text`: `Alert` (rosso brand su white text, default native), `Neutral` (dark su white text), `Brand` (brand token bg + brand text token, brand-bound multi-brand), `Inverse` (white bg + dark text, per host su superfici scure). Tipografia: `typography/body/microCaptionBold` per `number`."
+      }
+    },
+    "nestedComponents": ["Icon"],
+    "commonPartners": ["Header", "Navbar", "Tab Navigation", "Menu Unico", "FAB", "Banner Community"],
+    "parentConstraints": [
+      "Notification si renderizza con un offset oltre il bounding box dell'host (il marker sporge fuori dal corner top-right). Il parent deve avere abbastanza spazio per ospitare l'overflow (~16px in alto/a destra rispetto all'host), oppure non clippare l'overflow.",
+      "L'host owns the tap action. Notification non è interattivo: l'hit area è dell'element ospite (icona / button / banner). Il tap chiude la condizione di notifica e il marker scompare alla successiva re-render."
+    ]
+  },
+
+  "behavior": {
+    "states": [],
+    "interactions": {},
+    "responsive": {}
+  },
+
+  "accessibility": {
+    "role": "Notification è decorativo rispetto all'host, ma il suo contenuto (count o presenza) è informazione importante. Il pattern corretto è esporre l'host + il count nella `accessibilityLabel` dell'elemento tappabile (tab / button / banner) che la contiene: es. 'Messaggi, 10 non letti, pulsante'. Il marker in sé è marcato come decorativo (`isAccessibilityElement = false` su iOS, `importantForAccessibility = no` su Android) per non essere letto come elemento separato.",
+    "screenReader": "L'annuncio combina semantica host + count: 'Messaggi, 10 non letti' per `Type=number`, 'Profilo, nuovo aggiornamento' per `Type=circle`. L'Appearance non viene annunciato (è informazione visiva, non semantica). Quando `showNotificationBadge` è false, il marker non viene annunciato e nemmeno citato implicitamente.",
+    "focusManagement": "Notification non è focusable. Il focus è del bottone / tab / banner che lo ospita.",
+    "touchTarget": "Non applicabile: il marker non è un target tap, l'hit area è dell'host (che deve essere ≥ 44pt iOS / 48dp Android).",
+    "wcag": "AA"
+  },
+
+  "aiHints": {
+    "priority": "medium",
+    "keywords": ["notification", "notification badge", "unread", "notification dot", "count badge", "non letti", "notifiche", "pallino rosso", "ios badge", "material 3 badge"],
+    "context": "Usa Notification quando vuoi segnalare su un host (icona di tab bar / header / menu, FAB, Banner Community, list row) che c'è qualcosa di non letto o un'azione in attesa. Segui le convenzioni native: iOS HIG + Material Design 3, marker in corner top-right dell'host. Componente articolato su 2 assi: `Type` (shape) × `Appearance` (colore semantico). Type: `number` = pill con numero (default per count), `circle` = pallino senza testo (solo presenza, quando il count non è significativo). Appearance: `Alert` = rosso, default native per urgente / da leggere; `Neutral` = dark, low-emphasis non urgente; `Brand` = brand-aligned (token brand-bound) per contesti brandizzati; `Inverse` = bianco + text scuro, riserva per host su superfici scure dove le altre non passano AA. Nascondi il marker (`showNotificationBadge=false`) quando il count è 0, mai mostrare 0. L'hit area è dell'host: Notification non è interattivo. Per tag / label testuali standalone non legati a un host usare Badge Default."
+  },
+
+  "rationale": {
+    "designDecisions": ""
+  }
+}

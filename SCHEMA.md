@@ -64,21 +64,9 @@ Lo slug è l'identificativo "tecnico" del componente, usato come nome cartella e
 | Icon Button         | `icon-button`       |                                   |
 | Modal/Dialog        | `modal`             | Slash rimosso, scelto un solo nome |
 
-**Casi limite e aliases.**
+**Casi limite e nomi alternativi.**
 
-Quando un componente ha nomi commerciali specifici del cliente, nomi storici diversi tra loro, o varianti che potrebbero essere confuse con altri componenti, si usa il file `aliases.json` alla radice della repo.
-
-`aliases.json` mappa nomi alternativi al loro slug canonico:
-
-```json
-{
-  "Botton": "button",
-  "Action Button": "button",
-  "Foglio Inferiore": "bottom-sheet"
-}
-```
-
-Lo script di estrazione del node tree (in fase di check) consulta `aliases.json` per normalizzare i nomi che trova in Figma verso lo slug corretto.
+Quando un componente ha nomi commerciali specifici del cliente, nomi storici diversi tra loro, o varianti che potrebbero essere confuse con altri componenti, i nomi alternativi vanno nel campo `aiHints.keywords[]` del `metadata.json` del componente (vedi §4). Lo stesso campo ospita sia gli **intent semantici** (`"cta"`, `"submit"`, `"trigger"`) sia i **sinonimi nominali** (`"Bottone"`, `"CTA Button"`, `"Foglio Inferiore"`) — l'AI e lo scorer matchano qualunque termine elencato lì allo slug canonico.
 
 ---
 
@@ -372,7 +360,7 @@ Quando un componente esiste su tutte e tre, va elencato in tutte e tre le chiavi
 | `accessibility.dynamicType`      | string          | No           | Comportamento del testo sotto Dynamic Type (iOS) / Font Scale (Android). Descrizione qualitativa (es. "il label scala, va a capo se il contenitore lo permette, altrimenti overflow"). Niente dimensioni risolte. |
 | `accessibility.wcag`             | string          | No           | Livello WCAG (`AA`, `AAA`)                                           |
 | `aiHints.priority`               | enum            | No           | `high`, `medium`, `low`                                              |
-| `aiHints.keywords[]`             | array di string | No           | Keyword che triggerano l'uso di questo componente                    |
+| `aiHints.keywords[]`             | array di string | No           | Termini con cui il componente può essere evocato. Ospita sia **intent semantici** (`"cta"`, `"submit"`, `"trigger"`, `"cancel"`) sia **sinonimi nominali / nomi alternativi** (`"Bottone"`, `"CTA Button"`, `"Foglio Inferiore"`, nomi commerciali, nomi storici). L'AI matcha qualunque termine elencato qui allo slug canonico; lo scorer lo usa per normalizzare i nomi che trova in Figma. |
 | `aiHints.context`                | string          | No           | Quando l'AI deve scegliere questo componente                         |
 
 **Campi fisici per la composizione** (`variants`, `sizing`, `tokens`).
@@ -535,9 +523,6 @@ Oltre alle cartelle dei singoli componenti, la repo contiene questi file alla ra
 |-------------------|------------|-----------------------------------------------------------------------------|
 | `README.md`       | Manuale    | Introduzione alla repo e istruzioni di utilizzo                             |
 | `SCHEMA.md`       | Manuale    | Questo documento                                                            |
-| `WRITING-GUIDE.md`| Manuale    | Guida alla scrittura del blocco `rationale` del `metadata.json` per il team UX |
-| `inventory.md`    | Manuale    | Inventario di tutti i componenti del DS, con stato di documentazione        |
-| `aliases.json`    | Manuale    | Mappa di nomi alternativi → slug canonici                                   |
 | `index.toon`      | Automatico | Indice TOON aggregato di tutti i componenti (token-efficient, ~5k token), generato dalla GitHub Action |
 
 `index.toon` viene rigenerato a ogni push su `main` da una GitHub Action ([`.github/workflows/generate-index.yml`](.github/workflows/generate-index.yml)). Lo script ([`scripts/build_index.py`](scripts/build_index.py)) aggrega `slug/name/category/type/status/lastUpdated` di ogni componente, gli antiPattern globali, e il dependencyGraph (`composition.nestedComponents`). **Non va mai modificato a mano** — è output derivato.
@@ -582,12 +567,14 @@ Questo schema può evolvere. Quando viene modificato in modo non retrocompatibil
 La versione corrente dello schema è documentata qui:
 
 ```
-SCHEMA_VERSION: 3.3
+SCHEMA_VERSION: 3.4
 ```
 
 In caso di modifiche, aggiornare la versione e aggiungere una nota nel `CHANGELOG.md` della repo template.
 
 ---
+
+*SCHEMA v3.4 — Eliminato il file root `aliases.json`. I nomi alternativi (sinonimi nominali, nomi commerciali, nomi storici, varianti che potrebbero essere confuse) ora vivono nel campo `aiHints.keywords[]` di ogni `metadata.json`, insieme agli intent semantici. Single source of truth per componente: aggiungere o eliminare un componente porta dietro automaticamente i suoi alias, niente file centrale da mantenere disaccoppiato. Lo scorer e l'AI conversazionale leggono entrambi `aiHints.keywords[]` (via `index.toon` aggregato) per il match termine→slug. Migrazione: chi aveva voci in `aliases.json` le sposta nel `aiHints.keywords[]` del componente corrispondente, poi elimina il file.*
 
 *SCHEMA v3.3 — Aggiunti tre campi **obbligatori** per la composizione fisica dei componenti: `variants{}` (mappa Figma component-property → `values[]` + `default`), `sizing{}` (mappa size variant → dimensioni geometriche), `tokens{}` (mappa combinazione variant → stato → superfici bg/text/border/icon, valori = token name). Posizionati subito dopo `component` nello schema. Per `scaffold` valore ammesso `{}`, per `full` devono essere popolati. Documentati formalmente anche `accessibility.touchTarget` e `accessibility.dynamicType`, con regola esplicita: **non duplicare** le dimensioni di `sizing`, qui solo la claim di conformità (HIG/Material/WCAG). Retrocompatibile con v3.2 a patto di aggiungere `variants: {}`, `sizing: {}`, `tokens: {}` agli scaffold esistenti e di backfillarli sui `full`.*
 
